@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "../db_connect.php";
+include 'db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
@@ -16,22 +16,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['role'] = $row['role'];
 
             if ($row['role'] == 'student') {
-                header("Location: ../../pages/student/dashboard.html");
+                header("Location: ../pages/student/dashboard.html");
             } elseif ($row['role'] == 'warden') {
-                header("Location: ../../pages/warden/dashboard.html");
+                header("Location: ../pages/warden/dashboard.html");
             } elseif ($row['role'] == 'admin') {
-                header("Location: ../../pages/admin/dashboard.html");
+                header("Location: ../pages/admin/dashboard.html");
             } elseif ($row['role'] == 'finance') {
-                header("Location: ../../pages/finance/dashboard.html");
+                header("Location: ../pages/finance/dashboard.html");
             } elseif ($row['role'] == 'maintenance') {
-                header("Location: ../../pages/maintenance/dashboard.html");
+                header("Location: ../pages/maintenance/dashboard.html");
             }
             exit();
         } else {
-            echo "<script>alert('Wrong password!'); window.location.href = '../../login.html';</script>";
+            echo "<script>alert('Wrong password!'); window.location.href = 'index.html';</script>";
         }
     } else {
         echo "<script>alert('User not found. Please register first.'); window.location.href = '../../register.html';</script>";
     }
 }
+
 ?>
