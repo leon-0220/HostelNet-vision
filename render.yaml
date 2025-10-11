@@ -1,8 +1,7 @@
 services:
   - type: web
-    name: HostelNet-Vision
+    name: hostelnet-vision
     env: php
     plan: free
-    region: singapore
     buildCommand: ""
-    startCommand: "php -S 0.0.0.0:10000 -t ."
+    startCommand: "php -S 0.0.0.0:$PORT -t ."
