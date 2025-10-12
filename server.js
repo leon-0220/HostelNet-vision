@@ -308,3 +308,60 @@ app.patch("/api/rooms/:room_id", async (req, res) => {
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+// ===================== STUDENT PROFILE ROUTES ===================== //
+
+// Dapatkan profile pelajar ikut ID
+app.get("/api/student-profile/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      "SELECT id, username, email, gender, role FROM users WHERE id = ?",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Student not found." });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("❌ Fetch student profile error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// Update profile pelajar
+app.put("/api/student-profile/:id", async (req, res) => {
+  const { id } = req.params;
+  const { username, email, gender, password } = req.body;
+
+  try {
+    // Check dulu kalau user wujud
+    const [userCheck] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+    if (userCheck.length === 0) {
+      return res.status(404).json({ message: "Student not found." });
+    }
+
+    let updateQuery = "UPDATE users SET username = ?, email = ?, gender = ?";
+    const params = [username, email, gender];
+
+    // Kalau user nak ubah password, hash dulu
+    if (password && password.trim() !== "") {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateQuery += ", password = ?";
+      params.push(hashedPassword);
+    }
+
+    updateQuery += " WHERE id = ?";
+    params.push(id);
+
+    await db.query(updateQuery, params);
+
+    res.json({ message: "Profile updated successfully!" });
+  } catch (err) {
+    console.error("❌ Update profile error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});
