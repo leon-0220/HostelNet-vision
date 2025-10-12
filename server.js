@@ -174,3 +174,24 @@ app.get("/api/test-db", async (req, res) => {
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+// ===================== CHECK-IN ROUTE ===================== //
+app.post("/checkin", async (req, res) => {
+  const { studentId, studentName, course, block, roomNo, checkinDate } = req.body;
+
+  if (!studentId || !studentName || !course || !block || !roomNo || !checkinDate) {
+    return res.status(400).json({ message: "Please fill in all fields." });
+  }
+
+  try {
+    await db.query(
+      "INSERT INTO checkins (student_id, student_name, course, block, room_no, checkin_date) VALUES (?, ?, ?, ?, ?, ?)",
+      [studentId, studentName, course, block, roomNo, checkinDate]
+    );
+
+    res.status(200).json({ message: "Check-in recorded successfully." });
+  } catch (err) {
+    console.error("❌ Check-in Error:", err);
+    res.status(500).json({ message: "Database error." });
+  }
+});
