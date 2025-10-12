@@ -394,3 +394,24 @@ app.post("/api/assign-room", async (req, res) => {
     res.status(500).json({ message: "Server error, please try again." });
   }
 });
+
+// ========================== CHANGE ROOM API (Student) ========================== //
+app.post("/api/change-room", async (req, res) => {
+  const { student_id, new_room_number } = req.body;
+
+  try {
+    // Semak pelajar wujud atau tidak
+    const [rows] = await db.query("SELECT * FROM students WHERE id = ?", [student_id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Student ID not found!" });
+    }
+
+    // Update nombor bilik
+    await db.query("UPDATE students SET room_number = ? WHERE id = ?", [new_room_number, student_id]);
+    res.json({ message: "Room changed successfully!" });
+
+  } catch (err) {
+    console.error("❌ Error updating room:", err);
+    res.status(500).json({ message: "Error updating room" });
+  }
+});
