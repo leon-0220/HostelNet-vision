@@ -4,158 +4,27 @@
   <meta charset="UTF-8">
   <title>HostelNet | Student Dashboard</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    .layout {
-      display: flex;
-      min-height: 100vh;
-    }
-
-    .sidebar {
-      width: 220px;
-      background: #fff3e0;
-      color: #3e2723;
-      padding: 20px;
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      transition: transform 0.3s ease;
-      z-index: 1000;
-    }
-
-    .sidebar.closed {
-      transform: translateX(-100%);
-    }
-
-    .logo-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .logo-box img {
-      width: 100%;
-      max-width: 160px; 
-      height: auto;
-      margin-bottom: 5px;
-    }
-
-    .sidebar h2 {
-      margin: 0 0 20px 0;
-      font-size: 1.2rem;
-      text-align: center;
-    }
-
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .sidebar ul li {
-      margin: 15px 0;
-    }
-
-    .sidebar ul li a {
-      color: #3e2723;
-      text-decoration: none;
-      display: block;
-      padding: 10px;
-      border-radius: 5px;
-      transition: 0.3s;
-    }
-
-    .sidebar ul li a:hover {
-      background: #ed5d2d;
-    }
-
-    .toggle-btn {
-      position: fixed;
-      top: 15px;
-      left: 15px;
-      background: #fff3e0;
-      border: none;
-      cursor: pointer;
-      padding: 8px 12px;
-      border-radius: 5px;
-      z-index: 1100;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .main-content {
-      flex: 1;
-      margin-left: 220px;
-      padding: 20px;
-      background: linear-gradient(180deg, #ff4000, #eef3f8);
-      transition: margin-left 0.3s ease;
-    }
-
-    .sidebar.closed ~ .main-content {
-      margin-left: 0;
-    }
-
-    .main-content h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #000;
-    }
-
-    .dashboard-card {
-      max-width: 600px;
-      width: 100%;
-      border-radius: 5px;
-      border: 2px solid #000;
-      background: #fff;
-      padding: 20px;
-      margin: 20px auto;
-    }
-
-    .dashboard-card h3 {
-      margin-top: 0;
-      margin-bottom: 15px;
-      color: #333;
-      font-size: 1.1rem;
-    }
-
-    .dashboard-card input,
-    .dashboard-card select,
-    .dashboard-card textarea {
-      width: 100%;
-      margin-top: 5px;
-      margin-bottom: 15px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .dashboard-card textarea {
-      height: 100px;
-    }
-
-    .dashboard-card button,
-    .dashboard-card a {
-      display: inline-block;
-      width: 100%;
-      background: #04AA6D;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-align: center;
-      margin-top: 5px;
-      text-decoration: none;
-    }
-    
-    .dashboard-card button:hover,
-    .dashboard-card a:hover {
-      background: #038d59;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; }
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: #fff3e0; color: #3e2723; padding: 20px; position: fixed; top: 0; left: 0; height: 100%; transition: transform 0.3s ease; z-index: 1000; }
+    .sidebar.closed { transform: translateX(-100%); }
+    .logo-box { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+    .logo-box img { width: 100%; max-width: 160px; height: auto; margin-bottom: 5px; }
+    .sidebar h2 { margin: 0 0 20px 0; font-size: 1.2rem; text-align: center; }
+    .sidebar ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar ul li { margin: 15px 0; }
+    .sidebar ul li a { color: #3e2723; text-decoration: none; display: block; padding: 10px; border-radius: 5px; transition: 0.3s; }
+    .sidebar ul li a:hover { background: #ed5d2d; }
+    .toggle-btn { position: fixed; top: 15px; left: 15px; background: #fff3e0; border: none; cursor: pointer; padding: 8px 12px; border-radius: 5px; z-index: 1100; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .main-content { flex: 1; margin-left: 220px; padding: 20px; background: linear-gradient(180deg, #ff4000, #eef3f8); transition: margin-left 0.3s ease; }
+    .sidebar.closed ~ .main-content { margin-left: 0; }
+    .main-content h2 { text-align: center; margin-bottom: 20px; color: #000; }
+    .dashboard-card { max-width: 600px; width: 100%; border-radius: 5px; border: 2px solid #000; background: #fff; padding: 20px; margin: 20px auto; }
+    .dashboard-card h3 { margin-top: 0; margin-bottom: 15px; color: #333; font-size: 1.1rem; }
+    .dashboard-card input, .dashboard-card select, .dashboard-card textarea { width: 100%; margin-top: 5px; margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    .dashboard-card textarea { height: 100px; }
+    .dashboard-card button, .dashboard-card a { display: inline-block; width: 100%; background: #04AA6D; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; text-align: center; margin-top: 5px; text-decoration: none; }
+    .dashboard-card button:hover, .dashboard-card a:hover { background: #038d59; }
   </style>
 </head>
 <body>
@@ -163,7 +32,7 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
       <div class="logo-box">
-        <img src="../../images/2.png" alt="Vision University College Logo">
+        <img src="../../images/2.png" alt="Vision Logo">
         <h3>Menu</h3>
       </div>
       <ul>
@@ -172,7 +41,7 @@
         <li><a href="studentroom.html">🛏 Room</a></li>
         <li><a href="payment.html">💳 Payment</a></li>
         <li><a href="complaints_list.html">📝 Complaint</a></li>
-        <li><a href="logout.php">🚪 Logout</a></li>
+        <li><a href="#" id="logoutBtn">🚪 Logout</a></li>
       </ul>
     </div>
 
@@ -183,7 +52,7 @@
 
       <div class="dashboard-card">
         <h3>Profile</h3>
-        <button onclick="viewProfile()">View Profile</button>
+        <button onclick="loadProfile()">View Profile</button>
         <form id="updateProfileForm">
           <input type="text" name="name" placeholder="Name">
           <input type="email" name="email" placeholder="Email">
@@ -197,13 +66,11 @@
         <h3>Room Management</h3>
         <button onclick="viewRooms()">View Rooms</button>
         <form id="bookRoomForm">
-          <a href="checkin.html">Check-In</a>
-          <a href="checkout.html" style="background:#d9534f;">Check-Out</a>
-          <input type="number" name="room_id" placeholder="Room ID">
+          <input type="number" name="room_id" id="book_room_id" placeholder="Room ID">
           <button type="submit">Book Room</button>
         </form>
         <form id="changeRoomForm">
-          <input type="number" name="room_id" placeholder="New Room ID">
+          <input type="number" name="room_id" id="change_room_id" placeholder="New Room ID">
           <button type="submit" style="background:#f0ad4e;">Change Room</button>
         </form>
       </div>
@@ -213,7 +80,7 @@
         <h3>Payments</h3>
         <button onclick="viewPayments()">View Payments</button>
         <form id="makePaymentForm">
-          <input type="number" name="amount" placeholder="Amount">
+          <input type="number" name="amount" id="payment_amount" placeholder="Amount">
           <button type="submit">Make Payment</button>
         </form>
       </div>
@@ -223,7 +90,7 @@
         <h3>Complaints</h3>
         <button onclick="viewComplaints()">View Complaints</button>
         <form id="complaintForm">
-          <textarea name="message" placeholder="Write complaint..."></textarea>
+          <textarea name="message" id="complaint_message" placeholder="Write complaint..."></textarea>
           <button type="submit" style="background:#d9534f;">Submit Complaint</button>
         </form>
       </div>
@@ -232,14 +99,184 @@
       <div class="dashboard-card">
         <h3>Announcements</h3>
         <button onclick="viewAnnouncements()">View Announcements</button>
+        <div id="announcementsList"></div>
       </div>
     </div>
   </div>
 
   <script>
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("closed");
+    const API_BASE = "https://hostelnet-vision-2.onrender.com";
+    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("closed"); }
+
+    // ---------- PROFILE ----------
+    async function loadProfile() {
+      try {
+        const res = await fetch(`${API_BASE}/api/profile`, { method: "GET", credentials: "include" });
+        const data = await res.json();
+        if (res.ok) {
+          const form = document.getElementById("updateProfileForm");
+          form.name.value = data.username || "";
+          form.email.value = data.email || "";
+          form.phone.value = data.phone || "";
+          alert("Profile loaded.");
+        } else {
+          alert(data.message || "Failed to load profile");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Server error loading profile");
+      }
     }
+
+    document.getElementById("updateProfileForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      const phone = form.phone.value.trim();
+      try {
+        const res = await fetch(`${API_BASE}/api/profile`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ name, email, phone })
+        });
+        const data = await res.json();
+        if (res.ok) alert("Profile updated successfully!");
+        else alert(data.message || "Failed to update");
+      } catch (err) {
+        console.error(err);
+        alert("Server error updating profile");
+      }
+    });
+
+    // ---------- ROOMS ----------
+    async function viewRooms() {
+      try {
+        const res = await fetch(`${API_BASE}/api/rooms`);
+        const rows = await res.json();
+        if (res.ok) {
+          console.table(rows);
+          alert("Rooms listed in console (open DevTools).");
+        } else alert(rows.message || "Failed to fetch rooms");
+      } catch (err) { console.error(err); alert("Server error"); }
+    }
+
+    document.getElementById("bookRoomForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const room_id = Number(document.getElementById("book_room_id").value);
+      try {
+        const res = await fetch(`${API_BASE}/api/rooms/book`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ room_id })
+        });
+        const data = await res.json();
+        if (res.ok) alert(data.message || "Booked room");
+        else alert(data.message || "Failed book");
+      } catch (err) { console.error(err); alert("Server error"); }
+    });
+
+    document.getElementById("changeRoomForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const room_id = Number(document.getElementById("change_room_id").value);
+      try {
+        const res = await fetch(`${API_BASE}/api/rooms/change`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ room_id })
+        });
+        const data = await res.json();
+        if (res.ok) alert(data.message || "Room changed");
+        else alert(data.message || "Failed change");
+      } catch (err) { console.error(err); alert("Server error"); }
+    });
+
+    // ---------- PAYMENTS ----------
+    async function viewPayments() {
+      try {
+        const res = await fetch(`${API_BASE}/api/payments`, { credentials: "include" });
+        const data = await res.json();
+        if (res.ok) {
+          console.table(data);
+          alert("Payments listed in console.");
+        } else alert(data.message || "Failed to fetch payments");
+      } catch (err) { console.error(err); alert("Server error"); }
+    }
+
+    document.getElementById("makePaymentForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const amount = Number(document.getElementById("payment_amount").value);
+      if (!amount || amount <= 0) return alert("Enter valid amount");
+      try {
+        const res = await fetch(`${API_BASE}/api/payments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ amount })
+        });
+        const data = await res.json();
+        if (res.ok) alert("Payment recorded");
+        else alert(data.message || "Payment failed");
+      } catch (err) { console.error(err); alert("Server error"); }
+    });
+
+    // ---------- COMPLAINTS ----------
+    async function viewComplaints() {
+      try {
+        const res = await fetch(`${API_BASE}/api/complaints`, { credentials: "include" });
+        const data = await res.json();
+        if (res.ok) {
+          console.table(data);
+          alert("Complaints listed in console.");
+        } else alert(data.message || "Failed to fetch complaints");
+      } catch (err) { console.error(err); alert("Server error"); }
+    }
+
+    document.getElementById("complaintForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const message = document.getElementById("complaint_message").value.trim();
+      if (!message) return alert("Enter complaint");
+      try {
+        const res = await fetch(`${API_BASE}/api/complaints`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert("Complaint submitted");
+          document.getElementById("complaint_message").value = "";
+        } else alert(data.message || "Failed to submit complaint");
+      } catch (err) { console.error(err); alert("Server error"); }
+    });
+
+    // ---------- ANNOUNCEMENTS ----------
+    async function viewAnnouncements() {
+      try {
+        const res = await fetch(`${API_BASE}/api/announcements`);
+        const data = await res.json();
+        if (res.ok) {
+          const container = document.getElementById("announcementsList");
+          container.innerHTML = data.map(a => `<div style="border:1px solid #ddd;padding:8px;margin-bottom:8px;"><strong>${a.title}</strong><p>${a.content}</p><small>${a.created_at}</small></div>`).join("");
+        } else alert(data.message || "Failed to fetch announcements");
+      } catch (err) { console.error(err); alert("Server error"); }
+    }
+
+    // ---------- LOGOUT ----------
+    document.getElementById("logoutBtn").addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        await fetch(`${API_BASE}/logout`, { method: "POST", credentials: "include" });
+      } catch (err) { console.error(err); }
+      window.location.href = "/"; // back to login
+    });
+
+    // Optional: load profile automatically on page load
+    // loadProfile();
   </script>
 </body>
 </html>
