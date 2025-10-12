@@ -7,9 +7,9 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import cors from "cors";
 
-dotenv.config(); // baca ENV variables dari Render
+dotenv.config(); // Baca ENV variables dari Render
 
-// Setup dirname (sebab pakai ES module)
+// Setup __dirname sebab ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -24,7 +24,7 @@ app.use(cors()); // benarkan frontend GitHub access backend
 // Session setup
 app.use(
   session({
-    secret: "your_secret_key", // tukar ikut kehendak
+    secret: "your_secret_key",
     resave: false,
     saveUninitialized: true,
   })
@@ -54,25 +54,29 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-
 // ===================== REGISTER ROUTE ===================== //
 app.post("/register", async (req, res) => {
   const { id, uname, email, password, gender, role } = req.body;
 
-  if (!id || !uname || !email || !password || !gender || !role)
+  if (!id || !uname || !email || !password || !gender || !role) {
     return res.status(400).json({ message: "Please fill in all fields." });
+  }
 
   try {
+    // semak kalau user dah ada
     const [check] = await db.query(
       "SELECT * FROM users WHERE id = ? OR email = ?",
       [id, email]
     );
 
-    if (check.length > 0)
+    if (check.length > 0) {
       return res.status(400).json({ message: "User already exists." });
+    }
 
+    // hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // insert user baru
     await db.query(
       "INSERT INTO users (id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
       [id, uname, email, hashedPassword, gender, role]
@@ -84,7 +88,6 @@ app.post("/register", async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 });
-
 
 // ===================== LOGIN ROUTE ===================== //
 app.post("/login", async (req, res) => {
@@ -130,7 +133,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-
 // ===================== FORGOT PASSWORD ROUTE ===================== //
 app.post("/api/forgot-password", async (req, res) => {
   const { email } = req.body;
@@ -159,7 +161,6 @@ app.post("/api/forgot-password", async (req, res) => {
   }
 });
 
-
 // ===================== TEST DATABASE ROUTE ===================== //
 app.get("/api/test-db", async (req, res) => {
   try {
@@ -169,7 +170,6 @@ app.get("/api/test-db", async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
 
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
