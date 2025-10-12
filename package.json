@@ -24,3 +24,9 @@
     "start": "node reset.js"
   }
 }
+
+{
+  "scripts": {
+    "start": "node update-profile.js"
+  }
+}
