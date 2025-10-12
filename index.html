@@ -15,13 +15,13 @@
     <h4 class="mb-3">HOSTEL MANAGEMENT SYSTEM (HOSTELNET)</h4>
     <p class="text-muted">Login Page</p>
 
-    <!-- Form submit ke login.php -->
-    <form action="index.php" method="POST">
+    <!-- ✅ Tukar action ke endpoint Node.js -->
+    <form action="https://hostelnet-vision.onrender.com/login" method="POST">
       <div class="mb-3">
         <input type="text" name="username" class="form-control" placeholder="Username" required>
       </div>
       <div class="mb-3 input-group">
-        <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
+        <input type="password" name="password" class="form-control" placeholder="Password" required>
       </div>
       <div class="form-check mb-3">
         <input type="checkbox" class="form-check-input" id="remember" name="remember">
@@ -34,10 +34,5 @@
       </div>
     </form>
   </div>
-
-  <script src="js/loginscript.js"></script>
 </body>
-
 </html>
-
-
