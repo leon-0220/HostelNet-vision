@@ -225,7 +225,7 @@
 
       try {
         // 🔗 Hantar data ke Node.js backend
-        const response = await fetch("https://YOUR_RENDER_URL/register", {
+        const response = await fetch("https://hostelnet-vision-2.onrender.com/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id, uname, email, password, gender, role })
@@ -247,3 +247,4 @@
   </script>
 </body>
 </html>
+
