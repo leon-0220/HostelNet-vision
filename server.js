@@ -365,3 +365,32 @@ app.put("/api/student-profile/:id", async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 });
+
+// ===================== ASSIGN ROOM ROUTE ===================== //
+app.post("/api/assign-room", async (req, res) => {
+  const { student_id, room_number } = req.body;
+
+  if (!student_id || !room_number) {
+    return res.status(400).json({ message: "Please fill in all fields." });
+  }
+
+  try {
+    // Semak kalau student wujud
+    const [check] = await db.query("SELECT * FROM students WHERE id = ?", [student_id]);
+
+    if (check.length === 0) {
+      return res.status(404).json({ message: "Student ID not found!" });
+    }
+
+    // Update bilik
+    await db.query("UPDATE students SET room_number = ? WHERE id = ?", [
+      room_number,
+      student_id,
+    ]);
+
+    res.json({ success: true, message: "Room assigned successfully!" });
+  } catch (err) {
+    console.error("❌ Assign room error:", err);
+    res.status(500).json({ message: "Server error, please try again." });
+  }
+});
