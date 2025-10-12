@@ -4,8 +4,11 @@ import bcrypt from "bcrypt";
 import session from "express-session";
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 
-// Setup dirname (sebab pakai ES module)
+dotenv.config(); // baca ENV variables dari Render
+
+// Setup __dirname (ES module)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -21,27 +24,37 @@ app.use(express.static(__dirname));
 // Session setup
 app.use(
   session({
-    secret: "your_secret_key", // boleh tukar
+    secret: "your_secret_key", // tukar ikut kehendak
     resave: false,
     saveUninitialized: true,
   })
 );
 
 // Database connection (guna ENV variable dari Render/Railway)
-const db = await mysql.createConnection({
-  host: process.env.MYSQLHOST,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT || 3306,
-});
+let db;
+(async () => {
+  try {
+    db = await mysql.createConnection({
+      host: process.env.MYSQLHOST,
+      user: process.env.MYSQLUSER,
+      password: process.env.MYSQLPASSWORD,
+      database: process.env.MYSQLDATABASE,
+      port: process.env.MYSQLPORT || 3306,
+    });
+    console.log("✅ Database connected!");
+  } catch (err) {
+    console.error("❌ Database connection failed:", err.message);
+  }
+})();
 
-// ✅ Route default — buka login page
+// ===================== ROUTES ===================== //
+
+// Route default — buka login page
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// ✅ LOGIN ROUTE (sesuai untuk frontend guna fetch)
+// LOGIN ROUTE (frontend fetch)
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -56,7 +69,6 @@ app.post("/login", async (req, res) => {
         req.session.username = user.username;
         req.session.role = user.role;
 
-        // ✅ balas dalam JSON (frontend fetch boleh baca)
         return res.status(200).json({
           success: true,
           role: user.role,
@@ -80,6 +92,16 @@ app.post("/login", async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+});
+
+// Optional: TEST DB route
+app.get("/api/test-db", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT NOW() AS now");
+    res.json({ success: true, time: rows[0].now });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
