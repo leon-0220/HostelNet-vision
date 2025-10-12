@@ -248,3 +248,24 @@ app.get("/api/finance", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+// ======================= PAYMENT ROUTE ======================== //
+app.post("/api/payment", async (req, res) => {
+  try {
+    const { name, student_id, amount, method, details } = req.body;
+
+    if (!name || !student_id || !amount || !method || !details) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    await db.query(
+      "INSERT INTO payments (name, student_id, amount, method, details, date) VALUES (?, ?, ?, ?, ?, NOW())",
+      [name, student_id, amount, method, details]
+    );
+
+    res.json({ message: "Payment recorded successfully" });
+  } catch (err) {
+    console.error("Payment error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
