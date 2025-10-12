@@ -12,3 +12,15 @@
     "bcrypt": "^5.1.1"
   }
 }
+
+{
+  "scripts": {
+    "start": "node server.js"
+  }
+}
+
+{
+  "scripts": {
+    "start": "node reset.js"
+  }
+}
