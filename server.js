@@ -195,3 +195,35 @@ app.post("/checkin", async (req, res) => {
     res.status(500).json({ message: "Database error." });
   }
 });
+
+// ===================== STUDENT CHECKOUT ROUTE ===================== //
+app.post("/api/checkout", async (req, res) => {
+  const { student_id, block, room_no, checkout_date } = req.body;
+
+  if (!student_id || !block || !room_no || !checkout_date) {
+    return res.status(400).json({ message: "Please fill in all fields." });
+  }
+
+  try {
+    // semak student wujud
+    const [student] = await db.query("SELECT * FROM checkin WHERE student_id = ?", [student_id]);
+
+    if (student.length === 0) {
+      return res.status(404).json({ message: "Student not found or not checked in." });
+    }
+
+    // simpan checkout data dalam table checkout
+    await db.query(
+      "INSERT INTO checkout (student_id, block, room_no, checkout_date) VALUES (?, ?, ?, ?)",
+      [student_id, block, room_no, checkout_date]
+    );
+
+    // optional: delete record dari table checkin
+    await db.query("DELETE FROM checkin WHERE student_id = ?", [student_id]);
+
+    res.json({ success: true, message: "Checkout recorded successfully!" });
+  } catch (err) {
+    console.error("❌ Checkout Error:", err);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
