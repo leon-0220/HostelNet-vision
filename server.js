@@ -227,3 +227,18 @@ app.post("/api/checkout", async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
+// ===================== FINANCE ROUTE ===================== //
+app.get("/api/finance/:student_id", async (req, res) => {
+  const { student_id } = req.params;
+  try {
+    const [rows] = await db.query("SELECT * FROM finance WHERE student_id = ?", [student_id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: "Student not found." });
+    }
+    res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    console.error("❌ Finance Fetch Error:", err);
+    res.status(500).json({ success: false, message: "Server error." });
+  }
+});
