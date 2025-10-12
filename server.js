@@ -229,16 +229,22 @@ app.post("/api/checkout", async (req, res) => {
 });
 
 // ===================== FINANCE ROUTE ===================== //
-app.get("/api/finance/:student_id", async (req, res) => {
-  const { student_id } = req.params;
+app.get("/api/finance", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM finance WHERE student_id = ?", [student_id]);
-    if (rows.length === 0) {
-      return res.status(404).json({ success: false, message: "Student not found." });
-    }
-    res.json({ success: true, data: rows[0] });
+    // contoh: ambil user id dari session/login
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).json({ message: "Not logged in" });
+
+    const [rows] = await db.query(
+      "SELECT name, student_id, course, semester, total_due FROM finance WHERE user_id = ?",
+      [userId]
+    );
+
+    if (rows.length === 0) return res.status(404).json({ message: "No finance data found" });
+
+    res.json(rows[0]);
   } catch (err) {
-    console.error("❌ Finance Fetch Error:", err);
-    res.status(500).json({ success: false, message: "Server error." });
+    console.error("Finance fetch error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
