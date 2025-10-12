@@ -5,10 +5,11 @@ import session from "express-session";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import cors from "cors";
 
 dotenv.config(); // baca ENV variables dari Render
 
-// Setup __dirname (ES module)
+// Setup dirname (sebab pakai ES module)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -18,6 +19,7 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(__dirname));
+app.use(cors()); // benarkan frontend GitHub access backend
 
 // Session setup
 app.use(
@@ -52,12 +54,47 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// LOGIN route
+
+// ===================== REGISTER ROUTE ===================== //
+app.post("/register", async (req, res) => {
+  const { id, uname, email, password, gender, role } = req.body;
+
+  if (!id || !uname || !email || !password || !gender || !role)
+    return res.status(400).json({ message: "Please fill in all fields." });
+
+  try {
+    const [check] = await db.query(
+      "SELECT * FROM users WHERE id = ? OR email = ?",
+      [id, email]
+    );
+
+    if (check.length > 0)
+      return res.status(400).json({ message: "User already exists." });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.query(
+      "INSERT INTO users (id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
+      [id, uname, email, hashedPassword, gender, role]
+    );
+
+    res.status(200).json({ message: "Registration successful." });
+  } catch (err) {
+    console.error("❌ Register Error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+
+// ===================== LOGIN ROUTE ===================== //
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
+    const [rows] = await db.query(
+      "SELECT * FROM users WHERE username = ?",
+      [username]
+    );
 
     if (rows.length === 1) {
       const user = rows[0];
@@ -85,7 +122,7 @@ app.post("/login", async (req, res) => {
       });
     }
   } catch (err) {
-    console.error(err);
+    console.error("❌ Login Error:", err);
     res.status(500).json({
       success: false,
       message: "Server error",
@@ -93,15 +130,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// TEST DB route (optional)
-app.get("/api/test-db", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT NOW() AS now");
-    res.json({ success: true, time: rows[0].now });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
 
 // ===================== FORGOT PASSWORD ROUTE ===================== //
 app.post("/api/forgot-password", async (req, res) => {
@@ -115,27 +143,34 @@ app.post("/api/forgot-password", async (req, res) => {
     }
 
     const user = rows[0];
-
-    // Generate simple reset token (untuk test)
     const resetToken = Math.random().toString(36).substr(2, 8);
-    const expiry = new Date(Date.now() + 3600 * 1000); // 1 jam expiry
+    const expiry = new Date(Date.now() + 3600 * 1000); // 1 hour expiry
 
-    // Simpan token & expiry ke DB
     await db.query(
       "UPDATE users SET reset_token = ?, reset_expiry = ? WHERE id = ?",
       [resetToken, expiry, user.id]
     );
 
-    // Hantar email dengan token (boleh guna nodemailer nanti)
-    console.log(`🔐 Reset token for ${email}: ${resetToken}`); // Untuk testing
-
+    console.log(`🔐 Reset token for ${email}: ${resetToken}`);
     res.json({ success: true, message: "Reset link sent!" });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Forgot Password Error:", err);
     res.status(500).json({ success: false, message: "Server error." });
   }
 });
 
+
+// ===================== TEST DATABASE ROUTE ===================== //
+app.get("/api/test-db", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT NOW() AS now");
+    res.json({ success: true, time: rows[0].now });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
