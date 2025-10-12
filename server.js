@@ -63,7 +63,6 @@ app.post("/register", async (req, res) => {
   }
 
   try {
-    // semak kalau user dah ada
     const [check] = await db.query(
       "SELECT * FROM users WHERE id = ? OR email = ?",
       [id, email]
@@ -73,10 +72,8 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ message: "User already exists." });
     }
 
-    // hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // insert user baru
     await db.query(
       "INSERT INTO users (id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
       [id, uname, email, hashedPassword, gender, role]
@@ -94,10 +91,9 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const [rows] = await db.query(
-      "SELECT * FROM users WHERE username = ?",
-      [username]
-    );
+    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
+      username,
+    ]);
 
     if (rows.length === 1) {
       const user = rows[0];
@@ -171,10 +167,6 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
-// ===================== SERVER START ===================== //
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
 // ===================== CHECK-IN ROUTE ===================== //
 app.post("/checkin", async (req, res) => {
   const { studentId, studentName, course, block, roomNo, checkinDate } = req.body;
@@ -205,20 +197,17 @@ app.post("/api/checkout", async (req, res) => {
   }
 
   try {
-    // semak student wujud
     const [student] = await db.query("SELECT * FROM checkin WHERE student_id = ?", [student_id]);
 
     if (student.length === 0) {
       return res.status(404).json({ message: "Student not found or not checked in." });
     }
 
-    // simpan checkout data dalam table checkout
     await db.query(
       "INSERT INTO checkout (student_id, block, room_no, checkout_date) VALUES (?, ?, ?, ?)",
       [student_id, block, room_no, checkout_date]
     );
 
-    // optional: delete record dari table checkin
     await db.query("DELETE FROM checkin WHERE student_id = ?", [student_id]);
 
     res.json({ success: true, message: "Checkout recorded successfully!" });
@@ -231,7 +220,6 @@ app.post("/api/checkout", async (req, res) => {
 // ===================== FINANCE ROUTE ===================== //
 app.get("/api/finance", async (req, res) => {
   try {
-    // contoh: ambil user id dari session/login
     const userId = req.session.userId;
     if (!userId) return res.status(401).json({ message: "Not logged in" });
 
@@ -249,23 +237,27 @@ app.get("/api/finance", async (req, res) => {
   }
 });
 
-// ======================= PAYMENT ROUTE ======================== //
+// ===================== PAYMENT ROUTE ===================== //
 app.post("/api/payment", async (req, res) => {
+  const { name, student_id, amount, method, details } = req.body;
+
+  if (!name || !student_id || !amount || !method || !details) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
   try {
-    const { name, student_id, amount, method, details } = req.body;
-
-    if (!name || !student_id || !amount || !method || !details) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
     await db.query(
       "INSERT INTO payments (name, student_id, amount, method, details, date) VALUES (?, ?, ?, ?, ?, NOW())",
       [name, student_id, amount, method, details]
     );
 
-    res.json({ message: "Payment recorded successfully" });
+    res.status(200).json({ message: "💰 Payment recorded successfully!" });
   } catch (err) {
-    console.error("Payment error:", err);
+    console.error("❌ Payment Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
+
+// ===================== SERVER START ===================== //
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
