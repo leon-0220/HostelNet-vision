@@ -258,6 +258,53 @@ app.post("/api/payment", async (req, res) => {
   }
 });
 
+// ===================== ROOM MANAGEMENT ROUTES ===================== //
+// GET semua bilik
+app.get("/api/rooms", async (req, res) => {
+  try {
+    const [rooms] = await db.query("SELECT * FROM rooms");
+    res.json(rooms);
+  } catch (err) {
+    console.error("❌ Fetch rooms error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Tambah bilik baru
+app.post("/api/rooms", async (req, res) => {
+  const { gender, hostel, room_id, status } = req.body;
+  if (!gender || !hostel || !room_id || !status)
+    return res.status(400).json({ message: "Please fill in all fields." });
+
+  try {
+    await db.query(
+      "INSERT INTO rooms (gender, hostel, room_id, status) VALUES (?, ?, ?, ?)",
+      [gender, hostel, room_id, status]
+    );
+    res.status(200).json({ message: "Room added successfully!" });
+  } catch (err) {
+    console.error("❌ Add room error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Tukar status bilik (Available ↔ Occupied)
+app.patch("/api/rooms/:room_id", async (req, res) => {
+  const { room_id } = req.params;
+  const { status } = req.body;
+
+  try {
+    await db.query("UPDATE rooms SET status = ? WHERE room_id = ?", [
+      status,
+      room_id,
+    ]);
+    res.json({ message: "Room status updated successfully!" });
+  } catch (err) {
+    console.error("❌ Update room error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
