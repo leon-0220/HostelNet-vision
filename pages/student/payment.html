@@ -23,8 +23,8 @@
     .responsive-form { max-width:600px; width:100%; border-radius:5px; border:2px solid #000; background:#fff; padding:20px; margin:0 auto; }
     .responsive-form label { display:block; margin:10px 0 5px; font-weight:bold; }
     .responsive-form input, .responsive-form select { width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:4px; }
-    .responsive-form input[type=submit] { background:#04AA6D; color:white; cursor:pointer; font-size:16px; }
-    .responsive-form input[type=submit]:hover { background:#038d59; }
+    .responsive-form button { background:#04AA6D; color:white; border:none; padding:12px; width:100%; cursor:pointer; font-size:16px; border-radius:4px; }
+    .responsive-form button:hover { background:#038d59; }
   </style>
 </head>
 <body>
@@ -40,7 +40,7 @@
         <li><a href="rooms.html">🏘 View Rooms</a></li>
         <li><a href="finance.html">💰 Finance</a></li>
         <li><a href="complaints_list.html">📝 Complaints</a></li>
-        <li><a href="#" id="logoutBtn">🚪 Logout</a></li>
+        <li><a href="logout.html">🚪 Logout</a></li>
       </ul>
     </div>
 
@@ -74,9 +74,10 @@
           <label for="details">Card/Account Number</label>
           <input type="text" id="details" name="details" placeholder="Enter account/card number" required>
 
-          <input type="submit" value="Pay Now">
+          <button type="submit">Pay Now</button>
         </form>
-        <p id="message" style="text-align:center; font-weight:bold;"></p>
+
+        <p id="message" style="text-align:center; margin-top:10px; font-weight:bold;"></p>
       </div>
     </div>
   </div>
@@ -86,46 +87,33 @@
       document.getElementById("sidebar").classList.toggle("closed");
     }
 
-    // 🔹 submit data ke Node.js API
+    // Hantar data ke Node.js backend
     document.getElementById("paymentForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const name = document.getElementById("name").value;
-      const student_id = document.getElementById("id").value;
-      const amount = document.getElementById("amount").value;
-      const method = document.getElementById("method").value;
-      const details = document.getElementById("details").value;
-
-      const message = document.getElementById("message");
-      message.textContent = "Processing payment...";
+      const formData = {
+        name: document.getElementById("name").value,
+        id: document.getElementById("id").value,
+        amount: document.getElementById("amount").value,
+        method: document.getElementById("method").value,
+        details: document.getElementById("details").value
+      };
 
       try {
-        const res = await fetch("https://hostelnet-vision-2.onrender.com/api/payment", {
+        const response = await fetch("https://hostelnet-vision-2.onrender.com/api/payment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, student_id, amount, method, details })
+          body: JSON.stringify(formData)
         });
 
-        const data = await res.json();
-
-        if (res.ok) {
-          message.style.color = "green";
-          message.textContent = "✅ Payment successful!";
-          document.getElementById("paymentForm").reset();
-        } else {
-          message.style.color = "red";
-          message.textContent = "❌ " + (data.message || "Payment failed!");
-        }
-      } catch (err) {
-        console.error(err);
-        message.style.color = "red";
-        message.textContent = "⚠️ Unable to connect to server.";
+        const result = await response.json();
+        document.getElementById("message").textContent = result.message || "Payment successful!";
+        document.getElementById("message").style.color = "green";
+        document.getElementById("paymentForm").reset();
+      } catch (error) {
+        document.getElementById("message").textContent = "Error processing payment.";
+        document.getElementById("message").style.color = "red";
       }
-    });
-
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-      await fetch("https://hostelnet-vision-2.onrender.com/logout", { method: "POST" });
-      window.location.href = "../../index.html";
     });
   </script>
 </body>
