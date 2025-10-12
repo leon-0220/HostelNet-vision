@@ -36,12 +36,12 @@ const db = await mysql.createConnection({
   port: process.env.MYSQLPORT || 3306,
 });
 
-// Default route → buka login page
+// ✅ Route default — buka login page
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "login.html"));
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// LOGIN ROUTE
+// ✅ LOGIN ROUTE (sesuai untuk frontend guna fetch)
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -56,24 +56,30 @@ app.post("/login", async (req, res) => {
         req.session.username = user.username;
         req.session.role = user.role;
 
-        // Redirect ikut role user
-        if (user.role === "student") return res.redirect("pages/student/dashboard.html");
-        if (user.role === "warden") return res.redirect("pages/warden/dashboard.html");
-        if (user.role === "admin") return res.redirect("pages/admin/dashboard2.html");
-        if (user.role === "finance") return res.redirect("pages/finance/dashboard.html");
-        if (user.role === "maintenance") return res.redirect("pages/maintenance/dashboard.html");
-
-        // fallback kalau role tak dikenali
-        return res.send("<script>alert('Role tidak dikenali!'); window.location.href = 'index.html';</script>");
+        // ✅ balas dalam JSON (frontend fetch boleh baca)
+        return res.status(200).json({
+          success: true,
+          role: user.role,
+          message: "Login successful",
+        });
       } else {
-        return res.send("<script>alert('Wrong password!'); window.location.href = 'index.html';</script>");
+        return res.status(401).json({
+          success: false,
+          message: "Wrong password!",
+        });
       }
     } else {
-      return res.send("<script>alert('User not found. Please register first.'); window.location.href = 'register.html';</script>");
+      return res.status(404).json({
+        success: false,
+        message: "User not found. Please register first.",
+      });
     }
   } catch (err) {
     console.error(err);
-    res.status(500).send("Server error");
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 });
 
