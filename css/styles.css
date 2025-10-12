@@ -1,0 +1,148 @@
+:root{
+  --bg: #ff4000;
+  --card: #ffffff;
+  --accent: #f39c12;
+  --muted: #6b7280;
+  --radius: 12px;
+}
+
+/* style for registration */
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(180deg,var(--bg),#eef3f8);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    background: #0d4378;
+    color: white;
+    padding: 15px 20px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* container for sidebar and main content */
+.main {
+  display: flex;
+  flex: 1;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 200px;
+    background: #92cae4;
+    padding: 20px;
+    position: relative;
+    top: 0;
+    left: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    font-size: 18px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar a {
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+
+.sidebar a:hover {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+    color: rgb(255, 255, 255);
+}
+
+.content {
+  margin-left: 20px;
+  padding-left: 30px 40px;
+  flex: 1;
+  justify-content: flex-start;
+}
+
+h1, h2 {
+  color: #003366;
+}
+
+form, table {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.form-container {
+  max-width: 900px;
+  padding: 30px;
+  border: 1px solid #ccc;
+  font-family: Arial, sans-serif;
+}
+
+.form-group {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.form-group label {
+  width: 140px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+  flex: 1;
+  padding: 5px;
+}
+
+button {
+  padding: 8px 16px;
+  margin-top: 10px;
+}
+
+/* style for homepage */
+body {
+  background: linear-gradient(180deg,var(--bg),#eef3f8);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+  margin: 0;
+}
+
+/* style for dashboard */
+.profile-container {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.profile-pic {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #007bff;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.profile-pic:hover {
+  transform: scale(1.05);
+}
+
+h2 {
+  font-family: sans-serif;
+}

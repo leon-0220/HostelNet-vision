@@ -1,0 +1,180 @@
+:root{
+  --bg: #ff4000;
+  --card: #ffffff;
+  --accent: #f39c12;
+  --muted: #6b7280;
+  --radius: 12px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.sidebar {
+  width: 220px;
+  background: #ff4400;
+  color: #fff;
+  padding: 20px;
+  transition: transform 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.sidebar.closed {
+    transform: translateX(-100%);
+}
+
+.logo-box {
+  display: flex;
+  flex-direction: column; /* logo atas tulisan */
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo-box img {
+  width: 100px;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.logo-box h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.sidebar.closed .logo-box h2 {
+    opacity: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li {
+  margin: 15px 0;
+}
+
+.sidebar ul li a {
+  color: #ecf0f1;
+  text-decoration: none;
+  display: block;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: 0.3s;
+}
+
+.sidebar ul li a:hover {
+  background: #f38b69;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(180deg,var(--bg),#eef3f8);
+    margin: 0px;
+    color: #fa4300;
+    overflow-x: auto;
+}
+
+h2 {
+    color: #ffffff;
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+table th, table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+table th {
+    background-color: #ff4000;
+    color: #fff;
+}
+
+form {
+    background-color: #fff;
+    padding: 20px;
+    max-width: 500px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+form input, form select, form textarea, form button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+form button {
+    background-color: #32c02b;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #ce9a95;
+}
+
+/* Highlight status */
+.status-pending { color: #e67e22; font-weight: bold; }
+.status-in-progress { color: #f1c40f; font-weight: bold; }
+.status-resolved { color: #27ae60; font-weight: bold; }v
+
+.login-box img {
+  display: block;
+  max-width: 400px;
+  margin: 0 auto 20px;
+  width: 100%;
+  padding: 30px;
+  border-radius: 10px;
+  opacity: 0.8;
+}
+
+.sidebar.closed ~ .main-content {
+    margin-left: 0;
+}
+
+/* toggle button */
+.toggle-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 5px;
+    z-index: 1100;
+}
+
+.sidebar.closed + .toggle-btn {
+    left: 70px;
+}

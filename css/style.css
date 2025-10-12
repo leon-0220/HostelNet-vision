@@ -1,0 +1,52 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+}
+
+.layout {
+  display: flex;
+  width: 100%;
+}
+
+.sidebar {
+  width: 220px;
+  background: #2c3e50;
+  color: #fff;
+  min-height: 100vh;
+  padding-top: 20px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  padding: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar li.active, .sidebar li:hover {
+  background: #34495e;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.table-container {
+  margin-top: 15px;
+  overflow-x: auto;
+}
