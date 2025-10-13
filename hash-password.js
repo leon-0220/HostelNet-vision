@@ -10,7 +10,7 @@ dotenv.config();
       host: "crossover.proxy.rlwy.net",
       user: "root",
       password: "uWSKTbteHaXWZipnkABQiVSUvuhZVTda",
-      database: "railway",
+      database: "railway db2",
       port: 59855,
     });
 
