@@ -415,3 +415,34 @@ app.post("/api/change-room", async (req, res) => {
     res.status(500).json({ message: "Error updating room" });
   }
 });
+
+// ===================== AUTO-INSERT USERS (HASH PASSWORD) ===================== //
+(async () => {
+  try {
+    const users = [
+      { user_ref_id: 'DLM0423-001', username: 'JovenMaestro.09', email: 'tadrean@gmail.com', password: 'TengkuAdreanRuiz02', role: 'student' },
+      { user_ref_id: 'DLM0423-002', username: 'Eagle.08', email: 'thariq@gmail.com', password: 'ThariqRidzuwan', role: 'student' },
+      { user_ref_id: 'DIT0423-001', username: 'Leon.0920', email: 'rahmahsukor5@gmail.com', password: 'TengkuAdreanRuiz02', role: 'student' },
+      { user_ref_id: 'FIN001', username: 'Finance.01', email: 'finance01@gmail.com', password: 'FinancePass01', role: 'finance' },
+      { user_ref_id: 'WARD001', username: 'Warden.01', email: 'warden01@gmail.com', password: 'WardenPass01', role: 'warden' },
+      { user_ref_id: 'ADMIN001', username: 'Admin.01', email: 'admin01@gmail.com', password: 'AdminPass01', role: 'admin' },
+      { user_ref_id: 'MAIN001', username: 'Maintenance.01', email: 'maint01@gmail.com', password: 'MaintPass01', role: 'maintenance' }
+    ];
+
+    for (const u of users) {
+      const [check] = await db.query("SELECT * FROM users WHERE username = ?", [u.username]);
+      if (check.length === 0) {
+        const hashedPassword = await bcrypt.hash(u.password, 10);
+        await db.query(
+          "INSERT INTO users (user_ref_id, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
+          [u.user_ref_id, u.username, u.email, hashedPassword, u.role]
+        );
+        console.log(`✅ User ${u.username} added.`);
+      } else {
+        console.log(`ℹ️ User ${u.username} already exists.`);
+      }
+    }
+  } catch (err) {
+    console.error("❌ Error inserting users:", err);
+  }
+})();
