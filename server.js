@@ -35,11 +35,11 @@ let db;
 (async () => {
   try {
     db = await mysql.createConnection({
-      host: process.env.MYSQLHOST,
-      user: process.env.MYSQLUSER,
-      password: process.env.MYSQLPASSWORD,
-      database: process.env.MYSQLDATABASE,
-      port: process.env.MYSQLPORT || 3306,
+      host: crossover.proxy.rlwy.net,
+      user: root,
+      password: uWSKTbteHaXWZipnkABQiVSUvuhZVTda,
+      database: railway,
+      port: 59855,
     });
     console.log("✅ Database connected!");
   } catch (err) {
