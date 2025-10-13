@@ -35,10 +35,10 @@ let db;
 (async () => {
   try {
     db = await mysql.createConnection({
-      host: crossover.proxy.rlwy.net,
-      user: root,
-      password: uWSKTbteHaXWZipnkABQiVSUvuhZVTda,
-      database: railway,
+      host: "crossover.proxy.rlwy.net",
+      user: "root",
+      password: "uWSKTbteHaXWZipnkABQiVSUvuhZVTda",
+      database: "railway",
       port: 59855,
     });
     console.log("✅ Database connected!");
