@@ -13,7 +13,6 @@
     "mysql2": "^3.9.3",
     "bcrypt": "^5.1.1",
     "express-session": "^1.17.3",
-    "dotenv": "^16.3.1",
     "cors": "^2.8.5"
   },
   "devDependencies": {
@@ -21,10 +20,5 @@
   },
   "engines": {
     "node": ">=18.x"
-  },
-  "render": {
-    "env": {
-      "NODE_ENV": "production"
-    }
   }
 }
