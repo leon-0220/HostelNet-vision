@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HostelNet | Rooms</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Layout */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #ff4400;
+      color: #fff;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+    .sidebar.closed {
+      transform: translateX(-100%);
+    }
+    .sidebar h2 {
+      margin: 0 0 20px 0;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .sidebar ul li {
+      margin: 15px 0;
+    }
+    .sidebar ul li a {
+      color: #fff;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+    .sidebar ul li a:hover {
+      background: #f38b69;
+    }
+
+    /* Toggle button */
+    .toggle-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 5px;
+      z-index: 1100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 220px;
+      padding: 20px;
+      background: linear-gradient(180deg, #ff4000, #eef3f8);
+      transition: margin-left 0.3s ease;
+    }
+    .sidebar.closed ~ .main-content {
+      margin-left: 0;
+    }
+    .main-content h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #000;
+    }
+
+    /* Card */
+    .dashboard-card {
+      max-width: 900px;
+      width: 100%;
+      border-radius: 5px;
+      border: 2px solid #000;
+      background: #fff;
+      padding: 20px;
+      margin: 20px auto;
+    }
+    .dashboard-card h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #333;
+      font-size: 1.1rem;
+    }
+    .dashboard-card table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .dashboard-card table th,
+    .dashboard-card table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    /* Buttons */
+    .dashboard-card button,
+    .dashboard-card a {
+      display: inline-block;
+      background: #04AA6D;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 5px;
+      text-decoration: none;
+    }
+    .dashboard-card button:hover,
+    .dashboard-card a:hover {
+      background: #038d59;
+    }
+
+    /* Room status */
+    .available { color: green; font-weight: bold; cursor: pointer; }
+    .occupied { color: red; font-weight: bold; cursor: pointer; }
+
+    /* Form styling */
+    form label {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    form input, form select {
+      margin-right: 10px;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <h2>HostelNet</h2>
+      <ul>
+        <li><a href="dashboard2.html">🏠 Dashboard</a></li>
+        <li><a href="#">👨‍🎓 Students</a></li>
+        <li><a href="rooms.html">🛏 Rooms</a></li>
+        <li><a href="finance.html">💳 Payments</a></li>
+        <li><a href="view_complaint.php">📝 Complaints</a></li>
+        <li><a href="logout.php" style="color:#ffdddd;">🚪 Logout</a></li>
+      </ul>
+    </div>
+
+    <!-- Toggle Button -->
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <h2>Room Management</h2>
+
+      <!-- Add Room Section -->
+      <div class="dashboard-card">
+        <h3>Add New Room</h3>
+        <form id="addRoomForm" class="mb-3">
+          <label>Gender:</label>
+          <select name="gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+
+          <label>Hostel:</label>
+          <input type="text" name="hostel" required>
+
+          <label>Room No:</label>
+          <input type="text" name="room_id" required>
+
+          <label>Status:</label>
+          <select name="status">
+            <option value="Available">Available</option>
+            <option value="Occupied">Occupied</option>
+          </select>
+
+          <button type="submit">Add Room</button>
+        </form>
+      </div>
+
+      <!-- Room Table Section -->
+      <div class="dashboard-card">
+        <h3>List of Hostel Rooms</h3>
+        <div id="roomsContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("closed");
+    }
+
+    // Data bilik asal
+    const rooms = [
+  {gender:"Male", hostel:"Kelana Parkview", room_id:"D401", status:"Occupied"},
+  {gender:"Male", hostel:"Kelana Parkview", room_id:"D402", status:"Available"},
+  {gender:"Male", hostel:"SS4D/8", room_id:"21A", status:"Available"},
+  {gender:"Male", hostel:"SS4D/8", room_id:"21B", status:"Available"},
+  {gender:"Male", hostel:"SS4C/15", room_id:"14", status:"Occupied"},
+  {gender:"Male", hostel:"SS5D/6A", room_id:"20", status:"Available"},
+  {gender:"Male", hostel:"SS4B/13", room_id:"11A", status:"Available"},
+  {gender:"Male", hostel:"SS5C/11", room_id:"32", status:"Available"},
+  {gender:"Male", hostel:"Spacepod", room_id:"38-1", status:"Available"},
+  {gender:"Male", hostel:"Spacepod", room_id:"36-1", status:"Occupied"},
+  {gender:"Male", hostel:"Spacepod", room_id:"20-1", status:"Available"},
+
+  {gender:"Female", hostel:"Kelana Parkview", room_id:"D201", status:"Available"},
+  {gender:"Female", hostel:"Kelana Parkview", room_id:"D202", status:"Occupied"},
+  {gender:"Female", hostel:"Kelana Parkview", room_id:"D204", status:"Available"},
+  {gender:"Female", hostel:"Kelana Parkview", room_id:"D301", status:"Available"},
+  {gender:"Female", hostel:"Kelana Parkview", room_id:"D404", status:"Available"},
+  {gender:"Female", hostel:"SS5D/8", room_id:"12", status:"Available"},
+  {gender:"Female", hostel:"Ayamas", room_id:"18A4", status:"Available"},
+  {gender:"Female", hostel:"Focus Point", room_id:"20B2", status:"Available"},
+  {gender:"Female", hostel:"Focus Point", room_id:"20B3", status:"Available"},
+  {gender:"Female", hostel:"Focus Point", room_id:"20B4", status:"Occupied"},
+  {gender:"Female", hostel:"7-11", room_id:"24B3", status:"Available"},
+  {gender:"Female", hostel:"7-11", room_id:"24A4", status:"Available"},
+  {gender:"Female", hostel:"SS6/8", room_id:"5B", status:"Available"},
+  {gender:"Female", hostel:"SS6/8", room_id:"5C", status:"Available"},
+  {gender:"Female", hostel:"Spacepod", room_id:"38-2", status:"Available"},
+  {gender:"Female", hostel:"Spacepod", room_id:"36-2", status:"Available"},
+  {gender:"Female", hostel:"Spacepod", room_id:"38-3", status:"Available"},
+  {gender:"Female", hostel:"Spacepod", room_id:"36-3", status:"Occupied"},
+  {gender:"Female", hostel:"Spacepod 20", room_id:"20-2", status:"Available"},
+  {gender:"Female", hostel:"Spacepod 20", room_id:"20-3", status:"Available"},
+];
+
+const form = document.getElementById('addRoomForm');
+const roomsContainer = document.getElementById('roomsContainer');
+
+// Tambah bilik baru
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(form);
+  const room = {
+    gender: formData.get('gender'),
+    hostel: formData.get('hostel'),
+    room_id: formData.get('room_id'),
+    status: formData.get('status')
+  };
+  rooms.push(room);
+  form.reset();
+  renderRooms();
+});
+
+// Papar semua bilik
+function renderRooms() {
+  if (rooms.length === 0) {
+    roomsContainer.innerHTML = "<p>No rooms added yet.</p>";
+    return;
+  }
+
+  let tableHTML = '<table><tr><th>Gender</th><th>Hostel</th><th>Room No</th><th>Status</th></tr>';
+  rooms.forEach((room, index) => {
+    tableHTML += `<tr>
+      <td>${room.gender}</td>
+      <td>${room.hostel}</td>
+      <td>${room.room_id}</td>
+      <td class="${room.status === 'Available' ? 'available' : 'occupied'}" onclick="toggleStatus(${index})">${room.status}</td>
+    </tr>`;
+  });
+  tableHTML += '</table>';
+  roomsContainer.innerHTML = tableHTML;
+}
+
+// Tukar status bila klik
+function toggleStatus(index) {
+  rooms[index].status = rooms[index].status === "Available" ? "Occupied" : "Available";
+  renderRooms();
+}
+
+    // First load
+    renderRooms();
+  </script>
+</body>
+</html>

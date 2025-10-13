@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mock Payment Gateway with OTP</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #07ffea;
+      overflow-x: auto;
+      color: #333;
+    }
+
+    .card {
+      background: #fff;
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      max-width: 520px;
+      margin: auto;
+      position: relative;
+    }
+
+    h1 { 
+        text-align:center; 
+        margin-bottom:20px; 
+    }
+
+    label { 
+        font-weight: bold; 
+        margin-top:10px; 
+        display:block; 
+    }
+
+    input, select {
+      padding: 10px;
+      margin: 6px 0 12px;
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border-radius: 8px;
+      border: 0;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+
+    .btn-primary { 
+      background: #16b1a9; 
+      color: white; 
+      width: 100%; 
+    }
+
+    .btn-success { 
+      background:#27d8a3; 
+      color:#fff; width:48%; 
+    }
+
+    .btn-secondary { 
+      background:#6c757d; 
+      color:#fff; 
+      width:48%; 
+    }
+
+    .flex { 
+      display: flex; 
+      gap: 10px; 
+      justify-content: space-between; 
+    }
+
+    .success { 
+      color: green; 
+      margin-top: 12px; 
+    }
+
+    .receipt { 
+      margin-top: 20px; 
+      background: #fff; 
+      border: 1px dashed #000000; 
+      padding: 16px; 
+      border-radius: 10px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .receipt h3 { 
+      margin-top: 0; 
+      color: #0070ba; 
+    }
+
+    .receipt p { 
+      margin: 6px 0; 
+    }
+
+    .hidden { 
+      display:none; 
+    }
+
+    .modal { 
+      display:none; 
+      position:fixed; 
+      top:0; 
+      left:0; 
+      width:100%; 
+      height:100%; 
+      background:rgba(0,0,0,0.5); 
+      justify-content:center; 
+      align-items:center; 
+    }
+
+    .modal-content { 
+      background:#fff; 
+      padding:20px; 
+      border-radius:10px; 
+      width:90%; 
+      max-width:400px; 
+      text-align:center; 
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Payment Gateway</h1>
+
+    <label>Select Bank</label>
+    <select id="bankName">
+      <option value="">-- Select --</option>
+      <option>Maybank</option>
+      <option>CIMB</option>
+      <option>Bank Islam</option>
+      <option>Public Bank</option>
+      <option>RHB Bank</option>
+    </select>
+
+    <label>Transaction Type</label>
+    <select id="transferType">
+      <option value="">-- Select --</option>
+      <option>Fund Transfer to Saving</option>
+      <option>Credit Card Payment</option>
+      <option>Bill Payment</option>
+    </select>
+
+    <label>Account Number</label>
+    <input type="text" id="accountNo">
+
+    <label>Transfer Mode</label>
+    <select id="transferMode">
+      <option value="">-- Choose Mode --</option>
+      <option>Interbank Giro (IBG)</option>
+      <option>DuitNow Transfer</option>
+      <option>Online Banking</option>
+      <option>FPX</option>
+    </select>
+
+    <div id="recipientBox" class="hidden">
+      <label>Recipient Name</label>
+      <input type="text" id="recipientName" readonly>
+    </div>
+
+    <div id="amountBox" class="hidden">
+      <label>Enter Amount (RM)</label>
+      <input type="number" id="amount" min="1">
+    </div>
+
+    <button id="confirm-btn" class="btn-primary" disabled>Next</button>
+
+    <div id="result" class="success"></div>
+    <div id="receipt"></div>
+  </div>
+
+  <!-- OTP Modal -->
+  <div id="otpModal" class="modal">
+    <div class="modal-content">
+      <h3>Enter OTP</h3>
+      <p>A mock OTP has been sent to your phone.</p>
+      <input type="text" id="otpInput" placeholder="Enter OTP">
+      <button id="verifyBtn" class="btn-primary">Verify</button>
+    </div>
+  </div>
+
+<script>
+const confirmBtn = document.getElementById('confirm-btn');
+const result = document.getElementById('result');
+const receipt = document.getElementById('receipt');
+const recipientBox = document.getElementById('recipientBox');
+const recipientNameEl = document.getElementById('recipientName');
+const amountBox = document.getElementById('amountBox');
+const otpModal = document.getElementById('otpModal');
+const otpInput = document.getElementById('otpInput');
+const verifyBtn = document.getElementById('verifyBtn');
+
+let transaction = {};
+let mockOTP = '';
+
+function lookupRecipient(accNo){
+  const map = {
+    "12345678901234": "Ali Bin Abu",
+    "43210987654321": "Siti Binti Ahmad",
+    "20021701522002": "Hostel Vision Univeristy College (HostelNet)"
+  };
+  return map[accNo] || "Unknown Recipient";
+}
+
+// Enable button if all fields filled
+document.querySelectorAll('#bankName, #transferType, #accountNo, #transferMode').forEach(el=>{
+  el.addEventListener('input', ()=>{
+    confirmBtn.disabled = !(
+      document.getElementById('bankName').value &&
+      document.getElementById('transferType').value &&
+      document.getElementById('accountNo').value.trim() &&
+      document.getElementById('transferMode').value
+    );
+  });
+});
+
+confirmBtn.addEventListener('click', ()=>{
+  const bank = document.getElementById('bankName').value;
+  const type = document.getElementById('transferType').value;
+  const acc = document.getElementById('accountNo').value.trim();
+  const mode = document.getElementById('transferMode').value;
+  const amount = document.getElementById('amount').value;
+
+  // Step 1: Show recipient & amount
+  if(recipientBox.classList.contains("hidden")){
+    const rname = lookupRecipient(acc);
+    recipientNameEl.value = rname;
+    recipientBox.classList.remove("hidden");
+    amountBox.classList.remove("hidden");
+    result.textContent = "ℹ️ Please enter the amount and confirm payment.";
+    result.style.color = "black";
+    
+    confirmBtn.textContent = "Confirm Payment";
+    return;
+  }
+
+  // Step 2: Validate amount & show OTP modal
+  if(!amount || amount < 1){
+    result.textContent = "⚠️ Minimum transfer is RM1.";
+    return;
+  }
+
+  // Show OTP modal
+  mockOTP = Math.floor(100000 + Math.random()*900000).toString(); // 6 digit OTP
+  alert("Mock OTP sent: " + mockOTP); // just for demo
+  otpModal.style.display = "flex";
+});
+
+verifyBtn.addEventListener('click', ()=>{
+  const enteredOTP = otpInput.value.trim();
+  if(enteredOTP === mockOTP){
+    otpModal.style.display = "none";
+
+    const bank = document.getElementById('bankName').value;
+    const type = document.getElementById('transferType').value;
+    const acc = document.getElementById('accountNo').value.trim();
+    const mode = document.getElementById('transferMode').value;
+    const amount = document.getElementById('amount').value;
+
+    transaction = { bank, type, acc, mode, recipient: recipientNameEl.value, amount, date:new Date() };
+    result.textContent = "✅ Payment Successful!";
+
+    const d = transaction.date.toLocaleString();
+    const txtID = 'TXN' + Math.floor(Math.random()*1000000000);
+
+    receipt.innerHTML = `
+      <div class="receipt">
+        <h3>Payment Receipt</h3>
+        <p><b>Transaction ID:</b> ${txtID}</p>
+        <p><b>Bank:</b> ${transaction.bank}</p>
+        <p><b>Transfer Type:</b> ${transaction.type}</p>
+        <p><b>Account No:</b> ${transaction.acc}</p>
+        <p><b>Recipient:</b> ${transaction.recipient}</p>
+        <p><b>Transfer Mode:</b> ${transaction.mode}</p>
+        <p><b>Amount:</b> RM ${transaction.amount}</p>
+        <p><b>Date:</b> ${d}</p>
+        <p>Status: ✅ Successful</p>
+        <div class="flex">
+          <button class="btn-success" onclick="alert('📤 Receipt shared!')">Share Receipt</button>
+          <button class="btn-secondary" onclick="window.location.reload()">Homepage</button>
+        </div>
+      </div>
+    `;
+  } else {
+    alert("❌ OTP invalid, try again!");
+  }
+});
+</script>
+</body>
+</html>
