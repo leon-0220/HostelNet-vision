@@ -171,5 +171,5 @@ const autoInsertUsers = async () => {
 setTimeout(autoInsertUsers, 2000);
 
 // ===================== SERVER START ===================== //
-const PORT = process.env.PORT || 59855;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
