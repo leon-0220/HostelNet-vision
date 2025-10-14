@@ -11,12 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
-// ✅ CORS config supaya browser boleh hantar cookie session
-app.use(cors({
-  origin: "http://localhost:3000", // ganti ikut frontend URL awak
-  credentials: true
-}));
-
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -26,10 +21,6 @@ app.use(
     secret: "your_secret_key",
     resave: false,
     saveUninitialized: true,
-    cookie: { 
-      secure: false, // set true kalau HTTPS
-      maxAge: 1000 * 60 * 60 * 24 // 1 hari
-    }
   })
 );
 
@@ -56,7 +47,7 @@ app.get("/api/test-db", async (req, res) => {
   try {
     if (!db) throw new Error("Database not connected");
     const [rows] = await db.query("SELECT CURRENT_TIME() AS time");
-    res.json({ message: "✅ Database connected", time: rows[0].time });
+    res.json({ message: "✅ Database connected", time: rows[0].current_time });
   } catch (err) {
     console.error("❌ Test DB Error:", err);
     res.status(500).json({ message: "❌ Database not connected", error: err.message });
@@ -65,34 +56,57 @@ app.get("/api/test-db", async (req, res) => {
 
 // ===================== REGISTER ===================== //
 app.post("/register", async (req, res) => {
-  const { id, uname, email, password, gender, role, phone } = req.body;
+  const { id, uname, email, password, gender, role } = req.body;
 
-  if (!id || !uname || !email || !password || !gender || !role)
+  console.log("📥 Incoming register data:", req.body);
+
+  if (!id || !uname || !email || !password || !gender || !role) {
     return res.status(400).json({ message: "Please fill in all fields." });
+  }
 
   try {
-    if (!db) return res.status(500).json({ message: "Database not connected." });
+    if (!db) {
+      return res.status(500).json({ message: "Database not connected." });
+    }
 
+    // ✅ Semak ID format (contoh: DIT0423-001, ADMIN001, WARD001)
     const validID = /^[A-Za-z]{2,5}\d{2,4}-?\d{3}$/;
-    if (!validID.test(id)) return res.status(400).json({ message: "❌ Invalid ID format." });
+    if (!validID.test(id)) {
+      return res.status(400).json({
+        message:
+          "❌ Invalid ID format. Contoh format yang sah: DIT0423-001 atau ADMIN001",
+      });
+    }
 
+    // ✅ Semak kalau user dah wujud
     const [check] = await db.query(
       "SELECT * FROM users WHERE user_ref_id = ? OR email = ? OR username = ?",
       [id, email, uname]
     );
 
-    if (check.length > 0) return res.status(400).json({ message: "User already exists." });
+    if (check.length > 0) {
+      return res.status(400).json({ message: "User already exists." });
+    }
 
+    // ✅ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    await db.query(
-      "INSERT INTO users (user_ref_id, username, email, password, gender, role, phone) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [id, uname, email, hashedPassword, gender, role, phone || ""]
+
+    // ✅ Masukkan user baru
+    const [result] = await db.query(
+      "INSERT INTO users (user_ref_id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
+      [id, uname, email, hashedPassword, gender, role]
     );
 
-    res.status(200).json({ message: "✅ Registration successful." });
+    console.log("✅ User registered:", result);
+    res.status(200).json({ 
+      message: "✅ Registration successful.",
+    });
   } catch (err) {
     console.error("❌ Register Error:", err);
-    res.status(500).json({ message: "Server error.", error: err.message });
+    res.status(500).json({ 
+      message: "Server error.", 
+      error: err.message,
+    });
   }
 });
 
@@ -101,7 +115,12 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    if (!db) return res.status(500).json({ success: false, message: "Database not connected." });
+    if (!db) {
+      return res.status(500).json({ 
+        success: false, 
+        message: "Database not connected."
+      });
+    }
 
     const [rows] = await db.query(
       "SELECT * FROM users WHERE username = ? OR user_ref_id = ? OR email = ?",
@@ -111,90 +130,212 @@ app.post("/login", async (req, res) => {
     if (rows.length === 1) {
       const user = rows[0];
       const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) return res.status(401).json({ success: false, message: "❌ Wrong password!" });
 
-      // 🔹 SET SESSION
-      req.session.username = user.username;
-      req.session.role = user.role;
-      req.session.email = user.email;
-      req.session.user_ref_id = user.user_ref_id;
-      req.session.phone = user.phone || "";
+      if (validPassword) {
+        req.session.username = user.username;
+        req.session.role = user.role;
 
-      return res.status(200).json({ success: true, role: user.role, message: "✅ Login successful" });
+        return res.status(200).json({
+          success: true,
+          role: user.role,
+          message: "✅ Login successful",
+        });
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: "❌ Wrong password!",
+        });
+      }
     } else {
-      return res.status(404).json({ success: false, message: "⚠️ User not found." });
+      return res.status(404).json({
+        success: false,
+        message: "⚠️ User not found. Please register first.",
+      });
     }
   } catch (err) {
     console.error("❌ Login Error:", err);
-    res.status(500).json({ success: false, message: "Server error", error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
   }
 });
 
+// ===================== AUTO INSERT USERS ===================== //
+const autoInsertUsers = async () => {
+  try {
+    const users = [
+      { user_ref_id: 'DLM0423-001', username: 'JovenMaestro.09', email: 'tadrean@gmail.com', password: 'TengkuAdreanRuiz02', role: 'student' },
+      { user_ref_id: 'DIT0423-001', username: 'Leon.0920', email: 'rahmahsukor5@gmail.com', password: 'TengkuAdreanRuiz02', role: 'student' },
+      { user_ref_id: 'FIN001', username: 'Finance.01', email: 'finance01@gmail.com', password: 'FinancePass01', role: 'finance' },
+      { user_ref_id: 'WARD001', username: 'Warden.01', email: 'warden01@gmail.com', password: 'WardenPass01', role: 'warden' },
+      { user_ref_id: 'ADMIN001', username: 'Admin.01', email: 'admin01@gmail.com', password: 'AdminPass01', role: 'admin' },
+      { user_ref_id: 'MAIN001', username: 'Maintenance.01', email: 'maint01@gmail.com', password: 'MaintPass01', role: 'maintenance' }
+    ];
+
+    for (const u of users) {
+      const [check] = await db.query("SELECT * FROM users WHERE username = ?", [u.username]);
+      if (check.length === 0) {
+        const hashedPassword = await bcrypt.hash(u.password, 10);
+        await db.query(
+          "INSERT INTO users (user_ref_id, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
+          [u.user_ref_id, u.username, u.email, hashedPassword, u.role]
+        );
+        console.log(`✅ User ${u.username} added.`);
+      } else {
+        console.log(`ℹ️ ${u.username} already exists.`);
+      }
+    }
+  } catch (err) {
+    console.error("❌ Error inserting users:", err);
+  }
+};
+
+// delay sikit lepas connect db
+setTimeout(autoInsertUsers, 2000);
+
 // ===================== LOGOUT ===================== //
 app.get("/logout", (req, res) => {
-  req.session.destroy(err => {
-    if (err) return res.status(500).json({ message: "Server error during logout" });
-    res.clearCookie("connect.sid");
-    res.redirect("/index.html");
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("❌ Logout Error:", err);
+      return res.status(500).json({ message: "Server error during logout" });
+    }
+    res.clearCookie("connect.sid"); // padam cookie session
+    res.redirect("/index.html"); // redirect ke login page
   });
 });
 
-// ===================== USER PROFILE ===================== //
+// ===================== REPORT ROUTES ===================== //
+
+// Submit report
+app.post("/report", async (req, res) => {
+  const { fname, lname, hostel_unit, message } = req.body;
+  if (!fname || !lname || !hostel_unit || !message)
+    return res.status(400).json({ message: "All fields required" });
+
+  try {
+    await db.query(
+      "INSERT INTO reports (fname, lname, hostel_unit, message) VALUES (?, ?, ?, ?)",
+      [fname, lname, hostel_unit, message]
+    );
+    res.json({ success: true, message: "Report submitted successfully" });
+  } catch (err) {
+    console.error("❌ Report Error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Fetch all reports (for warden view)
+app.get("/reports", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM reports ORDER BY created_at DESC");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
+// Mark report as resolved
+app.put("/reports/:id/resolve", async (req, res) => {
+  try {
+    await db.query("UPDATE reports SET status = 'resolved' WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Update failed" });
+  }
+});
+
+// ✅ ROUTE: Dapatkan semua report
+app.get("/reports", (req, res) => {
+  const sql = "SELECT * FROM reports ORDER BY id DESC";
+  conn.query(sql, (err, results) => {
+    if (err) {
+      console.error("❌ Error fetching reports:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+    res.json(results);
+  });
+});
+
+// ✅ ROUTE: Tandakan report sebagai 'resolved'
+app.put("/reports/:id/resolve", (req, res) => {
+  const { id } = req.params;
+  const sql = "UPDATE reports SET status = 'resolved' WHERE id = ?";
+  conn.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error("❌ Error updating report:", err);
+      return res.status(500).json({ success: false, message: "Server error" });
+    }
+    res.json({ success: true });
+  });
+});
+
+// ✅ Get current user profile info
 app.get("/user/profile", (req, res) => {
-  if (!req.session.username) return res.status(401).json({ message: "Not logged in" });
+  if (!req.session.username) {
+    return res.status(401).json({ message: "Not logged in" });
+  }
+
   res.json({
     username: req.session.username,
     role: req.session.role,
-    email: req.session.email,
-    user_ref_id: req.session.user_ref_id,
-    phone: req.session.phone || ""
+    email: req.session.email || "",
+    user_ref_id: req.session.user_ref_id || ""
   });
 });
 
-// ===================== ANNOUNCEMENTS ===================== //
+// === ANNOUNCEMENTS: GET & POST ===
+
+// Get all announcements
 app.get("/announcements", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM announcements ORDER BY created_at DESC");
     res.json(rows);
   } catch (err) {
-    console.error("❌ Announcements GET Error:", err);
+    console.error("Error fetching announcements:", err);
     res.status(500).json({ message: "Server error fetching announcements" });
   }
 });
 
+// Add new announcement
 app.post("/announcements", async (req, res) => {
   const { title, message } = req.body;
-  if (!title || !message) return res.status(400).json({ message: "Title and message are required" });
+  if (!title || !message)
+    return res.status(400).json({ message: "Title and message are required" });
 
   try {
     await db.query("INSERT INTO announcements (title, message) VALUES (?, ?)", [title, message]);
     res.status(201).json({ message: "Announcement added successfully!" });
   } catch (err) {
-    console.error("❌ Announcements POST Error:", err);
+    console.error("Error adding announcement:", err);
     res.status(500).json({ message: "Server error adding announcement" });
   }
 });
 
-app.put("/announcements/:id", async (req, res) => {
+// Delete announcement
+app.delete('/announcements/:id', async (req, res) => {
   const { id } = req.params;
-  const { title, message } = req.body;
   try {
-    await db.query("UPDATE announcements SET title = ?, message = ? WHERE id = ?", [title, message, id]);
+    await db.query('DELETE FROM announcements WHERE id = ?', [id]);
     res.sendStatus(200);
   } catch (err) {
-    console.error("❌ Announcements PUT Error:", err);
-    res.status(500).json({ message: "Failed to update announcement" });
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete announcement' });
   }
 });
 
-app.delete("/announcements/:id", async (req, res) => {
+// Update announcement
+app.put('/announcements/:id', async (req, res) => {
   const { id } = req.params;
+  const { title, message } = req.body;
   try {
-    await db.query("DELETE FROM announcements WHERE id = ?", [id]);
+    await db.query('UPDATE announcements SET title = ?, message = ? WHERE id = ?', [title, message, id]);
     res.sendStatus(200);
   } catch (err) {
-    console.error("❌ Announcements DELETE Error:", err);
-    res.status(500).json({ message: "Failed to delete announcement" });
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update announcement' });
   }
 });
 
