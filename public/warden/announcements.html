@@ -1,69 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Warden Announcements</title>
+  <title>Warden Announcements | HostelNet</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon"/>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #fff3e0;
-      margin: 0;
-      padding: 20px;
+    :root {
+      --bg: #ff4000;
+      --light-bg: #fff3e0;
+      --card: #ffffff;
+      --accent: #ff6a00;
+      --muted: #6b7280;
+      --radius: 12px;
     }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, var(--light-bg), #fff);
+      margin: 0;
+      padding: 40px 20px;
+      color: #333;
+    }
+
     h2 {
       text-align: center;
+      color: var(--bg);
+      margin-bottom: 25px;
+      font-size: 2rem;
+      text-shadow: 1px 1px 3px rgba(255, 100, 0, 0.2);
     }
+
+    .search-bar {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .search-bar input {
+      width: 300px;
+      max-width: 90%;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: var(--radius);
+      outline: none;
+      transition: all 0.2s ease;
+      font-size: 15px;
+    }
+
+    .search-bar input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 6px rgba(255, 100, 0, 0.3);
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
-      background: #fff;
-      border-radius: 10px;
+      background: var(--card);
+      border-radius: var(--radius);
       overflow: hidden;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease-in;
     }
+
     th, td {
-      border: 1px solid #ddd;
-      padding: 12px;
+      padding: 14px;
       text-align: left;
     }
+
     th {
-      background: #ed5d2d;
-      color: white;
+      background: var(--bg);
+      color: #fff;
+      font-weight: bold;
     }
-    a {
-      display: inline-block;
-      margin-top: 20px;
-      color: #ed5d2d;
-      text-decoration: none;
+
+    tr:nth-child(even) {
+      background-color: #fffaf5;
     }
-    a:hover {
-      text-decoration: underline;
+
+    tr:hover {
+      background-color: #ffe3d0;
+      transition: background 0.3s ease;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 30px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-  <h2>Announcements</h2>
+  <h2>📢 Hostel Announcements</h2>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search announcement title...">
+  </div>
+
   <table id="announcementsTable">
-    <tr>
-      <th>Title</th>
-      <th>Message</th>
-      <th>Date</th>
-    </tr>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Message</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="announcementBody">
+      <tr><td colspan="3" class="no-data">Loading announcements...</td></tr>
+    </tbody>
   </table>
+
+  <footer>
+    © 2025 HostelNet | Vision University College
+  </footer>
+
   <script>
-    fetch('../../php/get_announcements.php')
-      .then(res => res.json())
-      .then(data => {
-        const table = document.getElementById('announcementsTable');
+    // === 🧠 Fetch data dari API Node.js (bukan PHP) ===
+    async function loadAnnouncements() {
+      try {
+        const res = await fetch("/announcements"); // Route dari server.js
+        const data = await res.json();
+        const tbody = document.getElementById("announcementBody");
+
+        if (!data || data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="3" class="no-data">No announcements available 🎉</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = "";
         data.forEach(a => {
-          const row = table.insertRow();
-          row.insertCell(0).textContent = a.title;
-          row.insertCell(1).textContent = a.message;
-          row.insertCell(2).textContent = a.created_at;
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${a.title}</td>
+            <td>${a.message}</td>
+            <td>${new Date(a.created_at).toLocaleString()}</td>
+          `;
+          tbody.appendChild(row);
         });
+      } catch (err) {
+        console.error("❌ Error fetching announcements:", err);
+        document.getElementById("announcementBody").innerHTML =
+          `<tr><td colspan="3" class="no-data">Error loading announcements ❌</td></tr>`;
+      }
+    }
+
+    // 🔎 Search filter
+    document.getElementById("searchInput").addEventListener("keyup", function() {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll("#announcementBody tr");
+      rows.forEach(row => {
+        const title = row.cells[0]?.textContent.toLowerCase() || "";
+        row.style.display = title.includes(filter) ? "" : "none";
       });
+    });
+
+    loadAnnouncements();
   </script>
 </body>
 </html>
