@@ -195,10 +195,6 @@ const autoInsertUsers = async () => {
 // delay sikit lepas connect db
 setTimeout(autoInsertUsers, 2000);
 
-// ===================== SERVER START ===================== //
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
 // ===================== LOGOUT ===================== //
 app.get("/logout", (req, res) => {
   req.session.destroy((err) => {
@@ -250,3 +246,32 @@ app.put("/reports/:id/resolve", async (req, res) => {
     res.status(500).json({ message: "Update failed" });
   }
 });
+
+// ✅ ROUTE: Dapatkan semua report
+app.get("/reports", (req, res) => {
+  const sql = "SELECT * FROM reports ORDER BY id DESC";
+  conn.query(sql, (err, results) => {
+    if (err) {
+      console.error("❌ Error fetching reports:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+    res.json(results);
+  });
+});
+
+// ✅ ROUTE: Tandakan report sebagai 'resolved'
+app.put("/reports/:id/resolve", (req, res) => {
+  const { id } = req.params;
+  const sql = "UPDATE reports SET status = 'resolved' WHERE id = ?";
+  conn.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error("❌ Error updating report:", err);
+      return res.status(500).json({ success: false, message: "Server error" });
+    }
+    res.json({ success: true });
+  });
+});
+
+// ===================== SERVER START ===================== //
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
