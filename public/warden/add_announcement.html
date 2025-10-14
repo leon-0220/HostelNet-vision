@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Announcement | HostelNet</title>
+  <style>
+    :root {
+      --bg: #ff4000;
+      --light-bg: #fff3e0;
+      --card: #ffffff;
+      --accent: #ff6a00;
+      --muted: #6b7280;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg), #eef3f8);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+    }
+
+    .container {
+      background: var(--card);
+      padding: 30px 40px;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 480px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--bg);
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: var(--radius);
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 6px rgba(255, 100, 0, 0.2);
+    }
+
+    textarea {
+      resize: none;
+      height: 100px;
+    }
+
+    button {
+      background-color: var(--bg);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #e05600;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📝 Add Announcement</h2>
+    <form id="announcementForm">
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" placeholder="Enter announcement title" required>
+
+      <label for="message">Message</label>
+      <textarea id="message" name="message" placeholder="Enter announcement details" required></textarea>
+
+      <button type="submit">Add Announcement</button>
+      <div class="message" id="msg"></div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("announcementForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById("title").value.trim();
+      const message = document.getElementById("message").value.trim();
+      const msg = document.getElementById("msg");
+
+      if (!title || !message) {
+        msg.textContent = "⚠️ Please fill in all fields!";
+        msg.style.color = "red";
+        return;
+      }
+
+      try {
+        const res = await fetch("/announcements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, message }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          msg.textContent = "✅ Announcement added successfully!";
+          msg.style.color = "green";
+          document.getElementById("announcementForm").reset();
+
+          // Redirect to announcements list after 1.5s
+          setTimeout(() => {
+            window.location.href = "announcements.html";
+          }, 1500);
+        } else {
+          msg.textContent = "❌ " + (data.message || "Failed to add announcement.");
+          msg.style.color = "red";
+        }
+      } catch (err) {
+        msg.textContent = "❌ Network error. Please try again.";
+        msg.style.color = "red";
+      }
+    });
+  </script>
+</body>
+</html>
