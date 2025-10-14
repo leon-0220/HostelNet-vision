@@ -151,7 +151,18 @@
           <p>Please fill in this form to create an account.</p>
           <hr>
           <label for="id"><b>ID</b></label>
-          <input type="text" placeholder="Enter your ID (e.g. DIT0423-001)" name="id" id="id" required pattern="^[A-Z]{3}\\d{4}-\\d{3}$" title="For Example: DIT0423-001" minlength="11" maxlength="12" style="text-transform:uppercase;">
+          <input 
+            type="text" 
+            placeholder="Enter your ID (e.g. DIT0423-001)" 
+            name="id" 
+            id="id" 
+            required 
+            pattern="^[A-Z]{3}\d{4}-\d{3}$" 
+            title="For Example: DIT0423-001" 
+            minlength="11" 
+            maxlength="12" 
+            style="text-transform:uppercase;"
+          >
 
           <label for="uname"><b>Username</b></label> 
           <input type="text" placeholder="Your Username" name="uname" id="uname" required>
@@ -195,15 +206,17 @@
   </div>
 
   <script>
+    // Auto uppercase untuk ID input
     const idInput = document.getElementById("id");
     idInput.addEventListener("input", () => {
       idInput.value = idInput.value.toUpperCase();
     });
 
+    // Handle submit form
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const id = document.getElementById("id").value.trim();
+      const id = document.getElementById("id").value.trim().toUpperCase();
       const uname = document.getElementById("uname").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("psw").value.trim();
@@ -211,13 +224,14 @@
       const gender = document.getElementById("gender").value;
       const role = document.getElementById("role").value;
 
+      // Validate ID pattern (uppercase)
       const idPattern = /^[A-Z]{3}\d{4}-\d{3}$/;
-
       if (!idPattern.test(id)) {
         alert("❌ ID format invalid! For example: DIT0423-001");
         return;
       }
 
+      // Validate password match
       if (password !== repeat) {
         alert("❌ Password and Repeat Password do not match!");
         return;
@@ -236,7 +250,7 @@
           alert("✅ Registration successful!");
           window.location.href = "index.html";
         } else {
-          alert("⚠️ " + data.message);
+          alert("⚠️ " + (data.message || "Registration failed."));
         }
       } catch (error) {
         console.error("Error:", error);
@@ -246,5 +260,3 @@
   </script>
 </body>
 </html>
-
-
