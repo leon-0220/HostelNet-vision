@@ -8,13 +8,68 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #ff9a00, #ffffff);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    .logout-card {
+      background-color: #fff;
+      padding: 40px 50px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      max-width: 400px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .logout-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+      color: #ff7a00;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    p {
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .btn-logout {
+      background-color: #ff7a00;
+      border: none;
+      font-size: 18px;
+      padding: 10px 25px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      color: white;
+    }
+
+    .btn-logout:hover {
+      background-color: #e56b00;
+      transform: scale(1.05);
+    }
+
+    .glyphicon-log-out {
+      margin-right: 8px;
+    }
+  </style>
 </head>
 <body>
-  <div class="container text-center" style="margin-top:100px;">
+  <div class="logout-card">
     <h2>Logout</h2>
-    <p>Click the button below to logout from the system:</p>
-
-    <button type="button" class="btn btn-danger btn-lg" onclick="confirmLogout()">
+    <p>Click the button below to log out from the system:</p>
+    <button type="button" class="btn btn-logout btn-lg" onclick="confirmLogout()">
       <span class="glyphicon glyphicon-log-out"></span> Logout
     </button>
   </div>
@@ -22,10 +77,9 @@
   <script>
     function confirmLogout() {
       if (confirm("Are you sure you want to log out?")) {
-        // Hantar request ke backend untuk logout
         fetch("/logout", { method: "GET" })
           .then(() => {
-            window.location.href = "/index.html"; // Redirect ke login page
+            window.location.href = "index.html"; // Redirect ke login page
           })
           .catch(err => {
             alert("Logout failed: " + err);
