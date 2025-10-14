@@ -87,6 +87,7 @@ body {
 
 .sidebar ul li a:hover {
   background: #ed5d2d;
+  color: white;
 }
 
 .form button {
@@ -193,7 +194,7 @@ form button:hover {
       <li><a href="../admin/student_list.html">👨‍🎓 Students</a></li>
       <li><a href="../adminroom.html">🛏️ Rooms</a></li>
       <li><a href="report.html">📝 Complaints</a></li>
-      <li><a href="../../logout.php">🚪 Logout</a></li>
+      <li><a href="../../logout.html">🚪 Logout</a></li>
     </ul>
   </div>
 
@@ -205,12 +206,8 @@ form button:hover {
 
       <div class="card mb-4">
         <div class="card-header profile-header">My Profile</div>
-        <div class="card-body">
-          <p><strong>Name:</strong> Mr. Ahmad Zulkarnain</p>
-          <p><strong>Warden ID:</strong> WRD001</p>
-          <p><strong>Position:</strong> Chief Warden</p>
-          <p><strong>Email:</strong> warden@vision.edu.my</p>
-          <p><strong>Phone:</strong> +60 11-234 5678</p>
+        <div class="card-body" id="wardenProfile">
+          <p>Loading profile...</p>
         </div>
       </div>
 
@@ -241,7 +238,29 @@ form button:hover {
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("closed");
     }
+
+    // ✅ Auto-load user info from session
+    async function loadProfile() {
+      try {
+        const res = await fetch("/user/profile");
+        if (res.ok) {
+          const user = await res.json();
+          document.getElementById("wardenProfile").innerHTML = `
+            <p><strong>Name:</strong> ${user.username}</p>
+            <p><strong>Warden ID:</strong> ${user.user_ref_id}</p>
+            <p><strong>Position:</strong> ${user.role === 'warden' ? 'Warden' : user.role}</p>
+            <p><strong>Email:</strong> ${user.email}</p>
+          `;
+        } else {
+          document.getElementById("wardenProfile").innerHTML =
+            '<p style="color:red;">⚠️ Session expired. Please <a href="/index.html">login again</a>.</p>';
+        }
+      } catch (err) {
+        document.getElementById("wardenProfile").innerHTML =
+          '<p style="color:red;">⚠️ Unable to load profile. Please check connection.</p>';
+      }
+    }
+    loadProfile();
   </script>
 </body>
-
 </html>
