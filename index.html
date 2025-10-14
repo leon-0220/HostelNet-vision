@@ -47,22 +47,21 @@
       const data = await response.json();
 
       if (response.ok) {
-        // ✅ Redirect ikut role
         switch (data.role) {
           case "student":
-            window.location.href = "public/student/dashboard.html";
+            window.location.href = "pages/student/dashboard.html";
             break;
           case "warden":
-            window.location.href = "public/warden/dashboard.html";
+            window.location.href = "pages/warden/dashboard.html";
             break;
           case "admin":
-            window.location.href = "public/admin/dashboard.html";
+            window.location.href = "pages/admin/dashboard2.html";
             break;
           case "finance":
-            window.location.href = "public/finance/dashboard.html";
+            window.location.href = "pages/finance/dashboard.html";
             break;
           case "maintenance":
-            window.location.href = "public/maintenance/dashboard.html";
+            window.location.href = "pages/maintenance/dashboard.html";
             break;
           default:
             alert("Unknown role. Please contact admin.");
@@ -78,6 +77,7 @@
   </script>
 </body>
 </html>
+
 
 
 
