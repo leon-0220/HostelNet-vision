@@ -140,7 +140,7 @@ app.get("/api/test-db", async (req, res) => {
 const autoInsertUsers = async () => {
   try {
     const users = [
-      { user_ref_id: "DLM0423-001", username: "JovenMaestro.09", email: "tadrean@gmail.com", password: "TengkuAdreanRuiz02", role: "student" },
+      { user_ref_id: 'DLM0423-001', username: 'JovenMaestro.09', email: 'tadrean@gmail.com', password: 'TengkuAdreanRuiz02', role: 'student' },
       { user_ref_id: 'DLM0423-002', username: 'Eagle.08', email: 'thariq@gmail.com', password: 'ThariqRidzuwan', role: 'student' },
       { user_ref_id: 'DIT0423-001', username: 'Leon.0920', email: 'rahmahsukor5@gmail.com', password: 'TengkuAdreanRuiz02', role: 'student' },
       { user_ref_id: 'FIN001', username: 'Finance.01', email: 'finance01@gmail.com', password: 'FinancePass01', role: 'finance' },
