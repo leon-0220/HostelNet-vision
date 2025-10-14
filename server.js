@@ -314,6 +314,31 @@ app.post("/announcements", async (req, res) => {
   }
 });
 
+// Delete announcement
+app.delete('/announcements/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query('DELETE FROM announcements WHERE id = ?', [id]);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete announcement' });
+  }
+});
+
+// Update announcement
+app.put('/announcements/:id', async (req, res) => {
+  const { id } = req.params;
+  const { title, message } = req.body;
+  try {
+    await db.query('UPDATE announcements SET title = ?, message = ? WHERE id = ?', [title, message, id]);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update announcement' });
+  }
+});
+
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
