@@ -210,3 +210,43 @@ app.get("/logout", (req, res) => {
     res.redirect("/index.html"); // redirect ke login page
   });
 });
+
+// ===================== REPORT ROUTES ===================== //
+
+// Submit report
+app.post("/report", async (req, res) => {
+  const { fname, lname, hostel_unit, message } = req.body;
+  if (!fname || !lname || !hostel_unit || !message)
+    return res.status(400).json({ message: "All fields required" });
+
+  try {
+    await db.query(
+      "INSERT INTO reports (fname, lname, hostel_unit, message) VALUES (?, ?, ?, ?)",
+      [fname, lname, hostel_unit, message]
+    );
+    res.json({ success: true, message: "Report submitted successfully" });
+  } catch (err) {
+    console.error("❌ Report Error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Fetch all reports (for warden view)
+app.get("/reports", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM reports ORDER BY created_at DESC");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
+// Mark report as resolved
+app.put("/reports/:id/resolve", async (req, res) => {
+  try {
+    await db.query("UPDATE reports SET status = 'resolved' WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Update failed" });
+  }
+});
