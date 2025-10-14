@@ -198,3 +198,15 @@ setTimeout(autoInsertUsers, 2000);
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+// ===================== LOGOUT ===================== //
+app.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("❌ Logout Error:", err);
+      return res.status(500).json({ message: "Server error during logout" });
+    }
+    res.clearCookie("connect.sid"); // padam cookie session
+    res.redirect("/index.html"); // redirect ke login page
+  });
+});
