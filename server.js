@@ -58,31 +58,24 @@ app.get("/api/test-db", async (req, res) => {
 app.post("/register", async (req, res) => {
   const { id, uname, email, password, gender, role } = req.body;
 
-  if (!id || !uname || !email || !password || !gender || !role) {
+  if (!id || !uname || !email || !password || !gender || !role)
     return res.status(400).json({ message: "Please fill in all fields." });
-  }
 
   try {
     if (!db) return res.status(500).json({ message: "Database not connected." });
 
     const validID = /^[A-Za-z]{2,5}\d{2,4}-?\d{3}$/;
-    if (!validID.test(id)) {
-      return res.status(400).json({
-        message: "❌ Invalid ID format. Example: DIT0423-001 or ADMIN001",
-      });
-    }
+    if (!validID.test(id))
+      return res.status(400).json({ message: "❌ Invalid ID format." });
 
     const [check] = await db.query(
       "SELECT * FROM users WHERE user_ref_id = ? OR email = ? OR username = ?",
       [id, email, uname]
     );
 
-    if (check.length > 0) {
-      return res.status(400).json({ message: "User already exists." });
-    }
+    if (check.length > 0) return res.status(400).json({ message: "User already exists." });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     await db.query(
       "INSERT INTO users (user_ref_id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
       [id, uname, email, hashedPassword, gender, role]
@@ -110,21 +103,14 @@ app.post("/login", async (req, res) => {
     if (rows.length === 1) {
       const user = rows[0];
       const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) return res.status(401).json({ success: false, message: "❌ Wrong password!" });
 
-      if (validPassword) {
-        req.session.username = user.username;
-        req.session.role = user.role;
-        req.session.email = user.email;
-        req.session.user_ref_id = user.user_ref_id;
+      req.session.username = user.username;
+      req.session.role = user.role;
+      req.session.email = user.email;
+      req.session.user_ref_id = user.user_ref_id;
 
-        return res.status(200).json({
-          success: true,
-          role: user.role,
-          message: "✅ Login successful",
-        });
-      } else {
-        return res.status(401).json({ success: false, message: "❌ Wrong password!" });
-      }
+      return res.status(200).json({ success: true, role: user.role, message: "✅ Login successful" });
     } else {
       return res.status(404).json({ success: false, message: "⚠️ User not found." });
     }
@@ -155,9 +141,7 @@ const autoInsertUsers = async () => {
           [u.user_ref_id, u.username, u.email, hashedPassword, u.gender, u.role]
         );
         console.log(`✅ User ${u.username} added.`);
-      } else {
-        console.log(`ℹ️ ${u.username} already exists.`);
-      }
+      } else console.log(`ℹ️ ${u.username} already exists.`);
     }
   } catch (err) {
     console.error("❌ Error inserting users:", err);
@@ -181,10 +165,7 @@ app.post("/report", async (req, res) => {
     return res.status(400).json({ message: "All fields required" });
 
   try {
-    await db.query(
-      "INSERT INTO reports (fname, lname, hostel_unit, message) VALUES (?, ?, ?, ?)",
-      [fname, lname, hostel_unit, message]
-    );
+    await db.query("INSERT INTO reports (fname, lname, hostel_unit, message) VALUES (?, ?, ?, ?)", [fname, lname, hostel_unit, message]);
     res.json({ success: true, message: "Report submitted successfully" });
   } catch (err) {
     console.error("❌ Report Error:", err);
@@ -216,7 +197,6 @@ app.put("/reports/:id/resolve", async (req, res) => {
 // ===================== USER PROFILE ===================== //
 app.get("/user/profile", (req, res) => {
   if (!req.session.username) return res.status(401).json({ message: "Not logged in" });
-
   res.json({
     username: req.session.username,
     role: req.session.role,
@@ -231,7 +211,7 @@ app.get("/announcements", async (req, res) => {
     const [rows] = await db.query("SELECT * FROM announcements ORDER BY created_at DESC");
     res.json(rows);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Announcements GET Error:", err);
     res.status(500).json({ message: "Server error fetching announcements" });
   }
 });
@@ -244,7 +224,7 @@ app.post("/announcements", async (req, res) => {
     await db.query("INSERT INTO announcements (title, message) VALUES (?, ?)", [title, message]);
     res.status(201).json({ message: "Announcement added successfully!" });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Announcements POST Error:", err);
     res.status(500).json({ message: "Server error adding announcement" });
   }
 });
@@ -252,11 +232,12 @@ app.post("/announcements", async (req, res) => {
 app.put("/announcements/:id", async (req, res) => {
   const { id } = req.params;
   const { title, message } = req.body;
+
   try {
     await db.query("UPDATE announcements SET title = ?, message = ? WHERE id = ?", [title, message, id]);
     res.sendStatus(200);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Announcements PUT Error:", err);
     res.status(500).json({ message: "Failed to update announcement" });
   }
 });
@@ -267,7 +248,7 @@ app.delete("/announcements/:id", async (req, res) => {
     await db.query("DELETE FROM announcements WHERE id = ?", [id]);
     res.sendStatus(200);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Announcements DELETE Error:", err);
     res.status(500).json({ message: "Failed to delete announcement" });
   }
 });
