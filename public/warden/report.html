@@ -1,41 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Report</title>
-        <link rel="stylesheet" href="css/reportstyle.css" />
-    </head>
-    <body>
-        <img src="images/vision.png" alt="Vision University College Logo">
-        <h2>Report Form</h2>
-        <p>Fill in this form to make a report.</p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HostelNet | Warden Report View</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #fff8f0, #ffe0b2);
+      margin: 0;
+      padding: 40px 20px;
+      min-height: 100vh;
+      color: #333;
+    }
 
-        <div class="responsive-form">
-            <form action="/action_page.php">
-                <label for="fname">First Name:</label>
-                <input type="text" id="fname" name="fname" placeholder="Your first name"> <br/>
+    h2 {
+      text-align: center;
+      color: #ff8000;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 2px rgba(255, 128, 0, 0.3);
+    }
 
-                <label for="lname">Last Name:</label>
-                <input type="text" id="lname" name="lname" placeholder="Your last name"><br/>
+    .container {
+      max-width: 950px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
 
-                <label for="hostel-unit">Hostel Unit:</label>
-                <select id="hostel-unit" name="hostel-unit">
-                    <option value="24B3">24B3</option>
-                    <option value="24A4">24A4</option>
-                    <option value="D201">D201</option>
-                    <option value="D202">D202</option>
-                    <option value="D204">D204</option>
-                    <option value="D301">D301</option>
-                    <option value="D401">D401</option>
-                    <option value="D404">D404</option>
-                </select> <br/>
-    
-                <label for="message">Message:</label>
-                <textarea id="message" name="message" placeholder="Write something.."></textarea>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
 
-                <input type="submit" value="Submit">
-            </form>
-        </div>
-    </body>
- </html>
+    th, td {
+      text-align: center;
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    thead {
+      background-color: #ffb74d;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #fff3e0;
+    }
+
+    .btn {
+      padding: 7px 15px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .btn.resolve {
+      background-color: #4caf50;
+    }
+
+    .btn.resolve:hover {
+      background-color: #3e8e41;
+      transform: scale(1.05);
+    }
+
+    .status {
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+
+    .status.pending {
+      color: #ff9800;
+    }
+
+    .status.resolved {
+      color: #4caf50;
+    }
+
+    .alert {
+      text-align: center;
+      background: #fff8e1;
+      padding: 15px;
+      border-radius: 8px;
+      color: #ff9800;
+      font-weight: bold;
+      border: 1px solid #ffecb3;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>🧾 Reports Overview</h2>
+  <div class="container" id="reportContainer">
+    <div class="alert">Loading reports...</div>
+  </div>
+
+  <script>
+    async function fetchReports() {
+      const res = await fetch("/reports");
+      const data = await res.json();
+      const container = document.getElementById("reportContainer");
+
+      if (!data.length) {
+        container.innerHTML = '<div class="alert">No reports submitted yet 🎉</div>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Hostel Unit</th>
+              <th>Message</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      data.forEach(r => {
+        html += `
+          <tr>
+            <td>${r.id}</td>
+            <td>${r.fname} ${r.lname}</td>
+            <td>${r.hostel_unit}</td>
+            <td>${r.message}</td>
+            <td><span class="status ${r.status}">${r.status}</span></td>
+            <td>
+              ${r.status === 'pending' ? 
+                `<button class="btn resolve" onclick="markResolved(${r.id})">Mark Resolved</button>` 
+                : '✅ Done'}
+            </td>
+          </tr>`;
+      });
+
+      html += "</tbody></table>";
+      container.innerHTML = html;
+    }
+
+    async function markResolved(id) {
+      const res = await fetch(`/reports/${id}/resolve`, { method: "PUT" });
+      const result = await res.json();
+      if (result.success) {
+        fetchReports();
+      } else {
+        alert("Error: " + result.message);
+      }
+    }
+
+    fetchReports();
+  </script>
+</body>
+</html>
