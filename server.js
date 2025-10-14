@@ -103,14 +103,23 @@ app.post("/login", async (req, res) => {
           message: "Login successful",
         });
       } else {
-        return res.status(401).json({ success: false, message: "Wrong password!" });
+        return res.status(401).json({ 
+          success: false, 
+          message: "Wrong password!",
+        });
       }
     } else {
-      return res.status(404).json({ success: false, message: "User not found. Please register first." });
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found. Please register first.",
+      });
     }
   } catch (err) {
     console.error("❌ Login Error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error",
+    });
   }
 });
 
