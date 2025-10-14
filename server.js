@@ -46,7 +46,7 @@ await connectDB();
 app.get("/api/test-db", async (req, res) => {
   try {
     if (!db) throw new Error("Database not connected");
-    const [rows] = await db.query("SELECT NOW() AS current_time");
+    const [rows] = await db.query("SELECT CURRENT_TIME() AS time");
     res.json({ message: "✅ Database connected", time: rows[0].current_time });
   } catch (err) {
     console.error("❌ Test DB Error:", err);
@@ -98,10 +98,15 @@ app.post("/register", async (req, res) => {
     );
 
     console.log("✅ User registered:", result);
-    res.status(200).json({ message: "✅ Registration successful." });
+    res.status(200).json({ 
+      message: "✅ Registration successful.",
+    });
   } catch (err) {
     console.error("❌ Register Error:", err);
-    res.status(500).json({ message: "Server error.", error: err.message });
+    res.status(500).json({ 
+      message: "Server error.", 
+      error: err.message,
+    });
   }
 });
 
@@ -111,7 +116,10 @@ app.post("/login", async (req, res) => {
 
   try {
     if (!db) {
-      return res.status(500).json({ success: false, message: "Database not connected." });
+      return res.status(500).json({ 
+        success: false, 
+        message: "Database not connected."
+      });
     }
 
     const [rows] = await db.query(
