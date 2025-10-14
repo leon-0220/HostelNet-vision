@@ -182,3 +182,14 @@ setTimeout(autoInsertUsers, 2000);
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+// ✅ TEST DATABASE CONNECTION
+app.get("/api/test-db", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT NOW() AS current_time");
+    res.json({ message: "✅ Database connected!", time: rows[0].current_time });
+  } catch (err) {
+    console.error("❌ Test DB error:", err);
+    res.status(500).json({ message: "❌ Database not connected", error: err.message });
+  }
+});
