@@ -286,6 +286,34 @@ app.get("/user/profile", (req, res) => {
   });
 });
 
+// === ANNOUNCEMENTS: GET & POST ===
+
+// Get all announcements
+app.get("/announcements", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM announcements ORDER BY created_at DESC");
+    res.json(rows);
+  } catch (err) {
+    console.error("Error fetching announcements:", err);
+    res.status(500).json({ message: "Server error fetching announcements" });
+  }
+});
+
+// Add new announcement
+app.post("/announcements", async (req, res) => {
+  const { title, message } = req.body;
+  if (!title || !message)
+    return res.status(400).json({ message: "Title and message are required" });
+
+  try {
+    await db.query("INSERT INTO announcements (title, message) VALUES (?, ?)", [title, message]);
+    res.status(201).json({ message: "Announcement added successfully!" });
+  } catch (err) {
+    console.error("Error adding announcement:", err);
+    res.status(500).json({ message: "Server error adding announcement" });
+  }
+});
+
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
