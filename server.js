@@ -272,6 +272,20 @@ app.put("/reports/:id/resolve", (req, res) => {
   });
 });
 
+// ✅ Get current user profile info
+app.get("/user/profile", (req, res) => {
+  if (!req.session.username) {
+    return res.status(401).json({ message: "Not logged in" });
+  }
+
+  res.json({
+    username: req.session.username,
+    role: req.session.role,
+    email: req.session.email || "",
+    user_ref_id: req.session.user_ref_id || ""
+  });
+});
+
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
