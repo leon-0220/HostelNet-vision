@@ -56,8 +56,9 @@ app.post("/register", async (req, res) => {
   }
 
   try {
+    // semak kalau user dah ada
     const [check] = await db.query(
-      "SELECT * FROM users WHERE id = ? OR email = ? OR username = ?",
+      "SELECT * FROM users WHERE user_ref_id = ? OR email = ? OR username = ?",
       [id, email, uname]
     );
 
@@ -67,12 +68,13 @@ app.post("/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // masukkan user baru
     await db.query(
-      "INSERT INTO users (id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO users (user_ref_id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
       [id, uname, email, hashedPassword, gender, role]
     );
 
-    res.status(200).json({ message: "Registration successful." });
+    res.status(200).json({ message: "✅ Registration successful." });
   } catch (err) {
     console.error("❌ Register Error:", err);
     res.status(500).json({ message: "Server error." });
@@ -84,8 +86,9 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
+    // cari user ikut id / username / email
     const [rows] = await db.query(
-      "SELECT * FROM users WHERE username = ? OR id = ? OR user_ref_id = ?",
+      "SELECT * FROM users WHERE username = ? OR user_ref_id = ? OR email = ?",
       [username, username, username]
     );
 
@@ -100,24 +103,24 @@ app.post("/login", async (req, res) => {
         return res.status(200).json({
           success: true,
           role: user.role,
-          message: "Login successful",
+          message: "✅ Login successful",
         });
       } else {
-        return res.status(401).json({ 
-          success: false, 
-          message: "Wrong password!",
+        return res.status(401).json({
+          success: false,
+          message: "❌ Wrong password!",
         });
       }
     } else {
-      return res.status(404).json({ 
-        success: false, 
-        message: "User not found. Please register first.",
+      return res.status(404).json({
+        success: false,
+        message: "⚠️ User not found. Please register first.",
       });
     }
   } catch (err) {
     console.error("❌ Login Error:", err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: "Server error",
     });
   }
@@ -138,6 +141,7 @@ const autoInsertUsers = async () => {
 
     for (const u of users) {
       const [check] = await db.query("SELECT * FROM users WHERE username = ?", [u.username]);
+
       if (check.length === 0) {
         const hashedPassword = await bcrypt.hash(u.password, 10);
         await db.query(
@@ -146,7 +150,14 @@ const autoInsertUsers = async () => {
         );
         console.log(`✅ User ${u.username} added.`);
       } else {
-        console.log(`ℹ️ User ${u.username} already exists.`);
+        // kalau password belum hashed
+        if (!check[0].password.startsWith("$2b$")) {
+          const hashedPassword = await bcrypt.hash(u.password, 10);
+          await db.query("UPDATE users SET password = ? WHERE username = ?", [hashedPassword, u.username]);
+          console.log(`🔄 Updated hash for ${u.username}`);
+        } else {
+          console.log(`ℹ️ ${u.username} already exists.`);
+        }
       }
     }
   } catch (err) {
@@ -154,6 +165,7 @@ const autoInsertUsers = async () => {
   }
 };
 
+// delay sikit lepas connect db
 setTimeout(autoInsertUsers, 2000);
 
 // ===================== SERVER START ===================== //
