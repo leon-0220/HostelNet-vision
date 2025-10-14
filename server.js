@@ -341,6 +341,38 @@ app.put('/announcements/:id', async (req, res) => {
   }
 });
 
+// GET user profile
+app.get('/user/profile', (req, res) => {
+  if(!req.session.username) return res.status(401).json({ message: 'Not logged in' });
+  res.json({
+    username: req.session.username,
+    email: req.session.email || '',
+    phone: req.session.phone || '',   // pastikan ada column phone dalam table
+    user_ref_id: req.session.user_ref_id,
+    role: req.session.role
+  });
+});
+
+// POST update profile
+app.post('/user/profile/update', async (req, res) => {
+  if(!req.session.username) return res.status(401).json({ message: 'Not logged in' });
+  const { name, email, phone } = req.body;
+  try {
+    await db.query(
+      'UPDATE users SET username = ?, email = ?, phone = ? WHERE user_ref_id = ?',
+      [name, email, phone, req.session.user_ref_id]
+    );
+    // update session juga supaya auto load next time
+    req.session.username = name;
+    req.session.email = email;
+    req.session.phone = phone;
+    res.json({ message: 'Profile updated successfully' });
+  } catch(err){
+    console.error(err);
+    res.status(500).json({ message: 'Server error updating profile' });
+  }
+});
+
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
