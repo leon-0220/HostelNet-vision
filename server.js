@@ -132,8 +132,10 @@ app.post("/login", async (req, res) => {
       const validPassword = await bcrypt.compare(password, user.password);
 
       if (validPassword) {
-        req.session.username = user.username;
+        req.session.name = user.name;
         req.session.role = user.role;
+        req.session.email = user.email;
+        req.session.user_ref_id = user.user_ref_id;
 
         return res.status(200).json({
           success: true,
