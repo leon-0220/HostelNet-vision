@@ -73,7 +73,7 @@ app.post("/register", async (req, res) => {
 
     await db.query(
       "INSERT INTO users (id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
-      [id, uname, email, hashedPassword, gender, role]
+      [u.user_ref_id, u.username, u.email, u.hashedPassword, gender, u.role]
     );
 
     res.status(200).json({ message: "Registration successful." });
