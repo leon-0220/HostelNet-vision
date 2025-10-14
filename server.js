@@ -55,11 +55,22 @@ app.post("/register", async (req, res) => {
     return res.status(400).json({ message: "Please fill in all fields." });
   }
 
+  // ✅ Allow all prefixes, but ensure correct general format (e.g. DIT0423-001, ADMIN001, FIN001)
+  const idPattern = /^[A-Za-z]{2,10}\d{0,4}-?\d{0,3}$/;
+  if (!idPattern.test(id)) {
+    return res.status(400).json({
+      message: "❌ Invalid ID format. Example: DIT0423-001 or FIN001",
+    });
+  }
+
   try {
+    // normalize ID (uppercase)
+    const normalizedId = id.toUpperCase();
+
     // semak kalau user dah ada
     const [check] = await db.query(
-      "SELECT * FROM users WHERE user_ref_id = ? OR email = ? OR username = ?",
-      [id, email, uname]
+      "SELECT * FROM users WHERE UPPER(user_ref_id) = ? OR email = ? OR username = ?",
+      [normalizedId, email, uname]
     );
 
     if (check.length > 0) {
@@ -71,7 +82,7 @@ app.post("/register", async (req, res) => {
     // masukkan user baru
     await db.query(
       "INSERT INTO users (user_ref_id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
-      [id, uname, email, hashedPassword, gender, role]
+      [normalizedId, uname, email, hashedPassword, gender, role]
     );
 
     res.status(200).json({ message: "✅ Registration successful." });
@@ -86,9 +97,9 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // cari user ikut id / username / email
+    // cari user ikut id / username / email (case-insensitive)
     const [rows] = await db.query(
-      "SELECT * FROM users WHERE username = ? OR user_ref_id = ? OR email = ?",
+      "SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(user_ref_id) = LOWER(?) OR LOWER(email) = LOWER(?)",
       [username, username, username]
     );
 
