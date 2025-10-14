@@ -186,7 +186,7 @@ app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 // ✅ TEST DATABASE CONNECTION
 app.get("/api/test-db", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT NOW() AS CURRENT_TIME");
+    const [rows] = await db.query("SELECT CURRENT_TIME() AS time");
     res.json({ message: "✅ Database connected!", time: rows[0].current_time });
   } catch (err) {
     console.error("❌ Test DB error:", err);
