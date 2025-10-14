@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logout Confirmation</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <div class="container text-center" style="margin-top:100px;">
+    <h2>Logout</h2>
+    <p>Click the button below to logout from the system:</p>
+
+    <button type="button" class="btn btn-danger btn-lg" onclick="confirmLogout()">
+      <span class="glyphicon glyphicon-log-out"></span> Logout
+    </button>
+  </div>
+
+  <script>
+    function confirmLogout() {
+      if (confirm("Are you sure you want to log out?")) {
+        // Hantar request ke backend untuk logout
+        fetch("/logout", { method: "GET" })
+          .then(() => {
+            window.location.href = "/index.html"; // Redirect ke login page
+          })
+          .catch(err => {
+            alert("Logout failed: " + err);
+          });
+      }
+    }
+  </script>
+</body>
+</html>
