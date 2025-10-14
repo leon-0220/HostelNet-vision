@@ -42,53 +42,66 @@ const connectDB = async () => {
 };
 await connectDB();
 
-// ===================== ROUTES ===================== //
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+// ===================== TEST DB ===================== //
+app.get("/api/test-db", async (req, res) => {
+  try {
+    if (!db) throw new Error("Database not connected");
+    const [rows] = await db.query("SELECT NOW() AS current_time");
+    res.json({ message: "✅ Database connected", time: rows[0].current_time });
+  } catch (err) {
+    console.error("❌ Test DB Error:", err);
+    res.status(500).json({ message: "❌ Database not connected", error: err.message });
+  }
 });
 
 // ===================== REGISTER ===================== //
 app.post("/register", async (req, res) => {
   const { id, uname, email, password, gender, role } = req.body;
 
+  console.log("📥 Incoming register data:", req.body);
+
   if (!id || !uname || !email || !password || !gender || !role) {
     return res.status(400).json({ message: "Please fill in all fields." });
   }
 
-  // ✅ Allow all prefixes, but ensure correct general format (e.g. DIT0423-001, ADMIN001, FIN001)
-  const idPattern = /^[A-Za-z]{2,10}\d{0,4}-?\d{0,3}$/;
-  if (!idPattern.test(id)) {
-    return res.status(400).json({
-      message: "❌ Invalid ID format. Example: DIT0423-001 or FIN001",
-    });
-  }
-
   try {
-    // normalize ID (uppercase)
-    const normalizedId = id.toUpperCase();
+    if (!db) {
+      return res.status(500).json({ message: "Database not connected." });
+    }
 
-    // semak kalau user dah ada
+    // ✅ Semak ID format (contoh: DIT0423-001, ADMIN001, WARD001)
+    const validID = /^[A-Za-z]{2,5}\d{2,4}-?\d{3}$/;
+    if (!validID.test(id)) {
+      return res.status(400).json({
+        message:
+          "❌ Invalid ID format. Contoh format yang sah: DIT0423-001 atau ADMIN001",
+      });
+    }
+
+    // ✅ Semak kalau user dah wujud
     const [check] = await db.query(
-      "SELECT * FROM users WHERE UPPER(user_ref_id) = ? OR email = ? OR username = ?",
-      [normalizedId, email, uname]
+      "SELECT * FROM users WHERE user_ref_id = ? OR email = ? OR username = ?",
+      [id, email, uname]
     );
 
     if (check.length > 0) {
       return res.status(400).json({ message: "User already exists." });
     }
 
+    // ✅ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // masukkan user baru
-    await db.query(
+    // ✅ Masukkan user baru
+    const [result] = await db.query(
       "INSERT INTO users (user_ref_id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
-      [normalizedId, uname, email, hashedPassword, gender, role]
+      [id, uname, email, hashedPassword, gender, role]
     );
 
+    console.log("✅ User registered:", result);
     res.status(200).json({ message: "✅ Registration successful." });
   } catch (err) {
     console.error("❌ Register Error:", err);
-    res.status(500).json({ message: "Server error." });
+    res.status(500).json({ message: "Server error.", error: err.message });
   }
 });
 
@@ -97,9 +110,12 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // cari user ikut id / username / email (case-insensitive)
+    if (!db) {
+      return res.status(500).json({ success: false, message: "Database not connected." });
+    }
+
     const [rows] = await db.query(
-      "SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(user_ref_id) = LOWER(?) OR LOWER(email) = LOWER(?)",
+      "SELECT * FROM users WHERE username = ? OR user_ref_id = ? OR email = ?",
       [username, username, username]
     );
 
@@ -133,6 +149,7 @@ app.post("/login", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error",
+      error: err.message,
     });
   }
 });
@@ -142,7 +159,6 @@ const autoInsertUsers = async () => {
   try {
     const users = [
       { user_ref_id: 'DLM0423-001', username: 'JovenMaestro.09', email: 'tadrean@gmail.com', password: 'TengkuAdreanRuiz02', role: 'student' },
-      { user_ref_id: 'DLM0423-002', username: 'Eagle.08', email: 'thariq@gmail.com', password: 'ThariqRidzuwan', role: 'student' },
       { user_ref_id: 'DIT0423-001', username: 'Leon.0920', email: 'rahmahsukor5@gmail.com', password: 'TengkuAdreanRuiz02', role: 'student' },
       { user_ref_id: 'FIN001', username: 'Finance.01', email: 'finance01@gmail.com', password: 'FinancePass01', role: 'finance' },
       { user_ref_id: 'WARD001', username: 'Warden.01', email: 'warden01@gmail.com', password: 'WardenPass01', role: 'warden' },
@@ -152,7 +168,6 @@ const autoInsertUsers = async () => {
 
     for (const u of users) {
       const [check] = await db.query("SELECT * FROM users WHERE username = ?", [u.username]);
-
       if (check.length === 0) {
         const hashedPassword = await bcrypt.hash(u.password, 10);
         await db.query(
@@ -161,14 +176,7 @@ const autoInsertUsers = async () => {
         );
         console.log(`✅ User ${u.username} added.`);
       } else {
-        // kalau password belum hashed
-        if (!check[0].password.startsWith("$2b$")) {
-          const hashedPassword = await bcrypt.hash(u.password, 10);
-          await db.query("UPDATE users SET password = ? WHERE username = ?", [hashedPassword, u.username]);
-          console.log(`🔄 Updated hash for ${u.username}`);
-        } else {
-          console.log(`ℹ️ ${u.username} already exists.`);
-        }
+        console.log(`ℹ️ ${u.username} already exists.`);
       }
     }
   } catch (err) {
@@ -182,14 +190,3 @@ setTimeout(autoInsertUsers, 2000);
 // ===================== SERVER START ===================== //
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
-// ✅ TEST DATABASE CONNECTION
-app.get("/api/test-db", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT CURRENT_TIME() AS time");
-    res.json({ message: "✅ Database connected!", time: rows[0].current_time });
-  } catch (err) {
-    console.error("❌ Test DB error:", err);
-    res.status(500).json({ message: "❌ Database not connected", error: err.message });
-  }
-});
