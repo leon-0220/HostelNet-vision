@@ -31,13 +31,18 @@
       text-shadow: 1px 1px 3px rgba(255, 100, 0, 0.2);
     }
 
-    .search-bar {
-      text-align: center;
-      margin-bottom: 20px;
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 900px;
+      margin: 0 auto 20px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .search-bar input {
-      width: 300px;
+      width: 260px;
       max-width: 90%;
       padding: 10px 14px;
       border: 1px solid #ddd;
@@ -52,8 +57,26 @@
       box-shadow: 0 0 6px rgba(255, 100, 0, 0.3);
     }
 
+    .btn-add {
+      background-color: var(--bg);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      font-size: 15px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-add:hover {
+      background-color: #e05600;
+      transform: scale(1.05);
+    }
+
     table {
       width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
       border-collapse: collapse;
       background: var(--card);
       border-radius: var(--radius);
@@ -105,8 +128,11 @@
 <body>
   <h2>📢 Hostel Announcements</h2>
 
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search announcement title...">
+  <div class="toolbar">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search announcement title...">
+    </div>
+    <button class="btn-add" onclick="window.location.href='add_announcement.html'">➕ Add Announcement</button>
   </div>
 
   <table id="announcementsTable">
@@ -127,42 +153,42 @@
   </footer>
 
   <script>
-    // === 🧠 Fetch data dari API Node.js (bukan PHP) ===
+    // Fetch data dari Node.js
     async function loadAnnouncements() {
       try {
-        const res = await fetch("/announcements"); // Route dari server.js
+        const res = await fetch('/announcements');
         const data = await res.json();
-        const tbody = document.getElementById("announcementBody");
+        const tbody = document.getElementById('announcementBody');
 
         if (!data || data.length === 0) {
           tbody.innerHTML = `<tr><td colspan="3" class="no-data">No announcements available 🎉</td></tr>`;
           return;
         }
 
-        tbody.innerHTML = "";
+        tbody.innerHTML = '';
         data.forEach(a => {
-          const row = document.createElement("tr");
+          const row = document.createElement('tr');
           row.innerHTML = `
             <td>${a.title}</td>
             <td>${a.message}</td>
-            <td>${new Date(a.created_at).toLocaleString()}</td>
+            <td>${new Date(a.created_at).toLocaleDateString()}</td>
           `;
           tbody.appendChild(row);
         });
       } catch (err) {
-        console.error("❌ Error fetching announcements:", err);
-        document.getElementById("announcementBody").innerHTML =
+        console.error(err);
+        document.getElementById('announcementBody').innerHTML =
           `<tr><td colspan="3" class="no-data">Error loading announcements ❌</td></tr>`;
       }
     }
 
-    // 🔎 Search filter
-    document.getElementById("searchInput").addEventListener("keyup", function() {
+    // Search function
+    document.getElementById('searchInput').addEventListener('keyup', function() {
       const filter = this.value.toLowerCase();
-      const rows = document.querySelectorAll("#announcementBody tr");
+      const rows = document.querySelectorAll('#announcementBody tr');
       rows.forEach(row => {
-        const title = row.cells[0]?.textContent.toLowerCase() || "";
-        row.style.display = title.includes(filter) ? "" : "none";
+        const title = row.cells[0]?.textContent.toLowerCase() || '';
+        row.style.display = title.includes(filter) ? '' : 'none';
       });
     });
 
