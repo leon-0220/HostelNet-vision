@@ -184,7 +184,7 @@
       document.getElementById("sidebar").classList.toggle("closed");
     }
 
-    // ✅ Load user profile from session
+    // ✅ Load Warden Profile dari session
     async function loadProfile() {
       try {
         const res = await fetch("/user/profile", {
@@ -201,7 +201,7 @@
             <p><strong>Email:</strong> ${user.email}</p>
             ${user.phone ? `<p><strong>Phone:</strong> ${user.phone}</p>` : ""}
           `;
-        } else if(res.status === 401){
+        } else if (res.status === 401) {
           document.getElementById("wardenProfile").innerHTML =
             '<p style="color:red;">⚠️ Session expired. Please <a href="/index.html">login again</a>.</p>';
         } else {
@@ -209,12 +209,14 @@
             '<p style="color:red;">⚠️ Unable to load profile.</p>';
         }
       } catch (err) {
+        console.error("❌ Load profile error:", err);
         document.getElementById("wardenProfile").innerHTML =
           '<p style="color:red;">⚠️ Unable to load profile. Check your connection.</p>';
       }
     }
 
-    loadProfile();
+    // Load profile bila page load
+    window.addEventListener("DOMContentLoaded", loadProfile);
   </script>
 </body>
 </html>
