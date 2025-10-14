@@ -168,7 +168,7 @@
       </div>
       <ul>
         <li><a href="dashboard.html">🏠 Dashboard</a></li>
-        <li><a href="profile.html">👨‍🎓 My Profile</a></li>
+        <li><a href="students.html">👨‍🎓 My Profile</a></li>
         <li><a href="studentroom.html">🛏 Room</a></li>
         <li><a href="payment.html">💳 Payment</a></li>
         <li><a href="complaints_list.html">📝 Complaint</a></li>
@@ -181,7 +181,6 @@
     <div class="main-content">
       <h2>Student Dashboard</h2>
 
-      <!-- Profile -->
       <div class="dashboard-card">
         <h3>Profile</h3>
         <button onclick="viewProfile()">View Profile</button>
@@ -193,7 +192,7 @@
         </form>
       </div>
 
-      <!-- Room Management -->
+      <!-- Room -->
       <div class="dashboard-card">
         <h3>Room Management</h3>
         <button onclick="viewRooms()">View Rooms</button>
@@ -241,51 +240,54 @@
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("closed");
     }
-
-    // ================= Load Profile dari session =================
-    async function loadProfile() {
-      try {
-        const res = await fetch('/user/profile', { credentials: 'include' });
-        if(res.ok){
-          const user = await res.json();
-          document.querySelector('input[name="name"]').value = user.username || '';
-          document.querySelector('input[name="email"]').value = user.email || '';
-          document.querySelector('input[name="phone"]').value = user.phone || '';
-        } else {
-          console.error('Cannot load profile', res.status);
-        }
-      } catch(err){
-        console.error('Error loading profile', err);
+  // Load user profile bila page load
+  async function loadProfile() {
+    try {
+      const res = await fetch('/user/profile', {
+        method: 'GET',
+        credentials: 'include' // penting untuk hantar cookie session
+      });
+      if(res.ok){
+        const user = await res.json();
+        document.querySelector('input[name="name"]').value = user.username || '';
+        document.querySelector('input[name="email"]').value = user.email || '';
+        document.querySelector('input[name="phone"]').value = user.phone || '';
+      } else {
+        console.error('Cannot load profile', res.status);
       }
+    } catch(err){
+      console.error('Error loading profile', err);
     }
-    loadProfile();
+  }
 
-    // ================= Update Profile =================
-    document.getElementById('updateProfileForm').addEventListener('submit', async function(e){
-      e.preventDefault();
-      const name = this.name.value.trim();
-      const email = this.email.value.trim();
-      const phone = this.phone.value.trim();
+  loadProfile();
 
-      try{
-        const res = await fetch('/user/profile/update', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ name, email, phone })
-        });
+  // Handle form submit
+  document.getElementById('updateProfileForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const name = this.name.value.trim();
+    const email = this.email.value.trim();
+    const phone = this.phone.value.trim();
 
-        const data = await res.json();
-        if(res.ok){
-          alert('✅ Profile updated successfully!');
-        } else {
-          alert('❌ Update failed: ' + data.message);
-        }
-      } catch(err){
-        console.error('Error updating profile', err);
-        alert('❌ Unable to update profile. Check console.');
+    try{
+      const res = await fetch('/user/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name, email, phone })
+      });
+
+      const data = await res.json();
+      if(res.ok){
+        alert('✅ Profile updated successfully!');
+      } else {
+        alert('❌ Update failed: ' + data.message);
       }
-    });
+    } catch(err){
+      console.error('Error updating profile', err);
+      alert('❌ Unable to update profile. Check console.');
+    }
+  });
   </script>
 </body>
 </html>
