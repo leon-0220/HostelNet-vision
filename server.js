@@ -11,12 +11,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
-app.use(cors()); // benarkan frontend access backend
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public"))); // folder HTML/CSS/JS kau
+app.use(express.static(path.join(__dirname, "public")));
 
-// Session setup
 app.use(
   session({
     secret: "your_secret_key",
@@ -27,7 +26,6 @@ app.use(
 
 // ===================== DATABASE CONNECTION ===================== //
 let db;
-
 const connectDB = async () => {
   try {
     db = await mysql.createConnection({
@@ -45,13 +43,11 @@ const connectDB = async () => {
 await connectDB();
 
 // ===================== ROUTES ===================== //
-
-// Default route — buka login page
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ===================== REGISTER ROUTE ===================== //
+// ===================== REGISTER ===================== //
 app.post("/register", async (req, res) => {
   const { id, uname, email, password, gender, role } = req.body;
 
@@ -61,8 +57,8 @@ app.post("/register", async (req, res) => {
 
   try {
     const [check] = await db.query(
-      "SELECT * FROM users WHERE id = ? OR email = ?",
-      [id, email]
+      "SELECT * FROM users WHERE id = ? OR email = ? OR username = ?",
+      [id, email, uname]
     );
 
     if (check.length > 0) {
@@ -73,7 +69,7 @@ app.post("/register", async (req, res) => {
 
     await db.query(
       "INSERT INTO users (id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
-      [u.user_ref_id, u.username, u.email, u.hashedPassword, gender, u.role]
+      [id, uname, email, hashedPassword, gender, role]
     );
 
     res.status(200).json({ message: "Registration successful." });
@@ -83,14 +79,15 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// ===================== LOGIN ROUTE ===================== //
+// ===================== LOGIN ===================== //
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
-    ]);
+    const [rows] = await db.query(
+      "SELECT * FROM users WHERE username = ? OR id = ? OR user_ref_id = ?",
+      [username, username, username]
+    );
 
     if (rows.length === 1) {
       const user = rows[0];
@@ -106,37 +103,18 @@ app.post("/login", async (req, res) => {
           message: "Login successful",
         });
       } else {
-        return res.status(401).json({
-          success: false,
-          message: "Wrong password!",
-        });
+        return res.status(401).json({ success: false, message: "Wrong password!" });
       }
     } else {
-      return res.status(404).json({
-        success: false,
-        message: "User not found. Please register first.",
-      });
+      return res.status(404).json({ success: false, message: "User not found. Please register first." });
     }
   } catch (err) {
     console.error("❌ Login Error:", err);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// ===================== TEST DATABASE ROUTE ===================== //
-app.get("/api/test-db", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT NOW() AS now");
-    res.json({ success: true, time: rows[0].now });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// ===================== AUTO-INSERT USERS (HASH PASSWORD) ===================== //
+// ===================== AUTO INSERT USERS ===================== //
 const autoInsertUsers = async () => {
   try {
     const users = [
@@ -167,7 +145,6 @@ const autoInsertUsers = async () => {
   }
 };
 
-// Tunggu DB connect dulu baru insert user
 setTimeout(autoInsertUsers, 2000);
 
 // ===================== SERVER START ===================== //
