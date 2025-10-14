@@ -56,7 +56,7 @@ app.get("/api/test-db", async (req, res) => {
 
 // ===================== REGISTER ===================== //
 app.post("/register", async (req, res) => {
-  const { id, uname, email, password, gender, role } = req.body;
+  const { id, uname, email, password, gender, role, course } = req.body;
 
   console.log("📥 Incoming register data:", req.body);
 
@@ -88,6 +88,21 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ message: "User already exists." });
     }
 
+    // ✅ Semak student dalam students table
+    const [studentCheck] = await db.query(
+      "SELECT * FROM students WHERE student_id = ?",
+      [id]
+    );
+
+    if (studentCheck.length === 0) {
+      // Kalau student tak ada, insert baru ke students table
+      await db.query(
+        "INSERT INTO students (student_id, name, email, gender, course) VALUES (?, ?, ?, ?, ?)",
+        [id, uname, email, gender, course || null]
+      );
+      console.log(`📌 Student ${uname} auto-added to students table.`);
+    }
+
     // ✅ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -107,6 +122,56 @@ app.post("/register", async (req, res) => {
       message: "Server error.", 
       error: err.message,
     });
+  }
+});
+
+// ===================== GET USER PROFILE ===================== //
+app.get('/user/profile', async (req, res) => {
+  if(!req.session.user_ref_id) return res.status(401).json({ message: 'Not logged in' });
+  try {
+    const [rows] = await db.query(
+      "SELECT username, email, phone, user_ref_id, role FROM users WHERE user_ref_id = ?",
+      [req.session.user_ref_id]
+    );
+    if(rows.length === 0) return res.status(404).json({ message: "User not found" });
+
+    // Kirim profile
+    res.json(rows[0]);
+  } catch(err){
+    console.error(err);
+    res.status(500).json({ message: "Server error fetching profile" });
+  }
+});
+
+// ===================== UPDATE USER PROFILE ===================== //
+app.post('/user/profile/update', async (req, res) => {
+  if(!req.session.user_ref_id) return res.status(401).json({ message: 'Not logged in' });
+
+  const { name, email, phone } = req.body;
+  if(!name || !email) return res.status(400).json({ message: "Name and Email required" });
+
+  try {
+    // Update users table
+    await db.query(
+      'UPDATE users SET username = ?, email = ?, phone = ? WHERE user_ref_id = ?',
+      [name, email, phone || null, req.session.user_ref_id]
+    );
+
+    // Optional: update students table juga supaya konsisten
+    await db.query(
+      'UPDATE students SET name = ?, email = ? WHERE student_id = ?',
+      [name, email, req.session.user_ref_id]
+    );
+
+    // update session supaya next load auto
+    req.session.username = name;
+    req.session.email = email;
+    req.session.phone = phone;
+
+    res.json({ message: 'Profile updated successfully' });
+  } catch(err){
+    console.error(err);
+    res.status(500).json({ message: 'Server error updating profile' });
   }
 });
 
