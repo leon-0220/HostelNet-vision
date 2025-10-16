@@ -1,103 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin Dashboard - Hostel</title>
-  <link rel="stylesheet" href="/styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | HostelNet</title>
+  <style>
+    /* ====== GENERAL STYLES ====== */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f6fa;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ====== SIDEBAR ====== */
+    .sidebar {
+      width: 230px;
+      background-color: #ff4000;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 12px 25px;
+      display: block;
+      transition: 0.3s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #ff7a33;
+      border-radius: 5px;
+    }
+
+    /* ====== MAIN CONTENT ====== */
+    .main {
+      flex: 1;
+      padding: 25px;
+      overflow-y: auto;
+    }
+    .main h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    /* ====== DASHBOARD CARDS ====== */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .card h3 {
+      margin: 0;
+      color: #ff4000;
+      font-size: 24px;
+    }
+    .card p {
+      margin: 5px 0 0;
+      color: #555;
+      font-size: 15px;
+    }
+
+    /* ====== RECENT ACTIVITY TABLE ====== */
+    .table-container {
+      margin-top: 40px;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: #ff4000;
+      color: white;
+    }
+
+    @media(max-width: 768px) {
+      .sidebar {
+        width: 70px;
+      }
+      .sidebar a {
+        text-align: center;
+        padding: 10px 0;
+      }
+      .sidebar h2 {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <h2 class="logo">HostelAdmin</h2>
-      <nav>
-        <ul>
-          <li class="active"><button data-nav="dashboard">Dashboard</button></li>
-          <li><button data-nav="students">Student Registrations</button></li>
-          <li><button data-nav="allocate">Room Allocation</button></li>
-          <li><button data-nav="check">Check-In/Out</button></li>
-          <li><button id="logout">Logout</button></li>
-        </ul>
-      </nav>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <h1 id="page-title">Dashboard</h1>
-      </header>
-
-      <section id="content">
-        <!-- Dashboard -->
-        <div id="dashboard" class="page">
-          <div class="cards">
-            <div class="card">
-              <h3>Total Students</h3>
-              <p id="totalStudents">—</p>
-            </div>
-            <div class="card">
-              <h3>Rooms Allocated</h3>
-              <p id="roomsAllocated">—</p>
-            </div>
-            <div class="card">
-              <h3>Checked-In Now</h3>
-              <p id="checkedInNow">—</p>
-            </div>
-            <div class="card">
-              <h3>Checked-Out</h3>
-              <p id="checkedOut">—</p>
-            </div>
-          </div>
-
-          <div class="panel">
-            <h3>Recent Activity</h3>
-            <table class="table" id="recentTable">
-              <thead><tr><th>Student</th><th>Room</th><th>Semester</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Students -->
-        <div id="students" class="page hidden">
-          <div class="panel">
-            <h3>Student Registrations</h3>
-            <table class="table" id="studentsTable">
-              <thead><tr><th>ID</th><th>Name</th><th>Student No</th><th>Email</th><th>Status</th><th>Action</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Allocate -->
-        <div id="allocate" class="page hidden">
-          <div class="panel">
-            <h3>Allocate Room</h3>
-            <form id="allocateForm">
-              <label>Student ID: <input type="number" id="allocStudentId" required /></label>
-              <label>Room:
-                <select id="allocRoom"></select>
-              </label>
-              <label>Semester: <input type="text" id="allocSemester" value="2025/1" required /></label>
-              <button type="submit">Allocate</button>
-            </form>
-            <div id="allocMsg"></div>
-          </div>
-        </div>
-
-        <!-- Check-in/out -->
-        <div id="check" class="page hidden">
-          <div class="panel">
-            <h3>Check-In / Check-Out</h3>
-            <p>Below allocations can be checked in or out.</p>
-            <table class="table" id="allocationsTable">
-              <thead><tr><th>Alloc ID</th><th>Student</th><th>Room</th><th>Semester</th><th>Checkin</th><th>Checkout</th><th>Action</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-    </main>
+  <!-- ===== SIDEBAR ===== -->
+  <div class="sidebar">
+    <h2>HostelNet</h2>
+    <a href="#" class="active">🏠 Dashboard</a>
+    <a href="#">👩‍🎓 Student Registration</a>
+    <a href="#">🏘️ Room Allocation</a>
+    <a href="#">🧍‍♂️ Check-In/Out</a>
+    <a href="/logout">🚪 Logout</a>
   </div>
-  <script src="/app.js"></script>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="main">
+    <h1>Admin Dashboard</h1>
+
+    <!-- Cards Section -->
+    <div class="cards">
+      <div class="card">
+        <h3 id="totalStudents">0</h3>
+        <p>Total Registered Students</p>
+      </div>
+      <div class="card">
+        <h3 id="roomsAllocated">0</h3>
+        <p>Rooms Allocated</p>
+      </div>
+      <div class="card">
+        <h3 id="checkedIn">0</h3>
+        <p>Students Checked-In</p>
+      </div>
+      <div class="card">
+        <h3 id="checkedOut">0</h3>
+        <p>Students Checked-Out</p>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="table-container">
+      <h2>Recent Registrations</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Student Name</th>
+            <th>Room</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="recentTable">
+          <tr><td colspan="4">Loading data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Fetch data from backend (server.js)
+    async function loadDashboard() {
+      try {
+        const res = await fetch("/api/admin/dashboard");
+        const data = await res.json();
+
+        // Update stats
+        document.getElementById("totalStudents").textContent = data.totalStudents;
+        document.getElementById("roomsAllocated").textContent = data.roomsAllocated;
+        document.getElementById("checkedIn").textContent = data.checkedIn;
+        document.getElementById("checkedOut").textContent = data.checkedOut;
+
+        // Update table
+        const tbody = document.getElementById("recentTable");
+        tbody.innerHTML = "";
+        data.recent.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.id}</td>
+            <td>${row.name}</td>
+            <td>${row.room || "-"}</td>
+            <td>${row.status}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadDashboard();
+  </script>
 </body>
 </html>
