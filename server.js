@@ -88,3 +88,57 @@ app.get("/", (req, res) => {
 
 // ===================== START SERVER ===================== //
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
+// ===================== ADD STUDENT ===================== //
+app.post("/api/students", async (req, res) => {
+  const { name, room, status } = req.body;
+  try {
+    await db.query(
+      "INSERT INTO students (name, room, status) VALUES (?, ?, ?)",
+      [name, room, status || "pending"]
+    );
+    res.json({ message: "Student added successfully" });
+  } catch (err) {
+    console.error("Add Student Error:", err);
+    res.status(500).json({ error: "Failed to add student" });
+  }
+});
+
+// ===================== DELETE STUDENT ===================== //
+app.delete("/api/students/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query("DELETE FROM students WHERE id = ?", [id]);
+    res.json({ message: "Student deleted successfully" });
+  } catch (err) {
+    console.error("Delete Student Error:", err);
+    res.status(500).json({ error: "Failed to delete student" });
+  }
+});
+
+// ===================== ADD ROOM ===================== //
+app.post("/api/rooms", async (req, res) => {
+  const { room_no, type, capacity } = req.body;
+  try {
+    await db.query(
+      "INSERT INTO rooms (room_no, type, capacity, allocated) VALUES (?, ?, ?, 0)",
+      [room_no, type, capacity]
+    );
+    res.json({ message: "Room added successfully" });
+  } catch (err) {
+    console.error("Add Room Error:", err);
+    res.status(500).json({ error: "Failed to add room" });
+  }
+});
+
+// ===================== DELETE ROOM ===================== //
+app.delete("/api/rooms/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query("DELETE FROM rooms WHERE id = ?", [id]);
+    res.json({ message: "Room deleted successfully" });
+  } catch (err) {
+    console.error("Delete Room Error:", err);
+    res.status(500).json({ error: "Failed to delete room" });
+  }
+});
