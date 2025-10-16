@@ -4,13 +4,48 @@
   <meta charset="UTF-8">
   <title>Student Management</title>
   <style>
-    body { font-family: Arial; background: #fdf6f0; margin: 0; padding: 20px; }
+    body { 
+      font-family: Arial, sans-serif;
+      background: #fdf6f0;
+      margin: 0;
+      padding: 20px;
+    }
     h1 { text-align: center; color: #ff4000; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    button { background: #04AA6D; color: #fff; border: none; padding: 8px 12px; cursor: pointer; }
-    button:hover { background: #038d59; }
-    input { padding: 6px; margin-right: 5px; }
+    form {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input, select {
+      padding: 6px;
+      margin-right: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background: #04AA6D;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background: #038d59;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: #ff4000;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -20,7 +55,7 @@
     <input type="text" id="name" placeholder="Student Name" required>
     <input type="text" id="room" placeholder="Room" required>
     <select id="status">
-      <option value="pending">Pending</option>
+      <option value="pending" selected>Pending</option>
       <option value="checked-in">Checked-in</option>
       <option value="checked-out">Checked-out</option>
     </select>
@@ -30,51 +65,93 @@
   <table id="studentTable">
     <thead>
       <tr>
-        <th>ID</th><th>Name</th><th>Room</th><th>Status</th><th>Action</th>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Room</th>
+        <th>Status</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <script>
+    // Load all students from backend
     async function loadStudents() {
-      const res = await fetch("/api/students");
-      const data = await res.json();
-      const tbody = document.querySelector("#studentTable tbody");
-      tbody.innerHTML = "";
-      data.forEach(s => {
-        const row = `<tr>
-          <td>${s.id}</td>
-          <td>${s.name}</td>
-          <td>${s.room}</td>
-          <td>${s.status}</td>
-          <td><button onclick="deleteStudent(${s.id})">Delete</button></td>
-        </tr>`;
-        tbody.innerHTML += row;
-      });
-    }
+      try {
+        const res = await fetch("/api/students");
+        if (!res.ok) throw new Error("Failed to fetch students");
+        const data = await res.json();
 
-    async function deleteStudent(id) {
-      if (confirm("Delete this student?")) {
-        await fetch("/api/students/" + id, { method: "DELETE" });
-        loadStudents();
+        const tbody = document.querySelector("#studentTable tbody");
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5">No students found.</td></tr>`;
+          return;
+        }
+
+        data.forEach(s => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${s.id}</td>
+            <td>${s.name}</td>
+            <td>${s.room}</td>
+            <td>${s.status}</td>
+            <td><button onclick="deleteStudent(${s.id})">Delete</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Load Error:", err);
+        alert("⚠️ Failed to load student data!");
       }
     }
 
+    // Add new student
     document.getElementById("addForm").addEventListener("submit", async e => {
       e.preventDefault();
-      const name = document.getElementById("name").value;
-      const room = document.getElementById("room").value;
+      const name = document.getElementById("name").value.trim();
+      const room = document.getElementById("room").value.trim();
       const status = document.getElementById("status").value;
-      await fetch("/api/students", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, room, status })
-      });
-      e.target.reset();
-      loadStudents();
+
+      if (!name || !room) return alert("Please fill all fields!");
+
+      try {
+        const res = await fetch("/api/students", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, room, status })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to add student");
+
+        alert("✅ Student added successfully!");
+        e.target.reset();
+        loadStudents();
+      } catch (err) {
+        console.error("Add Error:", err);
+        alert("❌ Failed to add student!");
+      }
     });
 
+    // Delete a student
+    async function deleteStudent(id) {
+      if (!confirm("Are you sure you want to delete this student?")) return;
+      try {
+        const res = await fetch(`/api/students/${id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Delete failed");
+        alert("🗑️ Student deleted!");
+        loadStudents();
+      } catch (err) {
+        console.error("Delete Error:", err);
+        alert("❌ Failed to delete student!");
+      }
+    }
+
+    // Load students on page start
     loadStudents();
   </script>
 </body>
