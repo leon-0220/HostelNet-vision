@@ -31,7 +31,7 @@ const db = await mysql.createPool({
   queueLimit: 0,
 });
 
-// ==================== TABLE CREATION ==================== //
+// ==================== TABLES ==================== //
 await db.query(`
 CREATE TABLE IF NOT EXISTS students (
   student_id VARCHAR(20) PRIMARY KEY,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS checkin_checkout (
 );
 `);
 
-console.log("✅ Database tables verified.");
+console.log("✅ Database ready.");
 
 // ==================== DEFAULT ADMIN CREATION ==================== //
 const [adminCheck] = await db.query("SELECT * FROM users WHERE username = 'admin01'");
@@ -99,12 +99,12 @@ if (adminCheck.length === 0) {
     "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
     [null, "admin01", "admin01@gmail.com", hashed, "admin", false]
   );
-  console.log("🛡️ Admin created — username: admin01, password: AdminPass01");
+  console.log("🛡️ Default admin created: admin01 / AdminPass01");
 }
 
 // ==================== AUTH ROUTES ==================== //
 
-// Login API
+// LOGIN
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -119,12 +119,10 @@ app.post("/api/login", async (req, res) => {
 
     if (user.password.startsWith("$2")) {
       match = await bcrypt.compare(password, user.password);
-    } else {
-      match = password === user.password;
-      if (match) {
-        const hash = await bcrypt.hash(password, 10);
-        await db.query("UPDATE users SET password = ? WHERE id = ?", [hash, user.id]);
-      }
+    } else if (password === user.password) {
+      match = true;
+      const hash = await bcrypt.hash(password, 10);
+      await db.query("UPDATE users SET password = ? WHERE id = ?", [hash, user.id]);
     }
 
     if (!match) return res.status(401).json({ error: "Invalid username or password" });
@@ -141,7 +139,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// Change Password API
+// CHANGE PASSWORD
 app.post("/api/change-password", async (req, res) => {
   try {
     const { user_id, new_password } = req.body;
@@ -161,7 +159,7 @@ app.post("/api/change-password", async (req, res) => {
   }
 });
 
-// ==================== ADMIN DASHBOARD SAMPLE ==================== //
+// ADMIN DASHBOARD
 app.get("/api/admin/dashboard", async (req, res) => {
   try {
     const [students] = await db.query("SELECT COUNT(*) AS total FROM students");
@@ -181,10 +179,10 @@ app.get("/api/admin/dashboard", async (req, res) => {
   }
 });
 
-// ==================== STATIC FRONTEND ==================== //
+// STATIC FRONTEND
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-// ==================== SERVER LISTEN ==================== //
+// SERVER
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
