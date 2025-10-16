@@ -1,443 +1,195 @@
-import express from "express";
-import mysql from "mysql2/promise";
-import bcrypt from "bcrypt";
-import session from "express-session";
-import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const path = require("path");
+const fs = require("fs");
+const sqlite3 = require("sqlite3").verbose();
 
-// ===================== SETUP ===================== //
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const DB_FILE = path.join(__dirname, "hostel.db");
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(
-  session({
-    secret: "your_secret_key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-
-// ===================== DATABASE CONNECTION ===================== //
-let db;
-const connectDB = async () => {
-  try {
-    db = await mysql.createConnection({
-      host: "crossover.proxy.rlwy.net",
-      user: "root",
-      password: "uWSKTbteHaXWZipnkABQiVSUvuhZVTda",
-      database: "railway",
-      port: 59855,
-    });
-    console.log("✅ Connected to Railway MySQL database!");
-  } catch (err) {
-    console.error("❌ Database connection failed:", err.message);
-  }
-};
-await connectDB();
-
-// ===================== TEST DB ===================== //
-app.get("/api/test-db", async (req, res) => {
-  try {
-    if (!db) throw new Error("Database not connected");
-    const [rows] = await db.query("SELECT CURRENT_TIME() AS time");
-    res.json({ message: "✅ Database connected", time: rows[0].current_time });
-  } catch (err) {
-    console.error("❌ Test DB Error:", err);
-    res.status(500).json({ message: "❌ Database not connected", error: err.message });
-  }
+// ---- initialize sqlite DB (create tables + seed minimal data) ----
+const dbExists = fs.existsSync(DB_FILE);
+const db = new sqlite3.Database(DB_FILE, (err) => {
+  if (err) return console.error("DB open error:", err);
+  console.log("Connected to sqlite DB:", DB_FILE);
 });
 
-// ===================== REGISTER ===================== //
-app.post("/register", async (req, res) => {
-  const { id, uname, email, password, gender, role, course } = req.body;
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS students (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    student_no TEXT UNIQUE,
+    email TEXT,
+    registration_status TEXT DEFAULT 'pending'
+  )`);
 
-  console.log("📥 Incoming register data:", req.body);
+  db.run(`CREATE TABLE IF NOT EXISTS rooms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_no TEXT UNIQUE,
+    type TEXT,
+    capacity INTEGER DEFAULT 1
+  )`);
 
-  if (!id || !uname || !email || !password || !gender || !role) {
-    return res.status(400).json({ message: "Please fill in all fields." });
-  }
+  db.run(`CREATE TABLE IF NOT EXISTS allocations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER,
+    room_id INTEGER,
+    semester TEXT,
+    allocated_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY(student_id) REFERENCES students(id),
+    FOREIGN KEY(room_id) REFERENCES rooms(id)
+  )`);
 
-  try {
-    if (!db) {
-      return res.status(500).json({ message: "Database not connected." });
-    }
+  db.run(`CREATE TABLE IF NOT EXISTS checkins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    allocation_id INTEGER,
+    checkin_at TEXT,
+    checkout_at TEXT,
+    FOREIGN KEY(allocation_id) REFERENCES allocations(id)
+  )`);
 
-    // ✅ Semak ID format (contoh: DIT0423-001, ADMIN001, WARD001)
-    const validID = /^[A-Za-z]{2,5}\d{2,4}-?\d{3}$/;
-    if (!validID.test(id)) {
-      return res.status(400).json({
-        message:
-          "❌ Invalid ID format. Contoh format yang sah: DIT0423-001 atau ADMIN001",
-      });
-    }
-
-    // ✅ Semak kalau user dah wujud
-    const [check] = await db.query(
-      "SELECT * FROM users WHERE user_ref_id = ? OR email = ? OR username = ?",
-      [id, email, uname]
-    );
-
-    if (check.length > 0) {
-      return res.status(400).json({ message: "User already exists." });
-    }
-
-    // ✅ Semak student dalam students table
-    const [studentCheck] = await db.query(
-      "SELECT * FROM students WHERE student_id = ?",
-      [id]
-    );
-
-    if (studentCheck.length === 0) {
-      // Kalau student tak ada, insert baru ke students table
-      await db.query(
-        "INSERT INTO students (student_id, name, email, gender, course) VALUES (?, ?, ?, ?, ?)",
-        [id, uname, email, gender, course || null]
-      );
-      console.log(`📌 Student ${uname} auto-added to students table.`);
-    }
-
-    // ✅ Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // ✅ Masukkan user baru
-    const [result] = await db.query(
-      "INSERT INTO users (user_ref_id, username, email, password, gender, role) VALUES (?, ?, ?, ?, ?, ?)",
-      [id, uname, email, hashedPassword, gender, role]
-    );
-
-    console.log("✅ User registered:", result);
-    res.status(200).json({ 
-      message: "✅ Registration successful.",
-    });
-  } catch (err) {
-    console.error("❌ Register Error:", err);
-    res.status(500).json({ 
-      message: "Server error.", 
-      error: err.message,
-    });
-  }
-});
-
-// ===================== GET USER PROFILE ===================== //
-app.get('/user/profile', async (req, res) => {
-  if(!req.session.user_ref_id) return res.status(401).json({ message: 'Not logged in' });
-  try {
-    const [rows] = await db.query(
-      "SELECT username, email, phone, user_ref_id, role FROM users WHERE user_ref_id = ?",
-      [req.session.user_ref_id]
-    );
-    if(rows.length === 0) return res.status(404).json({ message: "User not found" });
-
-    // Kirim profile
-    res.json(rows[0]);
-  } catch(err){
-    console.error(err);
-    res.status(500).json({ message: "Server error fetching profile" });
-  }
-});
-
-// ===================== UPDATE USER PROFILE ===================== //
-app.post('/user/profile/update', async (req, res) => {
-  if(!req.session.user_ref_id) return res.status(401).json({ message: 'Not logged in' });
-
-  const { name, email, phone } = req.body;
-  if(!name || !email) return res.status(400).json({ message: "Name and Email required" });
-
-  try {
-    // Update users table
-    await db.query(
-      'UPDATE users SET username = ?, email = ?, phone = ? WHERE user_ref_id = ?',
-      [name, email, phone || null, req.session.user_ref_id]
-    );
-
-    // Optional: update students table juga supaya konsisten
-    await db.query(
-      'UPDATE students SET name = ?, email = ? WHERE student_id = ?',
-      [name, email, req.session.user_ref_id]
-    );
-
-    // update session supaya next load auto
-    req.session.username = name;
-    req.session.email = email;
-    req.session.phone = phone;
-
-    res.json({ message: 'Profile updated successfully' });
-  } catch(err){
-    console.error(err);
-    res.status(500).json({ message: 'Server error updating profile' });
-  }
-});
-
-// ===================== LOGIN ===================== //
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    if (!db) {
-      return res.status(500).json({ 
-        success: false, 
-        message: "Database not connected."
-      });
-    }
-
-    const [rows] = await db.query(
-      "SELECT * FROM users WHERE username = ? OR user_ref_id = ? OR email = ?",
-      [username, username, username]
-    );
-
-    if (rows.length === 1) {
-      const user = rows[0];
-      const validPassword = await bcrypt.compare(password, user.password);
-
-      if (validPassword) {
-        req.session.name = user.name;
-        req.session.role = user.role;
-        req.session.email = user.email;
-        req.session.user_ref_id = user.user_ref_id;
-
-        return res.status(200).json({
-          success: true,
-          role: user.role,
-          message: "✅ Login successful",
-        });
-      } else {
-        return res.status(401).json({
-          success: false,
-          message: "❌ Wrong password!",
-        });
-      }
-    } else {
-      return res.status(404).json({
-        success: false,
-        message: "⚠️ User not found. Please register first.",
-      });
-    }
-  } catch (err) {
-    console.error("❌ Login Error:", err);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: err.message,
-    });
-  }
-});
-
-// ===================== AUTO INSERT USERS ===================== //
-const autoInsertUsers = async () => {
-  try {
-    const users = [
-      { user_ref_id: 'DLM0423-001', username: 'JovenMaestro.09', email: 'tadrean@gmail.com', password: 'TengkuAdreanRuiz02', role: 'student' },
-      { user_ref_id: 'DIT0423-001', username: 'Leon.0920', email: 'rahmahsukor5@gmail.com', password: 'TengkuAdreanRuiz02', role: 'student' },
-      { user_ref_id: 'FIN001', username: 'Finance.01', email: 'finance01@gmail.com', password: 'FinancePass01', role: 'finance' },
-      { user_ref_id: 'WARD001', username: 'Warden.01', email: 'warden01@gmail.com', password: 'WardenPass01', role: 'warden' },
-      { user_ref_id: 'ADMIN001', username: 'Admin.01', email: 'admin01@gmail.com', password: 'AdminPass01', role: 'admin' },
-      { user_ref_id: 'MAIN001', username: 'Maintenance.01', email: 'maint01@gmail.com', password: 'MaintPass01', role: 'maintenance' }
+  if (!dbExists) {
+    const seedRooms = [
+      ["A101","single",1],
+      ["A102","double",2],
+      ["B201","single",1],
+      ["B202","double",2]
     ];
+    const stmtR = db.prepare("INSERT OR IGNORE INTO rooms (room_no,type,capacity) VALUES (?,?,?)");
+    seedRooms.forEach(r => stmtR.run(r));
+    stmtR.finalize();
 
-    for (const u of users) {
-      const [check] = await db.query("SELECT * FROM users WHERE username = ?", [u.username]);
-      if (check.length === 0) {
-        const hashedPassword = await bcrypt.hash(u.password, 10);
-        await db.query(
-          "INSERT INTO users (user_ref_id, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
-          [u.user_ref_id, u.username, u.email, hashedPassword, u.role]
-        );
-        console.log(`✅ User ${u.username} added.`);
-      } else {
-        console.log(`ℹ️ ${u.username} already exists.`);
-      }
-    }
-  } catch (err) {
-    console.error("❌ Error inserting users:", err);
+    const seedStud = [
+      ["Aisyah","S2021001","aisyah@example.com"],
+      ["Badrul","S2021002","badrul@example.com"],
+      ["Citra","S2021003","citra@example.com"]
+    ];
+    const stmtS = db.prepare("INSERT OR IGNORE INTO students (name,student_no,email,registration_status) VALUES (?,?,?,?)");
+    seedStud.forEach(s => stmtS.run(s[0], s[1], s[2], "approved"));
+    stmtS.finalize();
   }
-};
+});
 
-// delay sikit lepas connect db
-setTimeout(autoInsertUsers, 2000);
-
-// ===================== LOGOUT ===================== //
-app.get("/logout", (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error("❌ Logout Error:", err);
-      return res.status(500).json({ message: "Server error during logout" });
-    }
-    res.clearCookie("connect.sid"); // padam cookie session
-    res.redirect("/index.html"); // redirect ke login page
+// ---- API endpoints ----
+app.get("/api/summary", (req, res) => {
+  const summary = {};
+  db.serialize(() => {
+    db.get(`SELECT COUNT(*) AS cnt FROM students`, (err,row) => {
+      summary.totalStudents = row ? row.cnt : 0;
+      db.get(`SELECT COUNT(*) AS cnt FROM allocations`, (err2,row2) => {
+        summary.roomsAllocated = row2 ? row2.cnt : 0;
+        db.get(`SELECT COUNT(*) AS cnt FROM rooms`, (err3,row3) => {
+          summary.totalRooms = row3 ? row3.cnt : 0;
+          db.get(`SELECT COUNT(*) AS cnt FROM allocations AS a
+                   LEFT JOIN checkins AS c ON a.id = c.allocation_id
+                   WHERE c.checkin_at IS NOT NULL AND (c.checkout_at IS NULL)`, (err4,row4) => {
+            summary.checkedInNow = row4 ? row4.cnt : 0;
+            db.get(`SELECT COUNT(*) AS cnt FROM checkins WHERE checkout_at IS NOT NULL`, (err5,row5) => {
+              summary.checkedOut = row5 ? row5.cnt : 0;
+              res.json(summary);
+            });
+          });
+        });
+      });
+    });
   });
 });
 
-// ===================== REPORT ROUTES ===================== //
-
-// Submit report
-app.post("/report", async (req, res) => {
-  const { fname, lname, hostel_unit, message } = req.body;
-  if (!fname || !lname || !hostel_unit || !message)
-    return res.status(400).json({ message: "All fields required" });
-
-  try {
-    await db.query(
-      "INSERT INTO reports (fname, lname, hostel_unit, message) VALUES (?, ?, ?, ?)",
-      [fname, lname, hostel_unit, message]
-    );
-    res.json({ success: true, message: "Report submitted successfully" });
-  } catch (err) {
-    console.error("❌ Report Error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Fetch all reports (for warden view)
-app.get("/reports", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT * FROM reports ORDER BY created_at DESC");
+app.get("/api/students", (req, res) => {
+  const sql = `
+    SELECT s.*,
+           a.id AS allocation_id, r.room_no, r.type AS room_type, a.semester
+    FROM students s
+    LEFT JOIN allocations a ON a.student_id = s.id
+    LEFT JOIN rooms r ON r.id = a.room_id
+    ORDER BY s.id DESC
+  `;
+  db.all(sql, (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
-  } catch (err) {
-    res.status(500).json({ message: "Database error" });
-  }
-});
-
-// Mark report as resolved
-app.put("/reports/:id/resolve", async (req, res) => {
-  try {
-    await db.query("UPDATE reports SET status = 'resolved' WHERE id = ?", [req.params.id]);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ message: "Update failed" });
-  }
-});
-
-// ✅ ROUTE: Dapatkan semua report
-app.get("/reports", (req, res) => {
-  const sql = "SELECT * FROM reports ORDER BY id DESC";
-  conn.query(sql, (err, results) => {
-    if (err) {
-      console.error("❌ Error fetching reports:", err);
-      return res.status(500).json({ message: "Server error" });
-    }
-    res.json(results);
   });
 });
 
-// ✅ ROUTE: Tandakan report sebagai 'resolved'
-app.put("/reports/:id/resolve", (req, res) => {
-  const { id } = req.params;
-  const sql = "UPDATE reports SET status = 'resolved' WHERE id = ?";
-  conn.query(sql, [id], (err, result) => {
-    if (err) {
-      console.error("❌ Error updating report:", err);
-      return res.status(500).json({ success: false, message: "Server error" });
-    }
-    res.json({ success: true });
-  });
-});
-
-// ✅ Get current user profile info
-app.get("/user/profile", (req, res) => {
-  if (!req.session.username) {
-    return res.status(401).json({ message: "Not logged in" });
-  }
-
-  res.json({
-    username: req.session.username,
-    role: req.session.role,
-    email: req.session.email || "",
-    user_ref_id: req.session.user_ref_id || ""
-  });
-});
-
-// === ANNOUNCEMENTS: GET & POST ===
-
-// Get all announcements
-app.get("/announcements", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT * FROM announcements ORDER BY created_at DESC");
+app.get("/api/rooms/available", (req,res) => {
+  const sql = `
+    SELECT r.* FROM rooms r
+    WHERE r.id NOT IN (SELECT room_id FROM allocations)
+  `;
+  db.all(sql, (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
-  } catch (err) {
-    console.error("Error fetching announcements:", err);
-    res.status(500).json({ message: "Server error fetching announcements" });
-  }
-});
-
-// Add new announcement
-app.post("/announcements", async (req, res) => {
-  const { title, message } = req.body;
-  if (!title || !message)
-    return res.status(400).json({ message: "Title and message are required" });
-
-  try {
-    await db.query("INSERT INTO announcements (title, message) VALUES (?, ?)", [title, message]);
-    res.status(201).json({ message: "Announcement added successfully!" });
-  } catch (err) {
-    console.error("Error adding announcement:", err);
-    res.status(500).json({ message: "Server error adding announcement" });
-  }
-});
-
-// Delete announcement
-app.delete('/announcements/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    await db.query('DELETE FROM announcements WHERE id = ?', [id]);
-    res.sendStatus(200);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to delete announcement' });
-  }
-});
-
-// Update announcement
-app.put('/announcements/:id', async (req, res) => {
-  const { id } = req.params;
-  const { title, message } = req.body;
-  try {
-    await db.query('UPDATE announcements SET title = ?, message = ? WHERE id = ?', [title, message, id]);
-    res.sendStatus(200);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to update announcement' });
-  }
-});
-
-// GET user profile
-app.get('/user/profile', (req, res) => {
-  if(!req.session.username) return res.status(401).json({ message: 'Not logged in' });
-  res.json({
-    username: req.session.username,
-    email: req.session.email || '',
-    phone: req.session.phone || '',   // pastikan ada column phone dalam table
-    user_ref_id: req.session.user_ref_id,
-    role: req.session.role
   });
 });
 
-// POST update profile
-app.post('/user/profile/update', async (req, res) => {
-  if(!req.session.username) return res.status(401).json({ message: 'Not logged in' });
-  const { name, email, phone } = req.body;
-  try {
-    await db.query(
-      'UPDATE users SET username = ?, email = ?, phone = ? WHERE user_ref_id = ?',
-      [name, email, phone, req.session.user_ref_id]
-    );
-    // update session juga supaya auto load next time
-    req.session.username = name;
-    req.session.email = email;
-    req.session.phone = phone;
-    res.json({ message: 'Profile updated successfully' });
-  } catch(err){
-    console.error(err);
-    res.status(500).json({ message: 'Server error updating profile' });
-  }
+app.post("/api/allocate", (req,res) => {
+  const { student_id, room_id, semester } = req.body;
+  if (!student_id || !room_id || !semester) return res.status(400).json({ error: "Missing fields" });
+
+  db.get(`SELECT * FROM allocations WHERE room_id = ?`, [room_id], (err,row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (row) return res.status(400).json({ error: "Room already allocated" });
+
+    const stmt = db.prepare("INSERT INTO allocations (student_id, room_id, semester) VALUES (?,?,?)");
+    stmt.run(student_id, room_id, semester, function(err2) {
+      if (err2) return res.status(500).json({ error: err2.message });
+      db.run("UPDATE students SET registration_status = 'approved' WHERE id = ?", [student_id]);
+      res.json({ success: true, allocation_id: this.lastID });
+    });
+  });
 });
 
-// ===================== SERVER START ===================== //
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.post("/api/checkin", (req,res) => {
+  const { allocation_id } = req.body;
+  if (!allocation_id) return res.status(400).json({ error: "Missing allocation_id" });
+
+  const now = new Date().toISOString();
+  const stmt = db.prepare("INSERT INTO checkins (allocation_id, checkin_at) VALUES (?,?)");
+  stmt.run(allocation_id, now, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, checkin_id: this.lastID, checkin_at: now });
+  });
+});
+
+app.post("/api/checkout", (req,res) => {
+  const { checkin_id } = req.body;
+  if (!checkin_id) return res.status(400).json({ error: "Missing checkin_id" });
+  const now = new Date().toISOString();
+  db.run("UPDATE checkins SET checkout_at = ? WHERE id = ?", [now, checkin_id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    if (this.changes === 0) return res.status(404).json({ error: "Checkin record not found" });
+    res.json({ success: true, checkout_at: now });
+  });
+});
+
+app.post("/api/students/approve", (req,res) => {
+  const { student_id } = req.body;
+  if (!student_id) return res.status(400).json({ error: "Missing student_id" });
+  db.run("UPDATE students SET registration_status = 'approved' WHERE id = ?", [student_id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+app.post("/api/students/register", (req,res) => {
+  const { name, student_no, email } = req.body;
+  if (!name || !student_no) return res.status(400).json({ error: "Missing name or student_no" });
+  const stmt = db.prepare("INSERT INTO students (name,student_no,email,registration_status) VALUES (?,?,?,?)");
+  stmt.run(name, student_no, email || "", "pending", function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, student_id: this.lastID });
+  });
+});
+
+app.get("*", (req,res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
