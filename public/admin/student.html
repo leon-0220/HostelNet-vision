@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Management</title>
+  <style>
+    body { font-family: Arial; background: #fdf6f0; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #ff4000; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    button { background: #04AA6D; color: #fff; border: none; padding: 8px 12px; cursor: pointer; }
+    button:hover { background: #038d59; }
+    input { padding: 6px; margin-right: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Student Management</h1>
+
+  <form id="addForm">
+    <input type="text" id="name" placeholder="Student Name" required>
+    <input type="text" id="room" placeholder="Room" required>
+    <select id="status">
+      <option value="pending">Pending</option>
+      <option value="checked-in">Checked-in</option>
+      <option value="checked-out">Checked-out</option>
+    </select>
+    <button type="submit">Add</button>
+  </form>
+
+  <table id="studentTable">
+    <thead>
+      <tr>
+        <th>ID</th><th>Name</th><th>Room</th><th>Status</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function loadStudents() {
+      const res = await fetch("/api/students");
+      const data = await res.json();
+      const tbody = document.querySelector("#studentTable tbody");
+      tbody.innerHTML = "";
+      data.forEach(s => {
+        const row = `<tr>
+          <td>${s.id}</td>
+          <td>${s.name}</td>
+          <td>${s.room}</td>
+          <td>${s.status}</td>
+          <td><button onclick="deleteStudent(${s.id})">Delete</button></td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+
+    async function deleteStudent(id) {
+      if (confirm("Delete this student?")) {
+        await fetch("/api/students/" + id, { method: "DELETE" });
+        loadStudents();
+      }
+    }
+
+    document.getElementById("addForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const room = document.getElementById("room").value;
+      const status = document.getElementById("status").value;
+      await fetch("/api/students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, room, status })
+      });
+      e.target.reset();
+      loadStudents();
+    });
+
+    loadStudents();
+  </script>
+</body>
+</html>
