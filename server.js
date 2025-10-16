@@ -4,30 +4,34 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import bcrypt from "bcrypt";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// ---------- Database pool (Railway: use env vars) ----------
+// ==================== DATABASE CONNECTION ==================== //
 const db = await mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASS || "",
-  database: process.env.DB_NAME || "hostelnet",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
 });
 
-// ---------- Ensure essential tables exist (minimal) ----------
+// ==================== TABLE CREATION ==================== //
 await db.query(`
 CREATE TABLE IF NOT EXISTS students (
   student_id VARCHAR(20) PRIMARY KEY,
@@ -52,53 +56,79 @@ CREATE TABLE IF NOT EXISTS users (
 );
 `);
 
-// create admin user if not exists
-const [adminRows] = await db.query("SELECT id FROM users WHERE username = ?", ["admin01"]);
-if (adminRows.length === 0) {
-  const adminPass = "AdminPass01";
-  const hashed = await bcrypt.hash(adminPass, 10);
+await db.query(`
+CREATE TABLE IF NOT EXISTS hostel_units (
+  unit_code VARCHAR(20) PRIMARY KEY,
+  unit_name VARCHAR(100) NOT NULL,
+  description TEXT
+);
+`);
+
+await db.query(`
+CREATE TABLE IF NOT EXISTS rooms (
+  unit_code VARCHAR(20) NOT NULL,
+  room_number VARCHAR(20) NOT NULL,
+  capacity INT NOT NULL DEFAULT 4,
+  available INT NOT NULL DEFAULT 0,
+  status ENUM('active','inactive','maintenance') DEFAULT 'active',
+  PRIMARY KEY (unit_code, room_number),
+  FOREIGN KEY (unit_code) REFERENCES hostel_units(unit_code) ON DELETE CASCADE
+);
+`);
+
+await db.query(`
+CREATE TABLE IF NOT EXISTS checkin_checkout (
+  record_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id VARCHAR(20) NOT NULL,
+  unit_code VARCHAR(20) NOT NULL,
+  room_number VARCHAR(20) NOT NULL,
+  checkin_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  checkout_date TIMESTAMP NULL,
+  FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+  FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number)
+);
+`);
+
+console.log("✅ Database tables verified.");
+
+// ==================== DEFAULT ADMIN CREATION ==================== //
+const [adminCheck] = await db.query("SELECT * FROM users WHERE username = 'admin01'");
+if (adminCheck.length === 0) {
+  const hashed = await bcrypt.hash("AdminPass01", 10);
   await db.query(
     "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
     [null, "admin01", "admin01@gmail.com", hashed, "admin", false]
   );
-  console.log("🛡️ Admin user created (username: admin01, password: AdminPass01)");
+  console.log("🛡️ Admin created — username: admin01, password: AdminPass01");
 }
 
-// ---------------- AUTH ROUTES ----------------
+// ==================== AUTH ROUTES ==================== //
 
-/**
- * POST /api/login
- * body: { username, password }
- * returns: { success, user_id, role, must_change_password } OR { error }
- */
+// Login API
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ error: "Missing username or password" });
+    if (!username || !password)
+      return res.status(400).json({ error: "Missing username or password" });
 
-    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
-    if (rows.length === 0) return res.status(401).json({ error: "Invalid username or password" });
+    const [users] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
+    if (users.length === 0) return res.status(401).json({ error: "Invalid username or password" });
 
-    const user = rows[0];
-    const stored = user.password || "";
+    const user = users[0];
+    let match = false;
 
-    let passwordMatches = false;
-    // if stored looks like bcrypt hash (starts with $2), use bcrypt compare
-    if (stored.startsWith("$2")) {
-      passwordMatches = await bcrypt.compare(password, stored);
+    if (user.password.startsWith("$2")) {
+      match = await bcrypt.compare(password, user.password);
     } else {
-      // fallback: plain-text stored password (e.g. initial student_id) — compare directly
-      passwordMatches = password === stored;
-      // optional: if matches plaintext but not hashed, upgrade to hashed password silently
-      if (passwordMatches) {
-        const hashed = await bcrypt.hash(password, 10);
-        await db.query("UPDATE users SET password = ? WHERE id = ?", [hashed, user.id]);
+      match = password === user.password;
+      if (match) {
+        const hash = await bcrypt.hash(password, 10);
+        await db.query("UPDATE users SET password = ? WHERE id = ?", [hash, user.id]);
       }
     }
 
-    if (!passwordMatches) return res.status(401).json({ error: "Invalid username or password" });
+    if (!match) return res.status(401).json({ error: "Invalid username or password" });
 
-    // login successful
     return res.json({
       success: true,
       user_id: user.id,
@@ -107,66 +137,54 @@ app.post("/api/login", async (req, res) => {
     });
   } catch (err) {
     console.error("Login Error:", err);
-    return res.status(500).json({ error: "Server error" });
-  }
-});
-
-/**
- * POST /api/change-password
- * body: { user_id, new_password }
- * This endpoint updates the user's password (hashed) and sets must_change_password=false
- */
-app.post("/api/change-password", async (req, res) => {
-  try {
-    const { user_id, new_password } = req.body;
-    if (!user_id || !new_password) return res.status(400).json({ error: "Missing fields" });
-
-    const hashed = await bcrypt.hash(new_password, 10);
-    await db.query("UPDATE users SET password = ?, must_change_password = FALSE WHERE id = ?", [hashed, user_id]);
-    return res.json({ success: true, message: "Password updated" });
-  } catch (err) {
-    console.error("Change Password Error:", err);
-    return res.status(500).json({ error: "Server error" });
-  }
-});
-
-// ---------------- existing APIs (dashboard / students / rooms / checkins) ----------------
-// If you already have these routes in your server.js (earlier), keep them. Example minimal endpoints:
-
-app.get("/api/admin/dashboard", async (req, res) => {
-  try {
-    const [students] = await db.query("SELECT COUNT(*) AS total FROM students");
-    const [rooms] = await db.query("SELECT COUNT(*) AS total FROM rooms");
-    const [checkedIn] = await db.query("SELECT COUNT(*) AS total FROM checkin_checkout WHERE checkout_date IS NULL");
-    const [recent] = await db.query("SELECT student_id, name FROM students ORDER BY student_id DESC LIMIT 5");
-
-    res.json({
-      totalStudents: students[0].total || 0,
-      totalRooms: rooms[0].total || 0,
-      checkedIn: checkedIn[0].total || 0,
-      recent,
-    });
-  } catch (err) {
-    console.error("Dashboard Error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-app.get("/api/students", async (req, res) => {
+// Change Password API
+app.post("/api/change-password", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM students ORDER BY student_id DESC");
-    res.json(rows);
+    const { user_id, new_password } = req.body;
+    if (!user_id || !new_password)
+      return res.status(400).json({ error: "Missing fields" });
+
+    const hashed = await bcrypt.hash(new_password, 10);
+    await db.query(
+      "UPDATE users SET password = ?, must_change_password = FALSE WHERE id = ?",
+      [hashed, user_id]
+    );
+
+    res.json({ success: true, message: "Password updated successfully" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to load students" });
+    console.error("Change Password Error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// keep other endpoints (rooms, assignments, checkins) as you had previously...
+// ==================== ADMIN DASHBOARD SAMPLE ==================== //
+app.get("/api/admin/dashboard", async (req, res) => {
+  try {
+    const [students] = await db.query("SELECT COUNT(*) AS total FROM students");
+    const [rooms] = await db.query("SELECT COUNT(*) AS total FROM rooms");
+    const [checkedIn] = await db.query(
+      "SELECT COUNT(*) AS total FROM checkin_checkout WHERE checkout_date IS NULL"
+    );
 
-// ---------------- default route ----------------
+    res.json({
+      totalStudents: students[0].total,
+      totalRooms: rooms[0].total,
+      checkedIn: checkedIn[0].total,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load dashboard" });
+  }
+});
+
+// ==================== STATIC FRONTEND ==================== //
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+// ==================== SERVER LISTEN ==================== //
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
