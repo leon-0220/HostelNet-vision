@@ -28,39 +28,33 @@
       transition: transform 0.3s ease;
       z-index: 1000;
     }
-    
     .sidebar.closed {
       transform: translateX(-100%);
     }
 
     .logo-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      text-align: center;
       margin-bottom: 20px;
     }
 
     .logo-box img {
       width: 100%;
-      max-width: 160px;
-      height: auto;
-      margin-bottom: 5px;
+      max-width: 150px;
     }
 
     .sidebar h3 {
       text-align: center;
-      margin: 0;
       font-size: 1.2rem;
+      margin-top: 10px;
     }
 
     .sidebar ul {
       list-style: none;
       padding: 0;
-      margin: 20px 0;
     }
 
     .sidebar ul li {
-      margin: 10px 0;
+      margin: 12px 0;
     }
 
     .sidebar ul li a {
@@ -107,7 +101,7 @@
       padding: 20px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       margin-bottom: 20px;
-      max-width: 900px;
+      max-width: 950px;
       margin-inline: auto;
     }
 
@@ -150,6 +144,19 @@
       color: white;
     }
 
+    button {
+      background: #04AA6D;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #038d59;
+    }
+
   </style>
 </head>
 <body>
@@ -164,7 +171,7 @@
         <li><a href="dashboard.html">🏠 Dashboard</a></li>
         <li><a href="students.html">👨‍🎓 Students</a></li>
         <li><a href="rooms.html">🏢 Rooms</a></li>
-        <li><a href="checkin.html">📅 Check-in/Check-out</a></li>
+        <li><a href="checkin.html">📅 Check-in / Check-out</a></li>
         <li><a href="logout.html">🚪 Logout</a></li>
       </ul>
     </div>
@@ -175,6 +182,7 @@
     <div class="main-content">
       <h2>Admin Dashboard</h2>
 
+      <!-- Overview -->
       <div class="dashboard-card">
         <h3>System Overview</h3>
         <div class="stats">
@@ -185,62 +193,132 @@
         </div>
       </div>
 
+      <!-- Student List -->
       <div class="dashboard-card">
-        <h3>Recent Students</h3>
+        <h3>Student List</h3>
         <table>
           <thead>
-            <tr>
-              <th>ID</th><th>Name</th><th>Room</th><th>Status</th>
-            </tr>
+            <tr><th>ID</th><th>Name</th><th>Room</th><th>Status</th></tr>
           </thead>
-          <tbody id="recentStudents">
-            <tr><td colspan="4">Loading...</td></tr>
-          </tbody>
+          <tbody id="studentTable"><tr><td colspan="4">Loading...</td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- Room List -->
+      <div class="dashboard-card">
+        <h3>Room List</h3>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Room No</th><th>Type</th><th>Capacity</th></tr>
+          </thead>
+          <tbody id="roomTable"><tr><td colspan="4">Loading...</td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- Check-in Records -->
+      <div class="dashboard-card">
+        <h3>Check-in / Check-out Records</h3>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Student</th><th>Check-in</th><th>Check-out</th></tr>
+          </thead>
+          <tbody id="checkTable"><tr><td colspan="4">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
   </div>
 
   <script>
-    // Sidebar toggle
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("closed");
     }
 
-    // Load dashboard data
     async function loadDashboard() {
       try {
         const res = await fetch("/api/admin/dashboard");
         const data = await res.json();
 
-        document.getElementById("totalStudents").textContent = data.totalStudents || 0;
-        document.getElementById("roomsAllocated").textContent = data.roomsAllocated || 0;
-        document.getElementById("checkedIn").textContent = data.checkedIn || 0;
-        document.getElementById("checkedOut").textContent = data.checkedOut || 0;
+        document.getElementById("totalStudents").textContent = data.totalStudents;
+        document.getElementById("roomsAllocated").textContent = data.roomsAllocated;
+        document.getElementById("checkedIn").textContent = data.checkedIn;
+        document.getElementById("checkedOut").textContent = data.checkedOut;
 
-        const tbody = document.getElementById("recentStudents");
+        const tbody = document.getElementById("studentTable");
         tbody.innerHTML = "";
-
-        if (data.recent && data.recent.length > 0) {
-          data.recent.forEach((s) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${s.id}</td>
-              <td>${s.name}</td>
-              <td>${s.room || "-"}</td>
-              <td>${s.status || "N/A"}</td>
-            `;
-            tbody.appendChild(row);
-          });
-        } else {
-          tbody.innerHTML = "<tr><td colspan='4'>No recent records</td></tr>";
-        }
+        data.recent.forEach(s => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${s.id}</td>
+            <td>${s.name}</td>
+            <td>${s.room || "-"}</td>
+            <td>${s.status}</td>
+          `;
+          tbody.appendChild(row);
+        });
       } catch (err) {
-        console.error(err);
+        console.error("Dashboard error", err);
       }
     }
 
-    loadDashboard();
+    async function loadStudents() {
+      const res = await fetch("/api/students");
+      const students = await res.json();
+      const tbody = document.getElementById("studentTable");
+      tbody.innerHTML = "";
+      students.forEach(s => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${s.id}</td>
+          <td>${s.name}</td>
+          <td>${s.room || "-"}</td>
+          <td>${s.status || "pending"}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function loadRooms() {
+      const res = await fetch("/api/rooms");
+      const rooms = await res.json();
+      const tbody = document.getElementById("roomTable");
+      tbody.innerHTML = "";
+      rooms.forEach(r => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${r.id}</td>
+          <td>${r.room_no}</td>
+          <td>${r.type}</td>
+          <td>${r.capacity}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function loadCheckins() {
+      const res = await fetch("/api/checkins");
+      const checks = await res.json();
+      const tbody = document.getElementById("checkTable");
+      tbody.innerHTML = "";
+      checks.forEach(c => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${c.id}</td>
+          <td>${c.student_name}</td>
+          <td>${c.checkin_at || "-"}</td>
+          <td>${c.checkout_at || "-"}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function init() {
+      await loadDashboard();
+      await loadStudents();
+      await loadRooms();
+      await loadCheckins();
+    }
+
+    init();
   </script>
 </body>
 </html>
