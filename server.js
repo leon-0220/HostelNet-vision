@@ -193,3 +193,25 @@ app.get("*", (req,res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// Example route for dashboard data
+app.get("/api/admin/dashboard", async (req, res) => {
+  try {
+    const [students] = await db.query("SELECT COUNT(*) AS total FROM students");
+    const [rooms] = await db.query("SELECT COUNT(*) AS allocated FROM rooms WHERE allocated=1");
+    const [checkedIn] = await db.query("SELECT COUNT(*) AS total FROM students WHERE status='checked-in'");
+    const [checkedOut] = await db.query("SELECT COUNT(*) AS total FROM students WHERE status='checked-out'");
+    const [recent] = await db.query("SELECT id, name, room, status FROM students ORDER BY id DESC LIMIT 5");
+
+    res.json({
+      totalStudents: students[0].total,
+      roomsAllocated: rooms[0].allocated,
+      checkedIn: checkedIn[0].total,
+      checkedOut: checkedOut[0].total,
+      recent
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
