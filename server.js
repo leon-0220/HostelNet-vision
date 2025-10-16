@@ -4,41 +4,70 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 
+// Setup
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// ===== MySQL Connection ===== //
+// ===================== DATABASE CONNECTION ===================== //
 const db = await mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "hostelnet",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
-// ===== Create Table (auto create if not exist) ===== //
-await db.query(`
-  CREATE TABLE IF NOT EXISTS students (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100),
-    room VARCHAR(50),
-    status ENUM('pending','checked-in','checked-out') DEFAULT 'pending'
-  )
-`);
+// ===================== API ROUTES ===================== //
 
-// ===== API Routes ===== //
+// Dashboard summary
+app.get("/api/admin/dashboard", async (req, res) => {
+  try {
+    const [students] = await db.query("SELECT COUNT(*) AS total FROM students");
+    const [rooms] = await db.query("SELECT COUNT(*) AS allocated FROM rooms WHERE allocated = 1");
+    const [checkedIn] = await db.query("SELECT COUNT(*) AS total FROM students WHERE status = 'checked-in'");
+    const [checkedOut] = await db.query("SELECT COUNT(*) AS total FROM students WHERE status = 'checked-out'");
+    const [recent] = await db.query("SELECT id, name, room, status FROM students ORDER BY id DESC LIMIT 5");
+
+    res.json({
+      totalStudents: students[0].total,
+      roomsAllocated: rooms[0].allocated,
+      checkedIn: checkedIn[0].total,
+      checkedOut: checkedOut[0].total,
+      recent,
+    });
+  } catch (err) {
+    console.error("Dashboard Error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Students list
 app.get("/api/students", async (req, res) => {
-  const [rows] = await db.query("SELECT * FROM students ORDER BY id DESC");
-  res.json(rows);
+  try {
+    const [rows] = await db.query("SELECT * FROM students ORDER BY id DESC");
+    res.json(rows);
+  } catch (err) {
+    console.error("Students Error:", err);
+    res.status(500).json({ error: "Failed to load students" });
+  }
 });
 
+// Add student
 app.post("/api/students", async (req, res) => {
   const { name, room, status } = req.body;
+  if (!name || !room)
+    return res.status(400).json({ error: "Name and room are required" });
+
   try {
     await db.query(
       "INSERT INTO students (name, room, status) VALUES (?, ?, ?)",
@@ -51,15 +80,60 @@ app.post("/api/students", async (req, res) => {
   }
 });
 
+// Delete student
 app.delete("/api/students/:id", async (req, res) => {
   const { id } = req.params;
-  await db.query("DELETE FROM students WHERE id = ?", [id]);
-  res.json({ message: "Deleted" });
+  try {
+    await db.query("DELETE FROM students WHERE id = ?", [id]);
+    res.json({ message: "Student deleted successfully" });
+  } catch (err) {
+    console.error("Delete Student Error:", err);
+    res.status(500).json({ error: "Failed to delete student" });
+  }
 });
 
-// ===== Frontend ===== //
+// Rooms list
+app.get("/api/rooms", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM rooms ORDER BY id ASC");
+    res.json(rows);
+  } catch (err) {
+    console.error("Rooms Error:", err);
+    res.status(500).json({ error: "Failed to load rooms" });
+  }
+});
+
+// Add room
+app.post("/api/rooms", async (req, res) => {
+  const { room_no, type, capacity } = req.body;
+  try {
+    await db.query(
+      "INSERT INTO rooms (room_no, type, capacity, allocated) VALUES (?, ?, ?, 0)",
+      [room_no, type, capacity]
+    );
+    res.json({ message: "Room added successfully" });
+  } catch (err) {
+    console.error("Add Room Error:", err);
+    res.status(500).json({ error: "Failed to add room" });
+  }
+});
+
+// Delete room
+app.delete("/api/rooms/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query("DELETE FROM rooms WHERE id = ?", [id]);
+    res.json({ message: "Room deleted successfully" });
+  } catch (err) {
+    console.error("Delete Room Error:", err);
+    res.status(500).json({ error: "Failed to delete room" });
+  }
+});
+
+// Default route
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "student.html"));
+  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
-app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
+// Start server
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
