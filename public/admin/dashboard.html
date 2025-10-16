@@ -2,201 +2,244 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard | HostelNet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HostelNet | Admin Dashboard</title>
   <style>
-    /* ====== GENERAL STYLES ====== */
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f6fa;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #ff4000, #eef3f8);
     }
 
-    /* ====== SIDEBAR ====== */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
     .sidebar {
-      width: 230px;
-      background-color: #ff4000;
-      color: white;
+      width: 220px;
+      background: #fff3e0;
+      color: #3e2723;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .sidebar.closed {
+      transform: translateX(-100%);
+    }
+
+    .logo-box {
       display: flex;
       flex-direction: column;
-      padding: 20px 0;
-    }
-    .sidebar h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-    .sidebar a {
-      color: white;
-      text-decoration: none;
-      padding: 12px 25px;
-      display: block;
-      transition: 0.3s;
-    }
-    .sidebar a:hover, .sidebar a.active {
-      background-color: #ff7a33;
-      border-radius: 5px;
-    }
-
-    /* ====== MAIN CONTENT ====== */
-    .main {
-      flex: 1;
-      padding: 25px;
-      overflow-y: auto;
-    }
-    .main h1 {
-      color: #333;
+      align-items: center;
       margin-bottom: 20px;
     }
 
-    /* ====== DASHBOARD CARDS ====== */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-    }
-    .card {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .card h3 {
-      margin: 0;
-      color: #ff4000;
-      font-size: 24px;
-    }
-    .card p {
-      margin: 5px 0 0;
-      color: #555;
-      font-size: 15px;
+    .logo-box img {
+      width: 100%;
+      max-width: 160px;
+      height: auto;
+      margin-bottom: 5px;
     }
 
-    /* ====== RECENT ACTIVITY TABLE ====== */
-    .table-container {
-      margin-top: 40px;
-      background: white;
+    .sidebar h3 {
+      text-align: center;
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+    }
+
+    .sidebar ul li {
+      margin: 10px 0;
+    }
+
+    .sidebar ul li a {
+      color: #3e2723;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+
+    .sidebar ul li a:hover {
+      background: #ed5d2d;
+      color: white;
+    }
+
+    .toggle-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #fff3e0;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 5px;
+      z-index: 1100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 220px;
+      padding: 20px;
+      transition: margin-left 0.3s ease;
+    }
+
+    .sidebar.closed ~ .main-content {
+      margin-left: 0;
+    }
+
+    .dashboard-card {
+      background: #fff;
       border-radius: 10px;
       padding: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+      max-width: 900px;
+      margin-inline: auto;
     }
+
+    h2 {
+      text-align: center;
+      color: #222;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .stat {
+      background: #ffede0;
+      padding: 20px;
+      border-radius: 8px;
+      width: 180px;
+      text-align: center;
+      margin: 10px;
+      font-weight: bold;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 15px;
     }
+
     th, td {
-      text-align: left;
+      border: 1px solid #ccc;
       padding: 10px;
-      border-bottom: 1px solid #ddd;
+      text-align: center;
     }
+
     th {
       background: #ff4000;
       color: white;
     }
 
-    @media(max-width: 768px) {
-      .sidebar {
-        width: 70px;
-      }
-      .sidebar a {
-        text-align: center;
-        padding: 10px 0;
-      }
-      .sidebar h2 {
-        display: none;
-      }
-    }
   </style>
 </head>
 <body>
-  <!-- ===== SIDEBAR ===== -->
-  <div class="sidebar">
-    <h2>HostelNet</h2>
-    <a href="#" class="active">🏠 Dashboard</a>
-    <a href="#">👩‍🎓 Student Registration</a>
-    <a href="#">🏘️ Room Allocation</a>
-    <a href="#">🧍‍♂️ Check-In/Out</a>
-    <a href="/logout">🚪 Logout</a>
-  </div>
-
-  <!-- ===== MAIN CONTENT ===== -->
-  <div class="main">
-    <h1>Admin Dashboard</h1>
-
-    <!-- Cards Section -->
-    <div class="cards">
-      <div class="card">
-        <h3 id="totalStudents">0</h3>
-        <p>Total Registered Students</p>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="logo-box">
+        <img src="logo.png" alt="Logo">
+        <h3>Admin Menu</h3>
       </div>
-      <div class="card">
-        <h3 id="roomsAllocated">0</h3>
-        <p>Rooms Allocated</p>
-      </div>
-      <div class="card">
-        <h3 id="checkedIn">0</h3>
-        <p>Students Checked-In</p>
-      </div>
-      <div class="card">
-        <h3 id="checkedOut">0</h3>
-        <p>Students Checked-Out</p>
-      </div>
+      <ul>
+        <li><a href="dashboard.html">🏠 Dashboard</a></li>
+        <li><a href="students.html">👨‍🎓 Students</a></li>
+        <li><a href="rooms.html">🏢 Rooms</a></li>
+        <li><a href="checkin.html">📅 Check-in/Check-out</a></li>
+        <li><a href="logout.html">🚪 Logout</a></li>
+      </ul>
     </div>
 
-    <!-- Recent Activity -->
-    <div class="table-container">
-      <h2>Recent Registrations</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Student Name</th>
-            <th>Room</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="recentTable">
-          <tr><td colspan="4">Loading data...</td></tr>
-        </tbody>
-      </table>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+    <!-- Main content -->
+    <div class="main-content">
+      <h2>Admin Dashboard</h2>
+
+      <div class="dashboard-card">
+        <h3>System Overview</h3>
+        <div class="stats">
+          <div class="stat">Students: <span id="totalStudents">0</span></div>
+          <div class="stat">Allocated Rooms: <span id="roomsAllocated">0</span></div>
+          <div class="stat">Checked In: <span id="checkedIn">0</span></div>
+          <div class="stat">Checked Out: <span id="checkedOut">0</span></div>
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>Recent Students</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Room</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="recentStudents">
+            <tr><td colspan="4">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <script>
-    // Fetch data from backend (server.js)
+    // Sidebar toggle
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("closed");
+    }
+
+    // Load dashboard data
     async function loadDashboard() {
       try {
         const res = await fetch("/api/admin/dashboard");
         const data = await res.json();
 
-        // Update stats
-        document.getElementById("totalStudents").textContent = data.totalStudents;
-        document.getElementById("roomsAllocated").textContent = data.roomsAllocated;
-        document.getElementById("checkedIn").textContent = data.checkedIn;
-        document.getElementById("checkedOut").textContent = data.checkedOut;
+        document.getElementById("totalStudents").textContent = data.totalStudents || 0;
+        document.getElementById("roomsAllocated").textContent = data.roomsAllocated || 0;
+        document.getElementById("checkedIn").textContent = data.checkedIn || 0;
+        document.getElementById("checkedOut").textContent = data.checkedOut || 0;
 
-        // Update table
-        const tbody = document.getElementById("recentTable");
+        const tbody = document.getElementById("recentStudents");
         tbody.innerHTML = "";
-        data.recent.forEach((row) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${row.id}</td>
-            <td>${row.name}</td>
-            <td>${row.room || "-"}</td>
-            <td>${row.status}</td>
-          `;
-          tbody.appendChild(tr);
-        });
+
+        if (data.recent && data.recent.length > 0) {
+          data.recent.forEach((s) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${s.id}</td>
+              <td>${s.name}</td>
+              <td>${s.room || "-"}</td>
+              <td>${s.status || "N/A"}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        } else {
+          tbody.innerHTML = "<tr><td colspan='4'>No recent records</td></tr>";
+        }
       } catch (err) {
         console.error(err);
       }
     }
+
     loadDashboard();
   </script>
 </body>
