@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard - Hostel</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h2 class="logo">HostelAdmin</h2>
+      <nav>
+        <ul>
+          <li class="active"><button data-nav="dashboard">Dashboard</button></li>
+          <li><button data-nav="students">Student Registrations</button></li>
+          <li><button data-nav="allocate">Room Allocation</button></li>
+          <li><button data-nav="check">Check-In/Out</button></li>
+          <li><button id="logout">Logout</button></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <h1 id="page-title">Dashboard</h1>
+      </header>
+
+      <section id="content">
+        <!-- Dashboard -->
+        <div id="dashboard" class="page">
+          <div class="cards">
+            <div class="card">
+              <h3>Total Students</h3>
+              <p id="totalStudents">—</p>
+            </div>
+            <div class="card">
+              <h3>Rooms Allocated</h3>
+              <p id="roomsAllocated">—</p>
+            </div>
+            <div class="card">
+              <h3>Checked-In Now</h3>
+              <p id="checkedInNow">—</p>
+            </div>
+            <div class="card">
+              <h3>Checked-Out</h3>
+              <p id="checkedOut">—</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Recent Activity</h3>
+            <table class="table" id="recentTable">
+              <thead><tr><th>Student</th><th>Room</th><th>Semester</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Students -->
+        <div id="students" class="page hidden">
+          <div class="panel">
+            <h3>Student Registrations</h3>
+            <table class="table" id="studentsTable">
+              <thead><tr><th>ID</th><th>Name</th><th>Student No</th><th>Email</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Allocate -->
+        <div id="allocate" class="page hidden">
+          <div class="panel">
+            <h3>Allocate Room</h3>
+            <form id="allocateForm">
+              <label>Student ID: <input type="number" id="allocStudentId" required /></label>
+              <label>Room:
+                <select id="allocRoom"></select>
+              </label>
+              <label>Semester: <input type="text" id="allocSemester" value="2025/1" required /></label>
+              <button type="submit">Allocate</button>
+            </form>
+            <div id="allocMsg"></div>
+          </div>
+        </div>
+
+        <!-- Check-in/out -->
+        <div id="check" class="page hidden">
+          <div class="panel">
+            <h3>Check-In / Check-Out</h3>
+            <p>Below allocations can be checked in or out.</p>
+            <table class="table" id="allocationsTable">
+              <thead><tr><th>Alloc ID</th><th>Student</th><th>Room</th><th>Semester</th><th>Checkin</th><th>Checkout</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
