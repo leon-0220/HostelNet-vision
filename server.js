@@ -11,11 +11,11 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // Konfigurasi manual (tanpa .env)
-const PORT = 8080; // Tukar ikut keperluan
+const PORT = process.env.PORT || 8080; // Render akan guna process.env.PORT automatik
 const DB_CONFIG = {
   host: "gondola.proxy.rlwy.net",
   user: "root",
-  password: "JwOzMilejTKDdMkSNJklrBplJbYzXQNo", 
+  password: "JwOzMilejTKDdMkSNJklrBplJbYzXQNo",
   database: "railway",
   port: 30273,
   waitForConnections: true,
@@ -30,6 +30,17 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // ===================== DATABASE CONNECTION ===================== //
 const db = await mysql.createPool(DB_CONFIG);
+
+// ===================== TEST DATABASE ROUTE ===================== //
+app.get("/api/test-db", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT NOW() AS time");
+    res.json({ success: true, message: "✅ Database connected!", time: rows[0].time });
+  } catch (err) {
+    console.error("❌ DB Test Error:", err);
+    res.status(500).json({ success: false, message: "Database connection failed" });
+  }
+});
 
 // ===================== TABLES ===================== //
 await db.query(`
