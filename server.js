@@ -4,34 +4,34 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import bcrypt from "bcrypt";
-import dotenv from "dotenv";
 
-dotenv.config();
-
+// ===================== SETUP ===================== //
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const app = express();
-const PORT = process.env.PORT || 8080;
+
+// Konfigurasi manual (tanpa .env)
+const PORT = 8080; // Tukar ikut keperluan
+const DB_CONFIG = {
+  host: "gondola.proxy.rlwy.net",
+  user: "root",
+  password: "JwOzMilejTKDdMkSNJklrBplJbYzXQNo", 
+  database: "railway",
+  port: 30273,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+};
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// ==================== DATABASE CONNECTION ==================== //
-const db = await mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+// ===================== DATABASE CONNECTION ===================== //
+const db = await mysql.createPool(DB_CONFIG);
 
-// ==================== TABLES ==================== //
+// ===================== TABLES ===================== //
 await db.query(`
 CREATE TABLE IF NOT EXISTS students (
   student_id VARCHAR(20) PRIMARY KEY,
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS checkin_checkout (
 
 console.log("✅ Database ready.");
 
-// ==================== DEFAULT ADMIN CREATION ==================== //
+// ===================== DEFAULT ADMIN CREATION ===================== //
 const [adminCheck] = await db.query("SELECT * FROM users WHERE username = 'admin01'");
 if (adminCheck.length === 0) {
   const hashed = await bcrypt.hash("AdminPass01", 10);
@@ -102,7 +102,7 @@ if (adminCheck.length === 0) {
   console.log("🛡️ Default admin created: admin01 / AdminPass01");
 }
 
-// ==================== AUTH ROUTES ==================== //
+// ===================== AUTH ROUTES ===================== //
 
 // LOGIN
 app.post("/api/login", async (req, res) => {
@@ -181,8 +181,8 @@ app.get("/api/admin/dashboard", async (req, res) => {
 
 // STATIC FRONTEND
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "login.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// SERVER
+// ===================== START SERVER ===================== //
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
