@@ -10,8 +10,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
-// Konfigurasi manual (tanpa .env)
-const PORT = process.env.PORT || 8080; // Render akan guna process.env.PORT automatik
+// Konfigurasi Railway (tanpa .env)
+const PORT = process.env.PORT || 8080;
 const DB_CONFIG = {
   host: "gondola.proxy.rlwy.net",
   user: "root",
@@ -31,7 +31,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // ===================== DATABASE CONNECTION ===================== //
 const db = await mysql.createPool(DB_CONFIG);
 
-// ===================== TEST DATABASE ROUTE ===================== //
+// ===================== TEST DATABASE ===================== //
 app.get("/api/test-db", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT NOW() AS time");
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS checkin_checkout (
 
 console.log("✅ Database ready.");
 
-// ===================== DEFAULT ADMIN CREATION ===================== //
+// ===================== DEFAULT ADMIN ===================== //
 const [adminCheck] = await db.query("SELECT * FROM users WHERE username = 'admin01'");
 if (adminCheck.length === 0) {
   const hashed = await bcrypt.hash("AdminPass01", 10);
@@ -114,8 +114,6 @@ if (adminCheck.length === 0) {
 }
 
 // ===================== AUTH ROUTES ===================== //
-
-// LOGIN
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -138,7 +136,7 @@ app.post("/api/login", async (req, res) => {
 
     if (!match) return res.status(401).json({ error: "Invalid username or password" });
 
-    return res.json({
+    res.json({
       success: true,
       user_id: user.id,
       role: user.role,
@@ -150,7 +148,6 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// CHANGE PASSWORD
 app.post("/api/change-password", async (req, res) => {
   try {
     const { user_id, new_password } = req.body;
@@ -170,30 +167,74 @@ app.post("/api/change-password", async (req, res) => {
   }
 });
 
-// ADMIN DASHBOARD
+// ===================== ADMIN DASHBOARD ===================== //
 app.get("/api/admin/dashboard", async (req, res) => {
   try {
     const [students] = await db.query("SELECT COUNT(*) AS total FROM students");
-    const [rooms] = await db.query("SELECT COUNT(*) AS total FROM rooms");
-    const [checkedIn] = await db.query(
-      "SELECT COUNT(*) AS total FROM checkin_checkout WHERE checkout_date IS NULL"
-    );
+    const [rooms] = await db.query("SELECT COUNT(*) AS allocated FROM rooms WHERE status='active'");
+    const [checkedIn] = await db.query("SELECT COUNT(*) AS total FROM checkin_checkout WHERE checkout_date IS NULL");
+    const [checkedOut] = await db.query("SELECT COUNT(*) AS total FROM checkin_checkout WHERE checkout_date IS NOT NULL");
+    const [recent] = await db.query(`
+      SELECT s.student_id AS id, s.name, r.room_number AS room,
+             CASE WHEN c.checkout_date IS NULL THEN 'checked-in' ELSE 'checked-out' END AS status
+      FROM students s
+      LEFT JOIN checkin_checkout c ON s.student_id = c.student_id
+      LEFT JOIN rooms r ON c.room_number = r.room_number
+      ORDER BY s.student_id DESC
+      LIMIT 5
+    `);
 
     res.json({
       totalStudents: students[0].total,
-      totalRooms: rooms[0].total,
+      roomsAllocated: rooms[0].allocated,
       checkedIn: checkedIn[0].total,
+      checkedOut: checkedOut[0].total,
+      recent,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Dashboard Error:", err);
     res.status(500).json({ error: "Failed to load dashboard" });
   }
 });
 
-// STATIC FRONTEND
+// ===================== ADDITIONAL ROUTES FOR TABLES ===================== //
+app.get("/api/students", async (req, res) => {
+  try {
+    const [students] = await db.query("SELECT student_id AS id, name FROM students");
+    res.json(students);
+  } catch {
+    res.status(500).json({ error: "Failed to load students" });
+  }
+});
+
+app.get("/api/rooms", async (req, res) => {
+  try {
+    const [rooms] = await db.query("SELECT room_number AS room_no, unit_code AS id, capacity, status AS type FROM rooms");
+    res.json(rooms);
+  } catch {
+    res.status(500).json({ error: "Failed to load rooms" });
+  }
+});
+
+app.get("/api/checkins", async (req, res) => {
+  try {
+    const [records] = await db.query(`
+      SELECT c.record_id AS id, s.name AS student_name, 
+             c.checkin_date AS checkin_at, c.checkout_date AS checkout_at
+      FROM checkin_checkout c
+      JOIN students s ON s.student_id = c.student_id
+      ORDER BY c.record_id DESC
+    `);
+    res.json(records);
+  } catch {
+    res.status(500).json({ error: "Failed to load check-ins" });
+  }
+});
+
+// ===================== FRONTEND ===================== //
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ===================== START SERVER ===================== //
+// ===================== SERVER START ===================== //
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
