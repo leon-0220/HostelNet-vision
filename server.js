@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
-// Konfigurasi Railway (tanpa .env)
+// Config Railway
 const PORT = process.env.PORT || 8080;
 const DB_CONFIG = {
   host: "gondola.proxy.rlwy.net",
@@ -31,7 +31,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // ===================== DATABASE CONNECTION ===================== //
 const db = await mysql.createPool(DB_CONFIG);
 
-// ===================== TEST DATABASE ===================== //
+// ===================== TEST ROUTE ===================== //
 app.get("/api/test-db", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT NOW() AS time");
@@ -42,7 +42,7 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
-// ===================== TABLES ===================== //
+// ===================== TABLE CREATION ===================== //
 await db.query(`
 CREATE TABLE IF NOT EXISTS students (
   student_id VARCHAR(20) PRIMARY KEY,
@@ -114,6 +114,8 @@ if (adminCheck.length === 0) {
 }
 
 // ===================== AUTH ROUTES ===================== //
+
+// LOGIN
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -121,18 +123,11 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ error: "Missing username or password" });
 
     const [users] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
-    if (users.length === 0) return res.status(401).json({ error: "Invalid username or password" });
+    if (users.length === 0)
+      return res.status(401).json({ error: "Invalid username or password" });
 
     const user = users[0];
-    let match = false;
-
-    if (user.password.startsWith("$2")) {
-      match = await bcrypt.compare(password, user.password);
-    } else if (password === user.password) {
-      match = true;
-      const hash = await bcrypt.hash(password, 10);
-      await db.query("UPDATE users SET password = ? WHERE id = ?", [hash, user.id]);
-    }
+    const match = await bcrypt.compare(password, user.password);
 
     if (!match) return res.status(401).json({ error: "Invalid username or password" });
 
@@ -148,6 +143,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+// CHANGE PASSWORD
 app.post("/api/change-password", async (req, res) => {
   try {
     const { user_id, new_password } = req.body;
@@ -167,74 +163,14 @@ app.post("/api/change-password", async (req, res) => {
   }
 });
 
-// ===================== ADMIN DASHBOARD ===================== //
-app.get("/api/admin/dashboard", async (req, res) => {
-  try {
-    const [students] = await db.query("SELECT COUNT(*) AS total FROM students");
-    const [rooms] = await db.query("SELECT COUNT(*) AS allocated FROM rooms WHERE status='active'");
-    const [checkedIn] = await db.query("SELECT COUNT(*) AS total FROM checkin_checkout WHERE checkout_date IS NULL");
-    const [checkedOut] = await db.query("SELECT COUNT(*) AS total FROM checkin_checkout WHERE checkout_date IS NOT NULL");
-    const [recent] = await db.query(`
-      SELECT s.student_id AS id, s.name, r.room_number AS room,
-             CASE WHEN c.checkout_date IS NULL THEN 'checked-in' ELSE 'checked-out' END AS status
-      FROM students s
-      LEFT JOIN checkin_checkout c ON s.student_id = c.student_id
-      LEFT JOIN rooms r ON c.room_number = r.room_number
-      ORDER BY s.student_id DESC
-      LIMIT 5
-    `);
-
-    res.json({
-      totalStudents: students[0].total,
-      roomsAllocated: rooms[0].allocated,
-      checkedIn: checkedIn[0].total,
-      checkedOut: checkedOut[0].total,
-      recent,
-    });
-  } catch (err) {
-    console.error("Dashboard Error:", err);
-    res.status(500).json({ error: "Failed to load dashboard" });
-  }
-});
-
-// ===================== ADDITIONAL ROUTES FOR TABLES ===================== //
-app.get("/api/students", async (req, res) => {
-  try {
-    const [students] = await db.query("SELECT student_id AS id, name FROM students");
-    res.json(students);
-  } catch {
-    res.status(500).json({ error: "Failed to load students" });
-  }
-});
-
-app.get("/api/rooms", async (req, res) => {
-  try {
-    const [rooms] = await db.query("SELECT room_number AS room_no, unit_code AS id, capacity, status AS type FROM rooms");
-    res.json(rooms);
-  } catch {
-    res.status(500).json({ error: "Failed to load rooms" });
-  }
-});
-
-app.get("/api/checkins", async (req, res) => {
-  try {
-    const [records] = await db.query(`
-      SELECT c.record_id AS id, s.name AS student_name, 
-             c.checkin_date AS checkin_at, c.checkout_date AS checkout_at
-      FROM checkin_checkout c
-      JOIN students s ON s.student_id = c.student_id
-      ORDER BY c.record_id DESC
-    `);
-    res.json(records);
-  } catch {
-    res.status(500).json({ error: "Failed to load check-ins" });
-  }
-});
-
-// ===================== FRONTEND ===================== //
+// ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ===================== SERVER START ===================== //
+app.get("/change-password", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "change-password.html"));
+});
+
+// ===================== START SERVER ===================== //
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
