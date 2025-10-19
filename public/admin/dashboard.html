@@ -1,324 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HostelNet | Admin Dashboard</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-:root {
-  --primary: #ff4000;
-  --sidebar-bg: #fff3e0;
-  --text-dark: #2c2c2c;
-  --shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HostelNet Admin Dashboard</title>
+  <link rel="icon" href="../../images/2.png" type="image/png" />
+  <style>
+    :root {
+      --primary: #ff4000;
+      --bg: #f9f9f9;
+      --card: #ffffff;
+      --accent: #ff8c42;
+      --text: #222;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
 
-body {
-  margin: 0;
-  font-family: "Poppins", sans-serif;
-  background: #fafafa;
-  color: var(--text-dark);
-  display: flex;
-  min-height: 100vh;
-}
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      background: var(--bg);
+    }
 
-/* SIDEBAR */
-.sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 240px;
-  height: 100%;
-  background: var(--sidebar-bg);
-  box-shadow: var(--shadow);
-  padding: 20px;
-  transition: transform 0.3s ease;
-  z-index: 1000;
-}
-.sidebar.closed {
-  transform: translateX(-100%);
-}
-.sidebar .logo {
-  text-align: center;
-}
-.sidebar .logo img {
-  width: 120px;
-  margin-bottom: 10px;
-}
-.sidebar h3 {
-  text-align: center;
-  color: var(--primary);
-}
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 20px;
-}
-.sidebar ul li {
-  margin: 12px 0;
-}
-.sidebar ul li a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #4e342e;
-  text-decoration: none;
-  padding: 10px 14px;
-  border-radius: 8px;
-  transition: 0.3s;
-}
-.sidebar ul li a:hover,
-.sidebar ul li a.active {
-  background: var(--primary);
-  color: #fff;
-}
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding: 20px 15px;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
 
-/* HEADER BAR */
-.header {
-  position: fixed;
-  left: 240px;
-  right: 0;
-  height: 60px;
-  background: white;
-  box-shadow: var(--shadow);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 25px;
-  z-index: 900;
-  transition: left 0.3s;
-}
-.sidebar.closed ~ .header {
-  left: 0;
-}
-.header h1 {
-  font-size: 1.1rem;
-  color: var(--primary);
-}
-.header .logout {
-  background: var(--primary);
-  color: white;
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
+    .sidebar h2 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
 
-/* MAIN */
-.main {
-  margin-left: 240px;
-  padding: 90px 25px 40px;
-  width: 100%;
-  transition: margin-left 0.3s;
-}
-.sidebar.closed ~ .main {
-  margin-left: 0;
-}
+    .sidebar img {
+      display: block;
+      margin: 0 auto 10px;
+      width: 100px;
+    }
 
-/* STATS CARDS */
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-}
-.card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-  padding: 20px;
-  text-align: center;
-}
-.card i {
-  font-size: 2rem;
-  color: var(--primary);
-}
-.card h4 {
-  margin: 10px 0 0;
-  font-weight: 600;
-}
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-/* TABLES */
-.section {
-  margin-top: 40px;
-}
-.section h3 {
-  margin-bottom: 10px;
-  color: var(--primary);
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  border-radius: 10px;
-  overflow: hidden;
-  background: white;
-  box-shadow: var(--shadow);
-}
-th, td {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  text-align: center;
-}
-th {
-  background: var(--primary);
-  color: white;
-}
-tr:hover {
-  background: #fff3e0;
-}
+    .sidebar li {
+      margin-bottom: 12px;
+    }
 
-/* TOGGLE BTN */
-.toggle-btn {
-  display: none;
-}
-@media (max-width: 768px) {
-  .toggle-btn {
-    display: block;
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 10px 12px;
-    font-size: 1.2rem;
-    border-radius: 8px;
-    z-index: 1200;
-  }
-  .header {
-    left: 0;
-  }
-  .main {
-    margin-left: 0;
-  }
-}
-</style>
+    .sidebar a {
+      display: block;
+      text-decoration: none;
+      color: var(--text);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .toggle-btn {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: var(--primary);
+      border: none;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 20;
+    }
+
+    /* Main Content */
+    .main {
+      flex: 1;
+      margin-left: 260px;
+      padding: 30px;
+      transition: margin-left 0.3s ease;
+    }
+
+    h1 {
+      color: var(--primary);
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .card span {
+      display: block;
+      font-size: 2rem;
+      color: var(--primary);
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      box-shadow: var(--shadow);
+      border-radius: 10px;
+      overflow: hidden;
+      background: white;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: var(--primary);
+      color: white;
+    }
+
+    tr:hover {
+      background: #fff4ef;
+    }
+
+    h2 {
+      margin-top: 40px;
+      color: var(--accent);
+    }
+
+    @media (max-width: 768px) {
+      .toggle-btn { display: block; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; padding-top: 60px; }
+    }
+  </style>
 </head>
 <body>
-
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
-  <div class="logo">
-    <img src="../../images/2.png" alt="Logo">
-  </div>
-  <h3>Admin Panel</h3>
-  <ul>
-    <li><a href="dashboard.html" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
-    <li><a href="student.html"><i class="fa-solid fa-user-graduate"></i> Students</a></li>
-    <li><a href="room.html"><i class="fa-solid fa-bed"></i> Rooms</a></li>
-    <li><a href="checkin.html"><i class="fa-solid fa-calendar-check"></i> Check-in</a></li>
-    <li><a href="../../logout.html"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
-  </ul>
-</div>
-
-<!-- HEADER -->
-<div class="header">
   <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-  <h1>HostelNet Dashboard</h1>
-  <button class="logout" onclick="location.href='../../logout.html'">Logout</button>
-</div>
 
-<!-- MAIN -->
-<div class="main">
-  <div class="cards">
-    <div class="card">
-      <i class="fa-solid fa-users"></i>
-      <h4>Students: <span id="totalStudents">0</span></h4>
+  <div class="sidebar" id="sidebar">
+    <img src="../../images/2.png" alt="HostelNet Logo" />
+    <h2>Admin Panel</h2>
+    <ul>
+      <li><a href="#" class="active">🏠 Dashboard</a></li>
+      <li><a href="student.html">👨‍🎓 Students</a></li>
+      <li><a href="room.html">🏢 Rooms</a></li>
+      <li><a href="checkin.html">📅 Check-ins</a></li>
+      <li><a href="../../logout.html">🚪 Logout</a></li>
+    </ul>
+  </div>
+
+  <div class="main">
+    <h1>Dashboard Overview</h1>
+
+    <div class="cards">
+      <div class="card"><h3>Total Students</h3><span id="totalStudents">0</span></div>
+      <div class="card"><h3>Total Rooms</h3><span id="totalRooms">0</span></div>
+      <div class="card"><h3>Currently Checked In</h3><span id="checkedIn">0</span></div>
     </div>
-    <div class="card">
-      <i class="fa-solid fa-door-closed"></i>
-      <h4>Rooms: <span id="totalRooms">0</span></h4>
-    </div>
-    <div class="card">
-      <i class="fa-solid fa-calendar-check"></i>
-      <h4>Checked In: <span id="checkedIn">0</span></h4>
-    </div>
+
+    <h2>Students</h2>
+    <table id="studentTable"><thead><tr><th>ID</th><th>Name</th><th>Course</th><th>Email</th></tr></thead><tbody><tr><td colspan="4">Loading...</td></tr></tbody></table>
+
+    <h2>Rooms</h2>
+    <table id="roomTable"><thead><tr><th>Unit Code</th><th>Room No</th><th>Capacity</th><th>Status</th></tr></thead><tbody><tr><td colspan="4">Loading...</td></tr></tbody></table>
+
+    <h2>Check-ins</h2>
+    <table id="checkTable"><thead><tr><th>ID</th><th>Student</th><th>Check-in</th><th>Check-out</th></tr></thead><tbody><tr><td colspan="4">Loading...</td></tr></tbody></table>
   </div>
 
-  <div class="section">
-    <h3>Student List</h3>
-    <table>
-      <thead><tr><th>ID</th><th>Name</th><th>Course</th><th>Email</th></tr></thead>
-      <tbody id="studentTable"><tr><td colspan="4">Loading...</td></tr></tbody>
-    </table>
-  </div>
+  <script>
+    const sidebar = document.getElementById("sidebar");
+    function toggleSidebar() {
+      sidebar.classList.toggle("open");
+    }
 
-  <div class="section">
-    <h3>Room List</h3>
-    <table>
-      <thead><tr><th>Unit</th><th>Room</th><th>Capacity</th><th>Status</th></tr></thead>
-      <tbody id="roomTable"><tr><td colspan="4">Loading...</td></tr></tbody>
-    </table>
-  </div>
+    async function fetchData(url) {
+      const res = await fetch(url);
+      return await res.json();
+    }
 
-  <div class="section">
-    <h3>Check-in / Check-out</h3>
-    <table>
-      <thead><tr><th>ID</th><th>Student</th><th>Check-in</th><th>Check-out</th></tr></thead>
-      <tbody id="checkTable"><tr><td colspan="4">Loading...</td></tr></tbody>
-    </table>
-  </div>
-</div>
+    async function init() {
+      // Load dashboard summary
+      const dash = await fetchData("/api/admin/dashboard");
+      document.getElementById("totalStudents").textContent = dash.totalStudents;
+      document.getElementById("totalRooms").textContent = dash.totalRooms;
+      document.getElementById("checkedIn").textContent = dash.checkedIn;
 
-<script>
-const sidebar = document.getElementById("sidebar");
-function toggleSidebar() {
-  sidebar.classList.toggle("closed");
-}
+      // Students
+      const students = await fetchData("/api/students");
+      document.getElementById("studentTable").innerHTML = students.map(s => `
+        <tr>
+          <td>${s.student_id}</td>
+          <td>${s.name}</td>
+          <td>${s.course || '-'}</td>
+          <td>${s.email || '-'}</td>
+        </tr>
+      `).join("");
 
-async function loadDashboard() {
-  const res = await fetch("/api/admin/dashboard");
-  const data = await res.json();
-  document.getElementById("totalStudents").textContent = data.totalStudents;
-  document.getElementById("totalRooms").textContent = data.totalRooms;
-  document.getElementById("checkedIn").textContent = data.checkedIn;
-}
+      // Rooms
+      const rooms = await fetchData("/api/rooms");
+      document.getElementById("roomTable").innerHTML = rooms.map(r => `
+        <tr>
+          <td>${r.unit_code}</td>
+          <td>${r.room_number}</td>
+          <td>${r.capacity}</td>
+          <td>${r.status}</td>
+        </tr>
+      `).join("");
 
-async function loadStudents() {
-  const res = await fetch("/api/students");
-  const data = await res.json();
-  const tbody = document.getElementById("studentTable");
-  tbody.innerHTML = data.map(s => `
-    <tr>
-      <td>${s.student_id}</td>
-      <td>${s.name}</td>
-      <td>${s.course || '-'}</td>
-      <td>${s.email || '-'}</td>
-    </tr>`).join("");
-}
+      // Check-ins
+      const checkins = await fetchData("/api/checkins");
+      document.getElementById("checkTable").innerHTML = checkins.map(c => `
+        <tr>
+          <td>${c.id}</td>
+          <td>${c.student_name}</td>
+          <td>${c.checkin_at || '-'}</td>
+          <td>${c.checkout_at || '-'}</td>
+        </tr>
+      `).join("");
+    }
 
-async function loadRooms() {
-  const res = await fetch("/api/rooms");
-  const data = await res.json();
-  const tbody = document.getElementById("roomTable");
-  tbody.innerHTML = data.map(r => `
-    <tr>
-      <td>${r.unit_code}</td>
-      <td>${r.room_number}</td>
-      <td>${r.capacity}</td>
-      <td>${r.status}</td>
-    </tr>`).join("");
-}
-
-async function loadCheckins() {
-  const res = await fetch("/api/checkins");
-  const data = await res.json();
-  const tbody = document.getElementById("checkTable");
-  tbody.innerHTML = data.map(c => `
-    <tr>
-      <td>${c.id}</td>
-      <td>${c.student_name}</td>
-      <td>${c.checkin_at || '-'}</td>
-      <td>${c.checkout_at || '-'}</td>
-    </tr>`).join("");
-}
-
-async function init() {
-  await loadDashboard();
-  await loadStudents();
-  await loadRooms();
-  await loadCheckins();
-}
-init();
-</script>
+    init();
+  </script>
 </body>
 </html>
