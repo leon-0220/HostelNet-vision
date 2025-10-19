@@ -113,6 +113,46 @@ if (adminCheck.length === 0) {
   console.log("🛡️ Default admin created: admin01 / AdminPass01");
 }
 
+// ==================== ADMIN DATA ROUTES ==================== //
+
+// Get all students
+app.get("/api/students", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM students");
+    res.json(rows);
+  } catch (err) {
+    console.error("Students fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch students" });
+  }
+});
+
+// Get all rooms
+app.get("/api/rooms", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM rooms");
+    res.json(rows);
+  } catch (err) {
+    console.error("Rooms fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch rooms" });
+  }
+});
+
+// Get check-in/out records
+app.get("/api/checkins", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT c.record_id AS id, s.name AS student_name, c.checkin_date AS checkin_at, c.checkout_date AS checkout_at
+      FROM checkin_checkout c
+      JOIN students s ON s.student_id = c.student_id
+      ORDER BY c.checkin_date DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error("Checkin fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch check-in/out records" });
+  }
+});
+
 // ===================== AUTH ROUTES ===================== //
 
 // LOGIN
