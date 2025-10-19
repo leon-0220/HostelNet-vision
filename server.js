@@ -134,6 +134,54 @@ app.get("/api/students", async (req, res) => {
   }
 });
 
+// --- ADD STUDENT + AUTO CREATE USER ---
+app.post("/api/students", async (req, res) => {
+  try {
+    const { student_id, name, course, gender, email } = req.body;
+    if (!student_id || !name || !email)
+      return res.status(400).json({ error: "Missing required fields" });
+
+    // 1️⃣ Masukkan dalam table students
+    await db.query(
+      "INSERT INTO students (student_id, name, course, gender, email) VALUES (?, ?, ?, ?, ?)",
+      [student_id, name, course, gender, email]
+    );
+
+    // 2️⃣ Hash default password = student_id
+    const hashed = await bcrypt.hash(student_id, 10);
+
+    // 3️⃣ Auto cipta akaun untuk login first time
+    await db.query(
+      "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
+      [student_id, student_id, email, hashed, "student", true]
+    );
+
+    res.json({ success: true, message: "Student & user created successfully" });
+  } catch (err) {
+    console.error("Add student error:", err);
+    res.status(500).json({ error: "Failed to add student" });
+  }
+});
+
+// --- DELETE STUDENT ---
+app.delete("/api/students/:student_id", async (req, res) => {
+  try {
+    const { student_id } = req.params;
+
+    // Delete from both users and students
+    await db.query("DELETE FROM users WHERE student_id = ?", [student_id]);
+    const [result] = await db.query("DELETE FROM students WHERE student_id = ?", [student_id]);
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Student not found" });
+
+    res.json({ success: true, message: "Student deleted successfully" });
+  } catch (err) {
+    console.error("Delete student error:", err);
+    res.status(500).json({ error: "Failed to delete student" });
+  }
+});
+
 // --- GET ROOMS ---
 app.get("/api/rooms", async (req, res) => {
   try {
