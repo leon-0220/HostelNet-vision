@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // ===================== CONFIG (TANPA .env) ===================== //
-const PORT = 8080; // Tukar ikut keperluan
+const PORT = 8080;
 const DB_CONFIG = {
   host: "gondola.proxy.rlwy.net",
   user: "root",
@@ -23,6 +23,7 @@ const DB_CONFIG = {
   queueLimit: 0,
 };
 
+// ===================== MIDDLEWARE ===================== //
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -37,17 +38,6 @@ try {
   console.error("❌ Database connection failed:", err);
   process.exit(1);
 }
-
-// ===================== TEST ROUTE ===================== //
-app.get("/api/test-db", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT NOW() AS time");
-    res.json({ success: true, message: "✅ Database connected!", time: rows[0].time });
-  } catch (err) {
-    console.error("❌ DB Test Error:", err);
-    res.status(500).json({ success: false, message: "Database connection failed" });
-  }
-});
 
 // ===================== TABLE CREATION ===================== //
 await db.query(`
@@ -122,7 +112,18 @@ if (adminCheck.length === 0) {
 
 // ===================== API ROUTES ===================== //
 
-// --- Get all students ---
+// --- TEST DB CONNECTION ---
+app.get("/api/test-db", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT NOW() AS time");
+    res.json({ success: true, message: "✅ Database connected!", time: rows[0].time });
+  } catch (err) {
+    console.error("❌ DB Test Error:", err);
+    res.status(500).json({ success: false, message: "Database connection failed" });
+  }
+});
+
+// --- GET STUDENTS ---
 app.get("/api/students", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM students");
@@ -133,7 +134,7 @@ app.get("/api/students", async (req, res) => {
   }
 });
 
-// --- Get all rooms ---
+// --- GET ROOMS ---
 app.get("/api/rooms", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM rooms");
@@ -144,7 +145,7 @@ app.get("/api/rooms", async (req, res) => {
   }
 });
 
-// --- Get checkin/checkout records ---
+// --- GET CHECK-IN/CHECK-OUT ---
 app.get("/api/checkins", async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -173,7 +174,6 @@ app.post("/api/login", async (req, res) => {
 
     const user = users[0];
     const match = await bcrypt.compare(password, user.password);
-
     if (!match) return res.status(401).json({ error: "Invalid username or password" });
 
     res.json({
@@ -211,6 +211,10 @@ app.post("/api/change-password", async (req, res) => {
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
 app.get("/change-password", (req, res) => {
