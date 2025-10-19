@@ -79,7 +79,7 @@
     // Load all students from backend
     async function loadStudents() {
       try {
-        const res = await fetch("/api/students");
+        const res = await fetch("../../server.js/api/students");
         if (!res.ok) throw new Error("Failed to fetch students");
         const data = await res.json();
 
