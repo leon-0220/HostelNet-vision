@@ -42,11 +42,10 @@ try {
 // ===================== TABLE CREATION ===================== //
 await db.query(`
 CREATE TABLE IF NOT EXISTS students (
-  student_id VARCHAR(20) PRIMARY KEY,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
-  course VARCHAR(100),
-  gender ENUM('male','female'),
-  email VARCHAR(150)
+  room VARCHAR(50),
+  status ENUM('pending','checked-in','checked-out') DEFAULT 'pending'
 );
 `);
 
@@ -59,8 +58,7 @@ CREATE TABLE IF NOT EXISTS users (
   password VARCHAR(255) NOT NULL,
   role ENUM('student','admin') DEFAULT 'student',
   must_change_password BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (student_id) REFERENCES students(student_id)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 `);
 
@@ -91,9 +89,7 @@ CREATE TABLE IF NOT EXISTS checkin_checkout (
   unit_code VARCHAR(20) NOT NULL,
   room_number VARCHAR(20) NOT NULL,
   checkin_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  checkout_date TIMESTAMP NULL,
-  FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
-  FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number)
+  checkout_date TIMESTAMP NULL
 );
 `);
 
@@ -112,7 +108,7 @@ if (adminCheck.length === 0) {
 
 // ===================== API ROUTES ===================== //
 
-// --- TEST DB CONNECTION ---
+// --- TEST DB CONNECTION --- //
 app.get("/api/test-db", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT NOW() AS time");
@@ -123,10 +119,10 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
-// --- GET STUDENTS ---
+// --- GET STUDENTS --- //
 app.get("/api/students", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM students");
+    const [rows] = await db.query("SELECT * FROM students ORDER BY id DESC");
     res.json(rows);
   } catch (err) {
     console.error("Students fetch error:", err);
@@ -134,55 +130,41 @@ app.get("/api/students", async (req, res) => {
   }
 });
 
-// --- ADD STUDENT + AUTO CREATE USER ---
+// --- ADD STUDENT --- //
 app.post("/api/students", async (req, res) => {
   try {
-    const { student_id, name, course, gender, email } = req.body;
-    if (!student_id || !name || !email)
+    const { name, room, status } = req.body;
+    if (!name || !room || !status)
       return res.status(400).json({ error: "Missing required fields" });
 
-    // 1️⃣ Masukkan dalam table students
-    await db.query(
-      "INSERT INTO students (student_id, name, course, gender, email) VALUES (?, ?, ?, ?, ?)",
-      [student_id, name, course, gender, email]
+    const [result] = await db.query(
+      "INSERT INTO students (name, room, status) VALUES (?, ?, ?)",
+      [name, room, status]
     );
 
-    // 2️⃣ Hash default password = student_id
-    const hashed = await bcrypt.hash(student_id, 10);
-
-    // 3️⃣ Auto cipta akaun untuk login first time
-    await db.query(
-      "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
-      [student_id, student_id, email, hashed, "student", true]
-    );
-
-    res.json({ success: true, message: "Student & user created successfully" });
+    res.json({ success: true, id: result.insertId });
   } catch (err) {
     console.error("Add student error:", err);
     res.status(500).json({ error: "Failed to add student" });
   }
 });
 
-// --- DELETE STUDENT ---
-app.delete("/api/students/:student_id", async (req, res) => {
+// --- DELETE STUDENT --- //
+app.delete("/api/students/:id", async (req, res) => {
   try {
-    const { student_id } = req.params;
-
-    // Delete from both users and students
-    await db.query("DELETE FROM users WHERE student_id = ?", [student_id]);
-    const [result] = await db.query("DELETE FROM students WHERE student_id = ?", [student_id]);
-
+    const { id } = req.params;
+    const [result] = await db.query("DELETE FROM students WHERE id = ?", [id]);
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Student not found" });
 
-    res.json({ success: true, message: "Student deleted successfully" });
+    res.json({ success: true });
   } catch (err) {
     console.error("Delete student error:", err);
     res.status(500).json({ error: "Failed to delete student" });
   }
 });
 
-// --- GET ROOMS ---
+// --- GET ROOMS --- //
 app.get("/api/rooms", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM rooms");
@@ -193,13 +175,13 @@ app.get("/api/rooms", async (req, res) => {
   }
 });
 
-// --- GET CHECK-IN/CHECK-OUT ---
+// --- GET CHECK-IN/CHECK-OUT --- //
 app.get("/api/checkins", async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT c.record_id AS id, s.name AS student_name, c.checkin_date AS checkin_at, c.checkout_date AS checkout_at
+      SELECT c.record_id AS id, c.student_id, c.unit_code, c.room_number,
+             c.checkin_date, c.checkout_date
       FROM checkin_checkout c
-      JOIN students s ON s.student_id = c.student_id
       ORDER BY c.checkin_date DESC
     `);
     res.json(rows);
@@ -209,7 +191,7 @@ app.get("/api/checkins", async (req, res) => {
   }
 });
 
-// --- LOGIN ---
+// --- LOGIN --- //
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -236,7 +218,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// --- CHANGE PASSWORD ---
+// --- CHANGE PASSWORD --- //
 app.post("/api/change-password", async (req, res) => {
   try {
     const { user_id, new_password } = req.body;
@@ -270,4 +252,6 @@ app.get("/change-password", (req, res) => {
 });
 
 // ===================== START SERVER ===================== //
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
