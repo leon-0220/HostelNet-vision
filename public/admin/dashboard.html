@@ -15,9 +15,7 @@
       --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -37,8 +35,12 @@
       left: 0;
       top: 0;
       padding: 20px 15px;
-      transition: all 0.3s ease;
-      z-index: 10;
+      transition: transform 0.3s ease;
+      z-index: 200;
+    }
+
+    .sidebar.hidden {
+      transform: translateX(-100%);
     }
 
     .sidebar h2 {
@@ -59,9 +61,7 @@
       margin: 0;
     }
 
-    .sidebar li {
-      margin-bottom: 10px;
-    }
+    .sidebar li { margin-bottom: 10px; }
 
     .sidebar a {
       display: flex;
@@ -75,25 +75,25 @@
       transition: 0.3s;
     }
 
-    .sidebar a:hover,
-    .sidebar a.active {
+    .sidebar a:hover, .sidebar a.active {
       background: var(--primary);
       color: white;
     }
 
+    /* Toggle Button */
     .toggle-btn {
-      display: none;
       position: fixed;
       top: 15px;
       left: 15px;
       background: var(--primary);
       border: none;
       color: white;
-      padding: 10px;
+      padding: 10px 12px;
       border-radius: 6px;
       font-size: 20px;
       cursor: pointer;
-      z-index: 20;
+      z-index: 300;
+      display: none;
     }
 
     /* Main */
@@ -102,6 +102,7 @@
       margin-left: 260px;
       padding: 30px;
       transition: margin-left 0.3s ease;
+      width: 100%;
     }
 
     h1 {
@@ -127,15 +128,9 @@
       transition: transform 0.2s;
     }
 
-    .card:hover {
-      transform: translateY(-4px);
-    }
+    .card:hover { transform: translateY(-4px); }
 
-    .card h3 {
-      margin: 0;
-      font-size: 1rem;
-      color: var(--text);
-    }
+    .card h3 { margin: 0; font-size: 1rem; color: var(--text); }
 
     .card span {
       display: block;
@@ -156,8 +151,7 @@
       margin-top: 10px;
     }
 
-    th,
-    td {
+    th, td {
       padding: 12px;
       text-align: center;
       border-bottom: 1px solid #eee;
@@ -169,9 +163,7 @@
       color: white;
     }
 
-    tr:hover {
-      background: #fff2eb;
-    }
+    tr:hover { background: #fff2eb; }
 
     h2 {
       margin-top: 40px;
@@ -181,22 +173,10 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-      .toggle-btn {
-        display: block;
-      }
-
-      .sidebar {
-        transform: translateX(-100%);
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .main {
-        margin-left: 0;
-        padding-top: 70px;
-      }
+      .toggle-btn { display: block; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.show { transform: translateX(0); }
+      .main { margin-left: 0; padding-top: 70px; }
     }
   </style>
 </head>
@@ -226,25 +206,19 @@
 
     <h2>Students</h2>
     <table id="studentTable">
-      <thead>
-        <tr><th>ID</th><th>Name</th><th>Course</th><th>Email</th></tr>
-      </thead>
+      <thead><tr><th>ID</th><th>Name</th><th>Course</th><th>Email</th></tr></thead>
       <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
     </table>
 
     <h2>Rooms</h2>
     <table id="roomTable">
-      <thead>
-        <tr><th>Unit Code</th><th>Room No</th><th>Capacity</th><th>Status</th></tr>
-      </thead>
+      <thead><tr><th>Unit Code</th><th>Room No</th><th>Capacity</th><th>Status</th></tr></thead>
       <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
     </table>
 
     <h2>Check-ins</h2>
     <table id="checkTable">
-      <thead>
-        <tr><th>ID</th><th>Student</th><th>Check-in</th><th>Check-out</th></tr>
-      </thead>
+      <thead><tr><th>ID</th><th>Student</th><th>Check-in</th><th>Check-out</th></tr></thead>
       <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
     </table>
   </div>
@@ -252,68 +226,45 @@
   <script>
     const sidebar = document.getElementById("sidebar");
     function toggleSidebar() {
-      sidebar.classList.toggle("open");
+      sidebar.classList.toggle("show");
     }
 
-    // Reusable fetch wrapper
     async function fetchData(url) {
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return await res.json();
       } catch (err) {
-        console.error("❌ Error fetching", url, err);
+        console.error("Error fetching:", url, err);
         return [];
       }
     }
 
     async function init() {
-      // Dashboard summary
       const dash = await fetchData("/api/dashboard");
       document.getElementById("totalStudents").textContent = dash.totalStudents || 0;
       document.getElementById("totalRooms").textContent = dash.totalRooms || 0;
       document.getElementById("checkedIn").textContent = dash.checkedIn || 0;
 
-      // Students
       const students = await fetchData("/api/students");
-      const studentTable = document.querySelector("#studentTable tbody");
-      studentTable.innerHTML = students.length
+      document.querySelector("#studentTable tbody").innerHTML = students.length
         ? students.map(s => `
-            <tr>
-              <td>${s.student_id}</td>
-              <td>${s.name}</td>
-              <td>${s.course || '-'}</td>
-              <td>${s.email || '-'}</td>
-            </tr>
-          `).join("")
+          <tr><td>${s.student_id}</td><td>${s.name}</td><td>${s.course || '-'}</td><td>${s.email || '-'}</td></tr>
+        `).join("")
         : `<tr><td colspan="4">No student data found</td></tr>`;
 
-      // Rooms
       const rooms = await fetchData("/api/rooms");
-      const roomTable = document.querySelector("#roomTable tbody");
-      roomTable.innerHTML = rooms.length
+      document.querySelector("#roomTable tbody").innerHTML = rooms.length
         ? rooms.map(r => `
-            <tr>
-              <td>${r.unit_code}</td>
-              <td>${r.room_number}</td>
-              <td>${r.capacity}</td>
-              <td>${r.status}</td>
-            </tr>
-          `).join("")
+          <tr><td>${r.unit_code}</td><td>${r.room_number}</td><td>${r.capacity}</td><td>${r.status}</td></tr>
+        `).join("")
         : `<tr><td colspan="4">No room data found</td></tr>`;
 
-      // Check-ins
       const checkins = await fetchData("/api/checkins");
-      const checkTable = document.querySelector("#checkTable tbody");
-      checkTable.innerHTML = checkins.length
+      document.querySelector("#checkTable tbody").innerHTML = checkins.length
         ? checkins.map(c => `
-            <tr>
-              <td>${c.id}</td>
-              <td>${c.student_name}</td>
-              <td>${c.checkin_at || '-'}</td>
-              <td>${c.checkout_at || '-'}</td>
-            </tr>
-          `).join("")
+          <tr><td>${c.id}</td><td>${c.student_name}</td><td>${c.checkin_at || '-'}</td><td>${c.checkout_at || '-'}</td></tr>
+        `).join("")
         : `<tr><td colspan="4">No check-in records</td></tr>`;
     }
 
