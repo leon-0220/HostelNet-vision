@@ -10,8 +10,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
-// Config Railway
-const PORT = process.env.PORT || 8080;
+// ===================== CONFIG (TANPA .env) ===================== //
+const PORT = 8080; // Tukar ikut keperluan
 const DB_CONFIG = {
   host: "gondola.proxy.rlwy.net",
   user: "root",
@@ -29,7 +29,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // ===================== DATABASE CONNECTION ===================== //
-const db = await mysql.createPool(DB_CONFIG);
+let db;
+try {
+  db = await mysql.createPool(DB_CONFIG);
+  console.log("✅ Database connected successfully!");
+} catch (err) {
+  console.error("❌ Database connection failed:", err);
+  process.exit(1);
+}
 
 // ===================== TEST ROUTE ===================== //
 app.get("/api/test-db", async (req, res) => {
@@ -100,7 +107,7 @@ CREATE TABLE IF NOT EXISTS checkin_checkout (
 );
 `);
 
-console.log("✅ Database ready.");
+console.log("✅ Database tables verified/created successfully.");
 
 // ===================== DEFAULT ADMIN ===================== //
 const [adminCheck] = await db.query("SELECT * FROM users WHERE username = 'admin01'");
@@ -113,9 +120,9 @@ if (adminCheck.length === 0) {
   console.log("🛡️ Default admin created: admin01 / AdminPass01");
 }
 
-// ==================== ADMIN DATA ROUTES ==================== //
+// ===================== API ROUTES ===================== //
 
-// Get all students
+// --- Get all students ---
 app.get("/api/students", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM students");
@@ -126,7 +133,7 @@ app.get("/api/students", async (req, res) => {
   }
 });
 
-// Get all rooms
+// --- Get all rooms ---
 app.get("/api/rooms", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM rooms");
@@ -137,7 +144,7 @@ app.get("/api/rooms", async (req, res) => {
   }
 });
 
-// Get check-in/out records
+// --- Get checkin/checkout records ---
 app.get("/api/checkins", async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -153,9 +160,7 @@ app.get("/api/checkins", async (req, res) => {
   }
 });
 
-// ===================== AUTH ROUTES ===================== //
-
-// LOGIN
+// --- LOGIN ---
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -183,7 +188,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// CHANGE PASSWORD
+// --- CHANGE PASSWORD ---
 app.post("/api/change-password", async (req, res) => {
   try {
     const { user_id, new_password } = req.body;
@@ -213,4 +218,4 @@ app.get("/change-password", (req, res) => {
 });
 
 // ===================== START SERVER ===================== //
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
