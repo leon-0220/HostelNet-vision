@@ -37,6 +37,7 @@
       padding: 20px 15px;
       transition: transform 0.3s ease;
       z-index: 200;
+      transform: translateX(0);
     }
 
     .sidebar.hidden {
@@ -93,7 +94,7 @@
       font-size: 20px;
       cursor: pointer;
       z-index: 300;
-      display: none;
+      display: block; /* ✅ sentiasa nampak */
     }
 
     /* Main */
@@ -103,6 +104,10 @@
       padding: 30px;
       transition: margin-left 0.3s ease;
       width: 100%;
+    }
+
+    .main.full {
+      margin-left: 0;
     }
 
     h1 {
@@ -173,10 +178,10 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-      .toggle-btn { display: block; }
-      .sidebar { transform: translateX(-100%); }
-      .sidebar.show { transform: translateX(0); }
-      .main { margin-left: 0; padding-top: 70px; }
+      .main {
+        margin-left: 0;
+        padding-top: 70px;
+      }
     }
   </style>
 </head>
@@ -195,7 +200,7 @@
     </ul>
   </div>
 
-  <div class="main">
+  <div class="main" id="mainContent">
     <h1>Dashboard Overview</h1>
 
     <div class="cards">
@@ -225,8 +230,11 @@
 
   <script>
     const sidebar = document.getElementById("sidebar");
+    const main = document.getElementById("mainContent");
+
     function toggleSidebar() {
-      sidebar.classList.toggle("show");
+      sidebar.classList.toggle("hidden");
+      main.classList.toggle("full");
     }
 
     async function fetchData(url) {
