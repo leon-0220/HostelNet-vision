@@ -13,11 +13,11 @@ const app = express();
 // ===================== CONFIG ===================== //
 const PORT = process.env.PORT || 8080;
 const DB_CONFIG = {
-  host: "gondola.proxy.rlwy.net",
-  user: "root",
-  password: "JwOzMilejTKDdMkSNJklrBplJbYzXQNo",
-  database: "railway",
-  port: 30273,
+  host: process.env.DB_HOST || "gondola.proxy.rlwy.net",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "JwOzMilejTKDdMkSNJklrBplJbYzXQNo",
+  database: process.env.DB_NAME || "railway",
+  port: process.env.DB_PORT || 30273,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -27,7 +27,8 @@ const DB_CONFIG = {
 app.use(cors({
   origin: [
     "https://leon-0220.github.io",
-    "https://gondola.proxy.rlwy.net"
+    "https://gondola.proxy.rlwy.net",
+    "https://your-render-app-name.onrender.com" // ✅ Tambah URL Render bila dah deploy
   ],
   methods: ["GET", "POST", "DELETE"],
   allowedHeaders: ["Content-Type"]
@@ -41,8 +42,9 @@ let db;
 try {
   db = await mysql.createPool(DB_CONFIG);
   console.log("✅ Database connected successfully!");
+  console.log(`📦 Connected to DB: ${DB_CONFIG.host}:${DB_CONFIG.port}`);
 } catch (err) {
-  console.error("❌ Database connection failed:", err);
+  console.error("❌ Database connection failed:", err.message);
   process.exit(1);
 }
 
@@ -115,51 +117,43 @@ if (adminCheck.length === 0) {
 }
 
 // ===================== API ROUTES ===================== //
-
-// --- TEST DB CONNECTION --- //
 app.get("/api/test-db", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT NOW() AS time");
     res.json({ success: true, message: "✅ Database connected!", time: rows[0].time });
   } catch (err) {
-    console.error("❌ DB Test Error:", err);
+    console.error("❌ DB Test Error:", err.message);
     res.status(500).json({ success: false, message: "Database connection failed" });
   }
 });
 
-// --- GET STUDENTS --- //
 app.get("/api/students", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM students ORDER BY student_id DESC");
     res.json(rows);
   } catch (err) {
-    console.error("Students fetch error:", err);
+    console.error("Students fetch error:", err.message);
     res.status(500).json({ error: "Failed to fetch students" });
   }
 });
 
-// --- ADD STUDENT --- //
 app.post("/api/students", async (req, res) => {
   try {
     const { student_id, name, room, status } = req.body;
     console.log("📩 Add Student Body:", req.body);
 
-    // validate
     if (!student_id || !name || !room || !status)
       return res.status(400).json({ error: "Missing required fields" });
 
-    // normalize status
     const normalizedStatus = status.trim().toLowerCase();
     const validStatuses = ["pending", "checked-in", "checked-out"];
     if (!validStatuses.includes(normalizedStatus))
       return res.status(400).json({ error: "Invalid status value" });
 
-    // duplicate check
     const [existing] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
     if (existing.length > 0)
       return res.status(400).json({ error: "Student ID already exists" });
 
-    // insert
     await db.query(
       "INSERT INTO students (student_id, name, room, status) VALUES (?, ?, ?, ?)",
       [student_id, name, room, normalizedStatus]
@@ -174,7 +168,6 @@ app.post("/api/students", async (req, res) => {
   }
 });
 
-// --- DELETE STUDENT --- //
 app.delete("/api/students/:student_id", async (req, res) => {
   try {
     const { student_id } = req.params;
@@ -189,7 +182,6 @@ app.delete("/api/students/:student_id", async (req, res) => {
   }
 });
 
-// --- LOGIN --- //
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -216,7 +208,6 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// --- CHANGE PASSWORD --- //
 app.post("/api/change-password", async (req, res) => {
   try {
     const { user_id, new_password } = req.body;
