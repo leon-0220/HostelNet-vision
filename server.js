@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
-// ===================== CONFIG (TANPA .env) ===================== //
+// ===================== CONFIG ===================== //
 const PORT = 8080;
 const DB_CONFIG = {
   host: "gondola.proxy.rlwy.net",
@@ -42,7 +42,7 @@ try {
 // ===================== TABLE CREATION ===================== //
 await db.query(`
 CREATE TABLE IF NOT EXISTS students (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id VARCHAR(20) PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
   room VARCHAR(50),
   status ENUM('pending','checked-in','checked-out') DEFAULT 'pending'
@@ -58,7 +58,8 @@ CREATE TABLE IF NOT EXISTS users (
   password VARCHAR(255) NOT NULL,
   role ENUM('student','admin') DEFAULT 'student',
   must_change_password BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE SET NULL
 );
 `);
 
@@ -122,7 +123,7 @@ app.get("/api/test-db", async (req, res) => {
 // --- GET STUDENTS --- //
 app.get("/api/students", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM students ORDER BY id DESC");
+    const [rows] = await db.query("SELECT * FROM students ORDER BY student_id DESC");
     res.json(rows);
   } catch (err) {
     console.error("Students fetch error:", err);
@@ -133,16 +134,24 @@ app.get("/api/students", async (req, res) => {
 // --- ADD STUDENT --- //
 app.post("/api/students", async (req, res) => {
   try {
-    const { name, room, status } = req.body;
-    if (!name || !room || !status)
+    const { student_id, name, room, status } = req.body;
+
+    if (!student_id || !name || !room || !status)
       return res.status(400).json({ error: "Missing required fields" });
 
-    const [result] = await db.query(
-      "INSERT INTO students (name, room, status) VALUES (?, ?, ?)",
-      [name, room, status]
+    // Check duplicate ID
+    const [existing] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
+    if (existing.length > 0)
+      return res.status(400).json({ error: "Student ID already exists" });
+
+    await db.query(
+      "INSERT INTO students (student_id, name, room, status) VALUES (?, ?, ?, ?)",
+      [student_id, name, room, status]
     );
 
-    res.json({ success: true, id: result.insertId });
+    const [newStudent] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
+
+    res.json({ success: true, student: newStudent[0] });
   } catch (err) {
     console.error("Add student error:", err);
     res.status(500).json({ error: "Failed to add student" });
@@ -150,10 +159,10 @@ app.post("/api/students", async (req, res) => {
 });
 
 // --- DELETE STUDENT --- //
-app.delete("/api/students/:id", async (req, res) => {
+app.delete("/api/students/:student_id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const [result] = await db.query("DELETE FROM students WHERE id = ?", [id]);
+    const { student_id } = req.params;
+    const [result] = await db.query("DELETE FROM students WHERE student_id = ?", [student_id]);
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Student not found" });
 
@@ -161,33 +170,6 @@ app.delete("/api/students/:id", async (req, res) => {
   } catch (err) {
     console.error("Delete student error:", err);
     res.status(500).json({ error: "Failed to delete student" });
-  }
-});
-
-// --- GET ROOMS --- //
-app.get("/api/rooms", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT * FROM rooms");
-    res.json(rows);
-  } catch (err) {
-    console.error("Rooms fetch error:", err);
-    res.status(500).json({ error: "Failed to fetch rooms" });
-  }
-});
-
-// --- GET CHECK-IN/CHECK-OUT --- //
-app.get("/api/checkins", async (req, res) => {
-  try {
-    const [rows] = await db.query(`
-      SELECT c.record_id AS id, c.student_id, c.unit_code, c.room_number,
-             c.checkin_date, c.checkout_date
-      FROM checkin_checkout c
-      ORDER BY c.checkin_date DESC
-    `);
-    res.json(rows);
-  } catch (err) {
-    console.error("Checkin fetch error:", err);
-    res.status(500).json({ error: "Failed to fetch check-in/out records" });
   }
 });
 
@@ -208,7 +190,7 @@ app.post("/api/login", async (req, res) => {
 
     res.json({
       success: true,
-      user_id: user.id,
+      student_id: user.student_id,
       role: user.role,
       must_change_password: !!user.must_change_password,
     });
