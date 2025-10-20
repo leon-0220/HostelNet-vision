@@ -24,7 +24,14 @@ const DB_CONFIG = {
 };
 
 // ===================== MIDDLEWARE ===================== //
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://leon-0220.github.io",
+    "https://gondola.proxy.rlwy.net"
+  ],
+  methods: ["GET", "POST", "DELETE"],
+  allowedHeaders: ["Content-Type"]
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
