@@ -139,6 +139,7 @@
 
   <div class="card">
     <form id="addForm">
+      <input type="text" id="student_id" placeholder="Student ID" required>
       <input type="text" id="name" placeholder="Student Name" required>
       <input type="text" id="room" placeholder="Room Number" required>
       <select id="status">
@@ -154,7 +155,7 @@
     <table id="studentTable">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>Student ID</th>
           <th>Student Name</th>
           <th>Room</th>
           <th>Status</th>
@@ -185,15 +186,15 @@
           return;
         }
 
-        data.forEach((s, index) => {
+        data.forEach(s => {
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${index + 1}</td>
+            <td>${s.student_id || s.id}</td>
             <td>${s.name}</td>
             <td>${s.room || "-"}</td>
             <td>${s.status || "Pending"}</td>
             <td>
-              <button class="delete-btn" onclick="deleteStudent('${s.id || s.student_id}')">Delete</button>
+              <button class="delete-btn" onclick="deleteStudent('${s.student_id || s.id}')">Delete</button>
             </td>
           `;
           tbody.appendChild(row);
@@ -207,17 +208,19 @@
     // Add student
     document.getElementById("addForm").addEventListener("submit", async e => {
       e.preventDefault();
+      const student_id = document.getElementById("student_id").value.trim();
       const name = document.getElementById("name").value.trim();
       const room = document.getElementById("room").value.trim();
       const status = document.getElementById("status").value;
 
-      if (!name || !room) return alert("Please fill in all fields!");
+      if (!student_id || !name || !room) 
+        return alert("Please fill in all fields!");
 
       try {
         const res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, room, status })
+          body: JSON.stringify({ student_id, name, room, status })
         });
 
         const data = await res.json();
