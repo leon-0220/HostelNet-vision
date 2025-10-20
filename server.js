@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // ===================== CONFIG ===================== //
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 const DB_CONFIG = {
   host: "gondola.proxy.rlwy.net",
   user: "root",
@@ -142,26 +142,35 @@ app.get("/api/students", async (req, res) => {
 app.post("/api/students", async (req, res) => {
   try {
     const { student_id, name, room, status } = req.body;
+    console.log("📩 Add Student Body:", req.body);
 
+    // validate
     if (!student_id || !name || !room || !status)
       return res.status(400).json({ error: "Missing required fields" });
 
-    // Check duplicate ID
+    // normalize status
+    const normalizedStatus = status.trim().toLowerCase();
+    const validStatuses = ["pending", "checked-in", "checked-out"];
+    if (!validStatuses.includes(normalizedStatus))
+      return res.status(400).json({ error: "Invalid status value" });
+
+    // duplicate check
     const [existing] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
     if (existing.length > 0)
       return res.status(400).json({ error: "Student ID already exists" });
 
+    // insert
     await db.query(
       "INSERT INTO students (student_id, name, room, status) VALUES (?, ?, ?, ?)",
-      [student_id, name, room, status]
+      [student_id, name, room, normalizedStatus]
     );
 
     const [newStudent] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
-
+    console.log("✅ New student added:", newStudent[0]);
     res.json({ success: true, student: newStudent[0] });
   } catch (err) {
-    console.error("Add student error:", err);
-    res.status(500).json({ error: "Failed to add student" });
+    console.error("❌ Add student error:", err.message);
+    res.status(500).json({ error: "Failed to add student", details: err.message });
   }
 });
 
@@ -175,8 +184,8 @@ app.delete("/api/students/:student_id", async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error("Delete student error:", err);
-    res.status(500).json({ error: "Failed to delete student" });
+    console.error("❌ Delete student error:", err.message);
+    res.status(500).json({ error: "Failed to delete student", details: err.message });
   }
 });
 
@@ -202,8 +211,8 @@ app.post("/api/login", async (req, res) => {
       must_change_password: !!user.must_change_password,
     });
   } catch (err) {
-    console.error("Login Error:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error("Login Error:", err.message);
+    res.status(500).json({ error: "Server error", details: err.message });
   }
 });
 
@@ -222,8 +231,8 @@ app.post("/api/change-password", async (req, res) => {
 
     res.json({ success: true, message: "Password updated successfully" });
   } catch (err) {
-    console.error("Change Password Error:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error("Change Password Error:", err.message);
+    res.status(500).json({ error: "Server error", details: err.message });
   }
 });
 
