@@ -168,7 +168,7 @@
     <ul>
       <li><a href="dashboard.html">🏠 Dashboard</a></li>
       <li><a href="students.html">👨‍🎓 Student</a></li>
-      <li><a href="studentroom.html" class="active">🛏️ Room</a></li>
+      <li><a href="studentroom.html" class="active">🛏 Room</a></li>
       <li><a href="payments.html">💳 Payment</a></li>
       <li><a href="../admin/reports.html">📝 Complaint</a></li>
       <li><a href="../../logout.php">🚪 Logout</a></li>
@@ -227,7 +227,7 @@ function renderRooms() {
   let tableHTML = '<table><tr><th>Gender</th><th>Hostel</th><th>Room No</th><th>Status</th></tr>';
   rooms.forEach((room, index) => {
     const statusClass = room.status === "Available" ? "available" : "occupied";
-    const clickable = room.status === "Available" ? `onclick="bookRoom(${index})"` : '';
+    const clickable = room.status === "Available" ? onclick="bookRoom(${index})" : '';
     tableHTML += `<tr>
       <td>${room.gender}</td>
       <td>${room.hostel}</td>
@@ -266,6 +266,3 @@ renderRooms();
 </script>
 </body>
 </html>
-
-
-
