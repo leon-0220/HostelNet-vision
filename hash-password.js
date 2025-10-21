@@ -19,7 +19,7 @@ import bcrypt from "bcrypt";
       const currentPass = user.password || "";
 
       if (currentPass.startsWith("$2b$") || currentPass.startsWith("$2a$")) {
-        console.log(`⏭️ Skipping user ID ${user.id} (already hashed)`);
+        console.log(⏭ Skipping user ID ${user.id} (already hashed));
         continue;
       }
 
@@ -28,7 +28,7 @@ import bcrypt from "bcrypt";
         hashed,
         user.id,
       ]);
-      console.log(`✅ Password for user ID ${user.id} hashed`);
+      console.log(✅ Password for user ID ${user.id} hashed);
     }
 
     console.log("🎉 All plain text passwords hashed successfully!");
@@ -36,8 +36,4 @@ import bcrypt from "bcrypt";
   } catch (err) {
     console.error("❌ Error hashing passwords:", err);
   }
-<<<<<<< HEAD
 })();
-=======
-})();
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
