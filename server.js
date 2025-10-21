@@ -38,8 +38,6 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Pastikan semua static frontend dalam /public
 app.use(express.static(path.join(__dirname, "public")));
 
 // ===================== DATABASE & TABLE INIT ===================== //
