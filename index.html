@@ -70,14 +70,35 @@
     const form = document.getElementById("loginForm");
     const errorBox = document.getElementById("error");
 
+    const API_BASE = "https://hostelnet-vision-3.onrender.com"; // ✅ backend Render URL
+
+    // 🧠 Check connection ke backend dulu
+    async function testConnection() {
+      try {
+        const res = await fetch(`${API_BASE}/api/test-db`);
+        if (res.ok) {
+          console.log("✅ Backend connection OK!");
+        } else {
+          console.warn("⚠️ Backend reachable tapi ada issue response:", await res.text());
+        }
+      } catch (err) {
+        console.error("❌ Backend not reachable:", err);
+        errorBox.textContent = "Server currently offline. Try again later.";
+      }
+    }
+
+    testConnection(); // test bila page load
+
+    // 🧩 Login form submit
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      errorBox.textContent = "";
+
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
 
       try {
-        // Guna full Render URL
-        const res = await fetch("https://hostelnet-vision-3.onrender.com/api/login", {
+        const res = await fetch(`${API_BASE}/api/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password }),
@@ -85,25 +106,28 @@
 
         const data = await res.json();
 
+        console.log("🔍 API Response:", data);
+
         if (!res.ok) {
-          errorBox.textContent = data.error || "Login failed";
+          errorBox.textContent = data.error || "Invalid username or password.";
           return;
         }
 
-        // Success → redirect ikut role
+        // ✅ Success → redirect ikut role
         if (data.must_change_password) {
           localStorage.setItem("user_id", data.student_id);
           window.location.href = "change-password.html";
         } else if (data.role === "admin") {
           window.location.href = "public/admin/dashboard.html";
+        } else if (data.role === "student") {
+          window.location.href = "public/student/dashboard.html";
         } else {
-          alert("Welcome student!");
-          // redirect ke student dashboard kalau ada
+          alert("Login success!");
         }
 
       } catch (err) {
-        errorBox.textContent = "Server not responding.";
-        console.error(err);
+        console.error("❌ Error connecting to backend:", err);
+        errorBox.textContent = "Server not responding. Please try again later.";
       }
     });
   </script>
