@@ -4,7 +4,7 @@ import mysql from "mysql2/promise";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 dotenv.config();
 
