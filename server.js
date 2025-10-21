@@ -4,6 +4,8 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import bcrypt from "bcrypt";
+import dotenv from "dotenv";
+dotenv.config();
 
 // ===================== SETUP ===================== //
 const __filename = fileURLToPath(import.meta.url);
