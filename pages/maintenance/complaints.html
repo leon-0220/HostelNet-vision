@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complaints | HostelNet</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+  <style>
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(180deg, #ffb88c, #fff3e0);
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 60px auto;
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease;
+    }
+
+    h2 {
+      text-align: center;
+      color: #d84315;
+      font-size: 28px;
+      margin-bottom: 25px;
+      letter-spacing: 1px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #ed5d2d;
+      color: #fff;
+      padding: 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    td {
+      background: #fff;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    tr:hover td {
+      background: #fff8f0;
+    }
+
+    .status {
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      text-align: center;
+      display: inline-block;
+    }
+
+    .pending {
+      background: #fff4e5;
+      color: #f57c00;
+    }
+
+    .in-progress {
+      background: #e3f2fd;
+      color: #0277bd;
+    }
+
+    .completed {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    a.back-btn {
+      display: inline-block;
+      margin-top: 30px;
+      background: #ed5d2d;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: 0.3s;
+      font-weight: 500;
+    }
+
+    a.back-btn:hover {
+      background: #d84315;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Complaints</h2>
+    <table>
+      <tr>
+        <th>Complaint ID</th>
+        <th>Room</th>
+        <th>Issue</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>C001</td>
+        <td>Room 4</td>
+        <td>Water leakage near bathroom</td>
+        <td><span class="status in-progress">In Progress</span></td>
+      </tr>
+      <tr>
+        <td>C002</td>
+        <td>Room 3</td>
+        <td>Ceiling fan not working</td>
+        <td><span class="status pending">Pending</span></td>
+      </tr>
+      <tr>
+        <td>C003</td>
+        <td>Room 4</td>
+        <td>Broken light switch</td>
+        <td><span class="status completed">Completed</span></td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

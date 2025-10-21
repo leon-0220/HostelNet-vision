@@ -1,0 +1,175 @@
+:root{
+  --bg: #ff4000;
+  --card: #ffffff;
+  --accent: #f39c12;
+  --muted: #6b7280;
+  --radius: 12px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.sidebar {
+  width: 220px;
+  background: #fff3e0;
+  color: #3e2723;
+  padding: 20px;
+  transition: transform 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: fixed;
+}
+
+.sidebar.closed {
+    transform: translateX(-100%);
+}
+
+.logo-box {
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo-box img {
+  width: 100px;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.logo-box h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.sidebar.closed .logo-box h2 {
+    opacity: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li {
+  margin: 5px 0;
+}
+
+.sidebar ul li a {
+  color: #3e2723;
+  text-decoration: none;
+  display: block;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: 0.3s;
+}
+
+.sidebar ul li a:hover {
+  background: #ed5d2d;
+}
+
+.form button {
+  background-color: #19de85;
+  color: white;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background: linear-gradient(180deg, #ff4000, #eef3f8);
+  overflow-x: auto;
+  color: #333;
+  margin-left: 220px;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content h2 {
+  text-align: center;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+form {
+  background-color: #fff;
+  padding: 20px;
+  max-width: 500px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin: 20px auto;
+  border-radius: 12px;
+}
+
+form label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+
+form input, form select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+form button:hover {
+  background-color: #ff5500;
+}
+
+.profile-header {
+  background-color: #40e0d0;
+  color: #fff;
+}
+
+.hostel-header {
+  background-color: #00b3b3;
+  color: #fff;
+}
+
+.info-header {
+  background-color: #ffd54f;
+  color: #fff;
+}
+
+.sidebar.closed ~ .main-content {
+    margin-left: 0;
+}
+
+.toggle-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #fff3e0;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 5px;
+    z-index: 1100;
+}
+
+.sidebar.closed + .toggle-btn {
+    left: 70px;
+}

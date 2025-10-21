@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HostelNet | Payment</title>
+  <style>
+    body { 
+      margin:0; 
+      font-family: Arial,sans-serif; 
+    }
+    .layout { display:flex; min-height:100vh; }
+    .sidebar { width:220px; background:#fff3e0; color:#3e2723; padding:20px; position:fixed; top:0; left:0; height:100%; transition: transform 0.3s ease; z-index:1000; }
+    .sidebar.closed { transform: translateX(-100%); }
+    .logo-box { display:flex; flex-direction:column; align-items:center; margin-bottom:20px; }
+    .logo-box img { width:100%; max-width:160px; height:auto; margin-bottom:5px; }
+    .sidebar h3 { margin-bottom:20px; text-align:center; }
+    .sidebar ul { list-style:none; padding:0; margin:0; }
+    .sidebar ul li { margin:15px 0; }
+    .sidebar ul li a { color:#3e2723; text-decoration:none; display:block; padding:10px; border-radius:5px; transition:0.3s; }
+    .sidebar ul li a:hover { background:#ed5d2d; }
+    .toggle-btn { position:fixed; top:15px; left:15px; background:#fff3e0; border:none; cursor:pointer; padding:8px 12px; border-radius:5px; z-index:1100; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+    .main-content { flex:1; margin-left:220px; padding:20px; background:linear-gradient(180deg,#ff4000,#eef3f8); transition: margin-left 0.3s ease; }
+    .sidebar.closed ~ .main-content { margin-left:0; }
+    .main-content h2 { text-align:center; margin-bottom:20px; color:#000; }
+    .responsive-form { max-width:600px; width:100%; border-radius:5px; border:2px solid #000; background:#fff; padding:20px; margin:0 auto; }
+    .responsive-form label { display:block; margin:10px 0 5px; font-weight:bold; }
+    .responsive-form input, .responsive-form select { width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:4px; }
+    .responsive-form input[type=submit] { background:#04AA6D; color:white; cursor:pointer; font-size:16px; }
+    .responsive-form input[type=submit]:hover { background:#038d59; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="logo-box">
+        <img src="../../images/2.png" alt="Vision University College Logo">
+        <h3>Menu</h3>
+      </div>
+      <ul>
+        <li><a href="dashboard.php">🏠 Home</a></li>
+        <li><a href="rooms.php">🏘 View Rooms</a></li>
+        <li><a href="finance.php">💰 Finance</a></li>
+        <li><a href="complaints_list.php">📝 Complaints</a></li>
+        <li><a href="logout.php">🚪 Logout</a></li>
+      </ul>
+    </div>
+
+    <!-- Toggle button -->
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <h2>Payment Form</h2>
+      <p style="text-align:center;">Please complete your payment details below.</p>
+
+      <div class="responsive-form">
+        <!-- action diubah ke public.html -->
+        <form action="public.html" method="post">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name">
+
+          <label for="id">Student ID</label>
+          <input type="text" id="id" name="id">
+
+          <label for="amount">Amount (RM)</label>
+          <input type="text" id="amount" name="amount">
+
+          <label for="method">Payment Method</label>
+          <select id="method" name="method" required>
+            <option value="">-- Select Method --</option>
+            <option value="credit">Credit/Debit Card</option>
+            <option value="online">Online Banking</option>
+            <option value="ewallet">E-Wallet</option>
+          </select>
+
+          <label for="details">Card/Account Number</label>
+          <input type="text" id="details" name="details" placeholder="Enter account/card number" required>
+
+          <input type="submit" value="public.html" placeholder="Pay Now">
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("closed");
+    }
+  </script>
+</body>
+</html>

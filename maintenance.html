@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>System Maintenance • HostelNet</title>
+  <link rel="stylesheet" href="css/maintenancestyle.css">
+</head>
+<body>
+  <main class="mn-container">
+    <div class="mn-card" role="alert" aria-live="polite">
+      <!-- you can keep this as static (no PHP) -->
+      <svg width="80" height="80" viewBox="0 0 24 24" aria-hidden="true" class="mn-icon">
+        <path fill="currentColor" d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2Zm1 11h-2V7h2v6Zm0 4h-2v-2h2v2Z"/>
+      </svg>
+
+      <h1>System Under Maintenance</h1>
+
+      <!-- optional placeholder token (no PHP) if you want personalize via PHP file -->
+      <p class="lead">Dear <strong>{{USERNAME}}</strong>,</p>
+
+      <p class="msg">
+        Our Hostel Management System is currently undergoing scheduled maintenance.
+        Some features may be unavailable for a short period. We apologise for the inconvenience.
+      </p>
+
+      <ul class="info-list">
+        <li><strong>Estimated downtime:</strong> 10:00 PM — 12:00 AM</li>
+        <li><strong>Contact:</strong> <a href="mailto:hostel@vision.edu">hostel@vision.edu</a></li>
+      </ul>
+
+      <div class="mn-actions">
+        <!-- These are normal links to other pages (no PHP required here) -->
+        <a class="btn" href="dashboard.html">Go to Dashboard</a>
+        <a class="btn btn-ghost" href="logout.php">Logout</a>
+      </div>
+
+      <p class="note">You can safely close this page — we'll be back soon.</p>
+    </div>
+  </main>
+</body>
+</html>

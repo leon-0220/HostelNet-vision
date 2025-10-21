@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Available Rooms</title>
+  <link rel="stylesheet" href="../../css/roomstyle.css">
+  <script src="../../js/roomscript.js" defer></script>
+</head>
+<body>
+  <div class="layout">
+  <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="logo-box">
+        <img src="../../images/vision.png" alt="Vision University College Logo">
+        <h3>Menu</h3>
+      </div>
+    <ul>
+      <li><a href="dashboard.html">🏠 Home</a></li>
+      <li><a href="students.html">Students</a></li>
+      <li><a href="rooms.html">🏘 View Rooms</a></li>
+      <li><a href="payment.html" class="active">💳 Payments</a></li>
+      <li><a href="complaints_list.html">🛠 Complaints</a></li>
+      <li><a href="logout.html" class="text-danger">🚪 Logout</a></li>
+    </ul>
+  </div>
+
+  <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+  <div class="container">
+    <h2>Hostel Rooms 🏠</h2>
+    <table id="roomsTable">
+      <thead>
+        <tr>
+          <th>Hostel Unit</th>
+          <th>Unit Type</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      <tr>
+          <td>Kelana Parkview D401</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Kelana Parkview D402</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>SS4D/8 21A</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>SS4D/8 21B</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>SS4C/15 14</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>SS5D/6A 20</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>SS4B/13 11A</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>v
+        <tr>
+          <td>SS5C/11 32</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Spacepod 38-1</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Spacepod 36-1</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Spacepod 20-1</td>
+          <td>Male</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Kelana Parkview D201</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Kelana Parkview D202</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Kelana Parkview D204</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Kelana Parkview D301</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Kelana Parkview D404</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>SS5D/8 12</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Ayamas 18A4</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Focus Point 20B2</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Focus Point 20B3</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Focus Point 20B4</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>7-11 24B3</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <li><a href="room_details.php?unit=24B3">Hostel Unit 7-11 24B3</a></li>
+          </td>
+        </tr>
+        <tr>
+          <td>7-11 24A4</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>SS6/8 5B</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>SS6/8 5C</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Spacepod 38-2</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Spacepod 36-2</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Spacepod 38-3</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Spacepod 36-3</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Spacepod 20 20-2</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Spacepod 20 20-3</td>
+          <td>Female</td>
+          <td>✅ Available</td>
+          <td class="action">
+            <a href="room_details.php?room=101">Room 101</a>
+          </td>
+        </tr>
+    </table>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("closed");
+    }
+
+    const userRole = "warden";
+
+      // select semua <td class="action">
+      const actions = document.querySelectorAll(".action");
+
+      if (userRole === "student") {
+        // kalau student, kosongkan
+        actions.forEach(td => td.innerHTML = "");
+      } else if (userRole === "warden") {
+        // kalau warden, letak button View Students
+        actions.forEach((td, index) => {
+          const roomNumber = td.parentElement.children[1].innerText;
+          td.innerHTML = `<a href="room_details.html?room=${roomNumber}" class="btn">View Students</a>`;
+        });
+      }
+  </script>
+</body>
+</html>

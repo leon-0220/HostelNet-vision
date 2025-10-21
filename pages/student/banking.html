@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Banking Simulation</title>
+  <link rel="stylesheet" href="../../css/bankingstyle.css">
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="loginPage" class="page active">
+    <h2>Bank Login</h2>
+    <form id="loginForm">
+      <label>Username</label>
+      <input type="text" id="username" required>
+      <label>Password</label>
+      <input type="password" id="password" required>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboardPage" class="page">
+    <h2>Welcome, <span id="userDisplay"></span></h2>
+    <p>Account Balance: RM <span id="balance">5000.00</span></p>
+    <button onclick="showPaymentPage()">Make Payment</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Payment Page -->
+  <div id="paymentPage" class="page">
+    <h2>Transfer Payment</h2>
+    <form id="paymentForm">
+      <label>Recipient Account No</label>
+      <input type="text" id="accountNo" required>
+      <label>Amount (RM)</label>
+      <input type="number" id="amount" required>
+      <button type="submit">Submit Payment</button>
+    </form>
+    <button onclick="backToDashboard()">Back</button>
+  </div>
+
+  <!-- Payment History -->
+  <div id="historyPage" class="page">
+    <h2>Payment History</h2>
+    <table border="1" width="100%">
+      <thead>
+        <tr>
+          <th>Recipient Account</th>
+          <th>Amount (RM)</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="historyTableBody"></tbody>
+    </table>
+    <button onclick="backToDashboard()">Back</button>
+  </div>
+
+  <script src="../../js/bankingscript.js"></script>
+</body>
+</html>

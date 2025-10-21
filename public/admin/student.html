@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Management</title>
+  <style>
+    /* ===== GLOBAL STYLE ===== */
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #fff8f4;
+      margin: 0;
+      padding: 40px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #ff4000;
+      margin-bottom: 25px;
+      letter-spacing: 1px;
+    }
+
+    /* ===== FORM CARD ===== */
+    .card {
+      max-width: 700px;
+      background: #ffffff;
+      margin: 0 auto;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    input, select {
+      flex: 1;
+      min-width: 150px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: #ff4000;
+      box-shadow: 0 0 3px rgba(255,64,0,0.3);
+    }
+
+    button {
+      background: #ff4000;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #e93b00;
+      transform: translateY(-1px);
+    }
+
+    /* ===== TABLE SECTION ===== */
+    .table-container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #f0f0f0;
+      padding: 12px 10px;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    th {
+      background: #ff4000;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fff4ee;
+    }
+
+    tr:hover {
+      background-color: #ffe6dc;
+    }
+
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .delete-btn:hover {
+      background: #b02a37;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Student Management</h1>
+
+  <div class="card">
+    <form id="addForm">
+      <input type="text" id="student_id" placeholder="Student ID" required>
+      <input type="text" id="name" placeholder="Student Name" required>
+      <input type="text" id="room" placeholder="Room Number" required>
+      <select id="status">
+        <option value="pending" selected>Pending</option>
+        <option value="checked-in">Checked-in</option>
+        <option value="checked-out">Checked-out</option>
+      </select>
+      <button type="submit">Add Student</button>
+    </form>
+  </div>
+
+  <div class="table-container">
+    <table id="studentTable">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Student Name</th>
+          <th>Room</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="5">Loading data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:8080/api/students";
+
+    // Load all students
+    async function loadStudents() {
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error("Failed to fetch students");
+        const data = await res.json();
+
+        const tbody = document.querySelector("#studentTable tbody");
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5">No students found.</td></tr>`;
+          return;
+        }
+
+        data.forEach(s => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${s.student_id || s.id}</td>
+            <td>${s.name}</td>
+            <td>${s.room || "-"}</td>
+            <td>${s.status || "Pending"}</td>
+            <td>
+              <button class="delete-btn" onclick="deleteStudent('${s.student_id || s.id}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error(err);
+        alert("⚠️ Failed to load student data!");
+      }
+    }
+
+    // Add student
+    document.getElementById("addForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const student_id = document.getElementById("student_id").value.trim();
+      const name = document.getElementById("name").value.trim();
+      const room = document.getElementById("room").value.trim();
+      const status = document.getElementById("status").value;
+
+      if (!student_id || !name || !room) 
+        return alert("Please fill in all fields!");
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ student_id, name, room, status })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to add student");
+
+        alert("✅ Student added successfully!");
+        e.target.reset();
+        loadStudents();
+      } catch (err) {
+        console.error(err);
+        alert("❌ Failed to add student!");
+      }
+    });
+
+    // Delete student
+    async function deleteStudent(id) {
+      if (!confirm("Are you sure you want to delete this student?")) return;
+
+      try {
+        const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Delete failed");
+
+        alert("🗑️ Student deleted!");
+        loadStudents();
+      } catch (err) {
+        console.error(err);
+        alert("❌ Failed to delete student!");
+      }
+    }
+
+    // Load on start
+    loadStudents();
+  </script>
+</body>
+</html>

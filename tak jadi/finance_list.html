@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Finance Transactions</title>
+    <link rel="stylesheet" href="../../css/financestyle.css">
+</head>
+<body>
+    <div class="layout">
+        <div class="sidebar" id="sidebar">
+            <div class="logo-box">
+                <img src="../images/vision.png" alt="Vision University College Logo">
+                <h2>HostelNet</h2>
+            </div>
+            <ul>
+                <li><a href="dashboard.html">Home</a></li>
+                <li><a href="rooms.html">View Rooms</a></li>
+                <li><a href="payments.html">Payments</a></li>
+                <li><a href="complaints_list.html">Complaints</a></li>
+                <li><a href="logout.html" class="text-danger">🚪 Logout</a></li>
+            </ul>
+        </div>
+
+        <!-- button to toggle -->
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+        <div class="main-content">
+            <div class="container mt-5">
+                <div class="card shadow p-4">
+                    <div class="login-box">
+                        <h2>Finance Dashboard</h2>
+                        <table border="1" id="financeTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Student Name</th>
+                                    <th>Amount</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+
+                        <script>
+                        fetch('../finance.php')
+                        .then(response => response.json())
+                        .then(data => {
+                            const tbody = document.querySelector("#financeTable tbody");
+                            data.forEach(tr => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${tr.id}</td>
+                                    <td>${tr.name}</td>
+                                    <td>${tr.amount}</td>
+                                    <td>${tr.type}</td>
+                                    <td>${tr.description}</td>
+                                    <td>${tr.date}</td>
+                                `;
+                                tbody.appendChild(row);
+                            });
+                        });
+
+                        function toggleSidebar() {
+                        document.getElementById("sidebar").classList.toggle("closed");
+                        }
+                    </script>
+</body>
+</html>

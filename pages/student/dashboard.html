@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HostelNet | Student Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #fff3e0;
+      color: #3e2723;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+
+    .sidebar.closed {
+      transform: translateX(-100%);
+    }
+
+    .logo-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-box img {
+      width: 100%;
+      max-width: 160px; 
+      height: auto;
+      margin-bottom: 5px;
+    }
+
+    .sidebar h2 {
+      margin: 0 0 20px 0;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar ul li {
+      margin: 15px 0;
+    }
+
+    .sidebar ul li a {
+      color: #3e2723;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+
+    .sidebar ul li a:hover {
+      background: #ed5d2d;
+    }
+
+    .toggle-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #fff3e0;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 5px;
+      z-index: 1100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 220px;
+      padding: 20px;
+      background: linear-gradient(180deg, #ff4000, #eef3f8);
+      transition: margin-left 0.3s ease;
+    }
+
+    .sidebar.closed ~ .main-content {
+      margin-left: 0;
+    }
+
+    .main-content h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #000;
+    }
+
+    .dashboard-card {
+      max-width: 600px;
+      width: 100%;
+      border-radius: 5px;
+      border: 2px solid #000;
+      background: #fff;
+      padding: 20px;
+      margin: 20px auto;
+    }
+
+    .dashboard-card h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #333;
+      font-size: 1.1rem;
+    }
+
+    .dashboard-card input,
+    .dashboard-card select,
+    .dashboard-card textarea {
+      width: 100%;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .dashboard-card textarea {
+      height: 100px;
+    }
+
+    .dashboard-card button,
+    .dashboard-card a {
+      display: inline-block;
+      width: 100%;
+      background: #04AA6D;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 5px;
+      text-decoration: none;
+    }
+    
+    .dashboard-card button:hover,
+    .dashboard-card a:hover {
+      background: #038d59;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="logo-box">
+        <img src="../../images/2.png" alt="Vision University College Logo">
+        <h3>Menu</h3>
+      </div>
+      <ul>
+        <li><a href="dashboard.html">🏠 Dashboard</a></li>
+        <li><a href="students.html">👨‍🎓 Student</a></li>
+        <li><a href="studentroom.html">🛏 Room</a></li>
+        <li><a href="payment.html">💳 Payment</a></li>
+        <li><a href="complaints_list.html">📝 Complaint</a></li>
+        <li><a href="logout.php">🚪 Logout</a></li>
+      </ul>
+    </div>
+
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+    <div class="main-content">
+      <h2>Student Dashboard</h2>
+
+      <div class="dashboard-card">
+        <h3>Profile</h3>
+        <button onclick="viewProfile()">View Profile</button>
+        <form id="updateProfileForm">
+          <input type="text" name="name" placeholder="Name">
+          <input type="email" name="email" placeholder="Email">
+          <input type="text" name="phone" placeholder="Phone">
+          <button type="submit">Update Profile</button>
+        </form>
+      </div>
+
+      <!-- Room -->
+      <div class="dashboard-card">
+        <h3>Room Management</h3>
+        <button onclick="viewRooms()">View Rooms</button>
+        <form id="bookRoomForm">
+          <a href="checkin.html">Check-In</a>
+          <a href="checkout.html" style="background:#d9534f;">Check-Out</a>
+          <input type="number" name="room_id" placeholder="Room ID">
+          <button type="submit">Book Room</button>
+        </form>
+        <form id="changeRoomForm">
+          <input type="number" name="room_id" placeholder="New Room ID">
+          <button type="submit" style="background:#f0ad4e;">Change Room</button>
+        </form>
+      </div>
+
+      <!-- Payments -->
+      <div class="dashboard-card">
+        <h3>Payments</h3>
+        <button onclick="viewPayments()">View Payments</button>
+        <form id="makePaymentForm">
+          <input type="number" name="amount" placeholder="Amount">
+          <button type="submit">Make Payment</button>
+        </form>
+      </div>
+
+      <!-- Complaints -->
+      <div class="dashboard-card">
+        <h3>Complaints</h3>
+        <button onclick="viewComplaints()">View Complaints</button>
+        <form id="complaintForm">
+          <textarea name="message" placeholder="Write complaint..."></textarea>
+          <button type="submit" style="background:#d9534f;">Submit Complaint</button>
+        </form>
+      </div>
+
+      <!-- Announcements -->
+      <div class="dashboard-card">
+        <h3>Announcements</h3>
+        <button onclick="viewAnnouncements()">View Announcements</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("closed");
+    }
+  </script>
+</body>
+</html>

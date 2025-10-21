@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complaints Dashboard</title>
+    <link rel="stylesheet" href="../css/complaintstyle.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+</head>
+<body>
+    <div class="layout">
+        <!-- sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo-box">
+                <img src="../../images/vision.png" alt="Vision University College Logo">
+                <h2>Menu</h2>
+            </div>
+            <ul>
+                <li><a href="dashboard.html" clss="nav-link text-white">Home</a></li>
+                <li><a href="rooms.html">View Rooms</a></li>
+                <li><a href="payments.html">Payments</a></li>
+                <li><a href="complaints_list.html">Complaints</a></li>
+                <li><a href="logout.html" class="text-danger">🚪 Logout</a></li>
+            </ul>
+        </div>
+
+        <!-- button to toggle -->
+     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+        <div class="main-content">
+            <div class="container mt-5">
+                <div class="card shadow p-4">
+                    <div class="login-box">
+                        <h2>Complaints</h2>
+                        <table border="1" id="complaintsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Student Name</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                    </tbody>
+                </table>
+                
+                <script>
+                fetch('php/complaints.php')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.querySelector("#complaintsTable tbody");
+                    data.forEach(c => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${c.id}</td>
+                            <td>${c.name}</td>
+                            <td>${c.category}</td>
+                            <td>${c.description}</td>
+                            <td>${c.status}</td>
+                            <td>${c.date}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                });
+                
+                function toggleSidebar() {
+                document.getElementById("sidebar").classList.toggle("closed");
+                }
+                </script>
+                <script src="../../js/sidebar.js"></script>
+</body>
+</html>

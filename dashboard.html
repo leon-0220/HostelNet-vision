@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Dashboard | HostelNet</title>
+  <link rel="stylesheet" href="css/dashboardstyle.css">
+</head>
+<body>
+<div class="layout">
+  <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="logo-box">
+        <img src="images/vision.png" alt="Vision University College Logo">
+        <h3>Menu</h3>
+      </div>
+    <ul>
+      <li><a href="dashboard.html">🏠 Home</a></li>
+      <li><a href="pages/admin/students.html">Students</a></li>
+      <li><a href="pages/admin/rooms.html">🏘 View Rooms</a></li>
+      <li><a href="pages/student/payments.html" class="active">💳 Payments</a></li>
+      <li><a href="pages/admin/reports.html">🛠 Complaints</a></li>
+      <li><a href="logout.html" class="text-danger">🚪 Logout</a></li>
+    </ul>
+  </div>
+
+  <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="main-content">
+  <h2>Student Dashboard</h2>
+
+  <!-- Home -->
+  <div id="homeSection" class="section" style="display:block;">
+    <div class="row mt-4">
+      <div class="col-md-4"><div class="card p-3 text-center"><h4>Your Room</h4><p id="studentRoom" class="display-6">Not Assigned</p></div></div>
+      <div class="col-md-4"><div class="card p-3 text-center"><h4>Payments</h4><p id="studentPayments" class="display-6">0 Pending</p></div></div>
+      <div class="col-md-4"><div class="card p-3 text-center"><h4>Complaints</h4><p id="studentComplaints" class="display-6">0 Active</p></div></div>
+    </div>
+  </div>
+
+  <!-- View Rooms -->
+  <div id="roomsSection" class="section">
+    <h4>Available Rooms</h4>
+    <ul id="roomList" class="list-group"></ul>
+  </div>
+
+  <!-- Payments -->
+  <div id="paymentsSection" class="section">
+    <h4>Make Payment</h4>
+    <ul id="paymentsList" class="list-group"></ul>
+    <button class="btn btn-success mt-2" onclick="makePayment()">💳 Pay Now</button>
+  </div>
+
+  <!-- Complaints -->
+  <div id="complaintsSection" class="section">
+    <h4>Report Maintenance Issue</h4>
+    <form id="complaintForm">
+      <textarea id="complaintText" class="form-control" placeholder="Describe your issue..." required></textarea><br>
+      <button type="submit" class="btn btn-warning">Submit Complaint</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function showSection(sectionId) {
+  document.querySelectorAll('.section').forEach(sec => sec.style.display = "none");
+  document.getElementById(sectionId).style.display = "block";
+
+  if(sectionId === "homeSection") loadStudentOverview();
+  if(sectionId === "roomsSection") loadRooms();
+  if(sectionId === "paymentsSection") loadPayments();
+}
+
+async function loadStudentOverview() {
+  try {
+    const res = await fetch("/api/student/overview");
+    const data = await res.json();
+    document.getElementById("studentRoom").innerText = data.room || "Not Assigned";
+    document.getElementById("studentPayments").innerText = data.pendingPayments + " Pending";
+    document.getElementById("studentComplaints").innerText = data.activeComplaints + " Active";
+  } catch(e){ console.error(e); }
+}
+
+async function loadRooms() {
+  try {
+    const res = await fetch("/api/student/rooms");
+    const rooms = await res.json();
+    const list = document.getElementById("roomList");
+    list.innerHTML = "";
+    rooms.forEach(r => {
+      const li = document.createElement("li");
+      li.classList.add("list-group-item");
+      li.innerHTML = Room ${r.number} - ${r.isOccupied ? "❌ Occupied" : "✅ Available"};
+
+      const btn = document.createElement("button");
+      btn.classList.add("btn", "btn-primary", "btn-sm", "ms-2");
+      if(!r.isOccupied) {
+        btn.innerText = "Register / Change";
+        btn.onclick = async () => {
+          await fetch("/api/student/book-room", {
+            method:"POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({roomId:r._id})
+          });
+          loadRooms();
+          loadStudentOverview();
+        };
+      } else if(r.isOccupied && r.userId === "currentStudentId") {
+        btn.innerText = "Change Room";
+        btn.onclick = async () => {
+          await fetch("/api/student/change-room", {
+            method:"POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({roomId:r._id})
+          });
+          loadRooms();
+          loadStudentOverview();
+        };
+      } else btn.style.display="none";
+
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+  } catch(e){ console.error(e); }
+}
+
+async function loadPayments() {
+  try {
+    const res = await fetch("/api/student/payments");
+    const payments = await res.json();
+    const list = document.getElementById("paymentsList");
+    list.innerHTML = "";
+    payments.forEach(p => {
+      const li = document.createElement("li");
+      li.classList.add("list-group-item");
+      li.innerText = RM${p.amount} - ${p.status};
+      list.appendChild(li);
+    });
+  } catch(e){ console.error(e); }
+}
+
+function makePayment() {
+  // Contoh: redirect ke payment gateway atau API call
+  alert("Redirecting to payment gateway...");
+}
+
+document.getElementById("complaintForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const text = document.getElementById("complaintText").value;
+  await fetch("/api/student/complaints", {
+    method:"POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({message:text})
+  });
+  alert("Complaint submitted!");
+  document.getElementById("complaintText").value="";
+  loadStudentOverview();
+});
+
+loadStudentOverview();
+
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("closed");
+}
+</script>
+</body>
+</html>

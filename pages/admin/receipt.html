@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HostelNet | Payment Receipt</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 40px;
+    }
+    .receipt {
+      max-width: 500px;
+      background: #fff;
+      border-radius: 10px;
+      border: 2px solid #ff4400;
+      padding: 30px;
+      margin: auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #ff4400;
+    }
+    .details p {
+      font-size: 16px;
+      margin: 8px 0;
+    }
+    .btn {
+      display: block;
+      text-align: center;
+      background: #04AA6D;
+      color: #fff;
+      padding: 10px;
+      margin-top: 20px;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: #038d59;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="receipt">
+    <h2>Payment Receipt</h2>
+    <div class="details">
+      <p><strong>Name:</strong> <?= $data['student_name']; ?></p>
+      <p><strong>Student ID:</strong> <?= $data['student_id']; ?></p>
+      <p><strong>Amount:</strong> RM <?= $data['amount']; ?></p>
+      <p><strong>Method:</strong> <?= ucfirst($data['method']); ?></p>
+      <p><strong>Transaction Date:</strong> <?= $data['date']; ?></p>
+    </div>
+    <a href="finance.html" class="btn">Back to Finance</a>
+  </div>
+
+</body>
+</html>

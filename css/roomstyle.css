@@ -1,0 +1,142 @@
+:root{
+  --bg: #ff4000;
+  --card: #ffffff;
+  --accent: #f39c12;
+  --muted: #6b7280;
+  --radius: 12px;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(180deg,var(--bg),#eef3f8);
+}
+
+.sidebar {
+  width: 220px;
+  background: #ff4400;
+  color: #fff;
+  padding: 20px;
+  transition: transform 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.sidebar.closed {
+    transform: translateX(-100%);
+}
+
+.logo-box {
+  display: flex;
+  flex-direction: column; /* logo atas tulisan */
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo-box img {
+  width: 100px;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.logo-box h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.sidebar.closed .logo-box h2 {
+    opacity: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li {
+  margin: 15px 0;
+}
+
+.sidebar ul li a {
+  color: #ecf0f1;
+  text-decoration: none;
+  display: block;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: 0.3s;
+}
+
+.sidebar ul li a:hover {
+  background: #f38b69;
+}
+
+.container {
+  max-width: 800px;
+  margin: 50px auto;
+  background: #fff;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: center;
+  padding: 10px;
+}
+
+th {
+  background: #27ae60;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background: #f2f2f2;
+}
+
+.btn {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #3498db;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}
+.btn:hover {
+  background: #2980b9;
+}
+
+.sidebar.closed ~ .content {
+    margin-left: 0;
+}
+
+/* toggle button */
+.toggle-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 5px;
+    z-index: 1100;
+}
+
+.sidebar.closed + .toggle-btn {
+    left: 70px;
+}

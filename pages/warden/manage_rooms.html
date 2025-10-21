@@ -1,0 +1,62 @@
+<?php
+include("../php/db_connect.php");
+
+// Assign bilik kepada student
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $student_id = $_POST['student_id'];
+    $room_id = $_POST['room_id'];
+
+    // Update bilik student
+    $sql = "UPDATE students SET room_id='$room_id' WHERE student_id='$student_id'";
+    $conn->query($sql);
+
+    // Update bilik jadi occupied
+    $conn->query("UPDATE rooms SET isOccupied=1 WHERE id='$room_id'");
+
+    echo "<div class='alert alert-success'>Room assigned successfully!</div>";
+}
+
+// Ambil semua student & room
+$students = $conn->query("SELECT * FROM students");
+$rooms = $conn->query("SELECT * FROM rooms WHERE isOccupied=0");
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Rooms</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+
+  <h2 class="mb-4">🏘 Manage Rooms</h2>
+
+  <form method="POST" class="row g-3">
+    <div class="col-md-5">
+      <label for="student" class="form-label">Student</label>
+      <select name="student_id" class="form-select" required>
+        <option value="">-- Select Student --</option>
+        <?php while($s = $students->fetch_assoc()): ?>
+          <option value="<?= $s['student_id'] ?>"><?= $s['student_id'] ?> - <?= $s['fullname'] ?></option>
+        <?php endwhile; ?>
+      </select>
+    </div>
+
+    <div class="col-md-5">
+      <label for="room" class="form-label">Room</label>
+      <select name="room_id" class="form-select" required>
+        <option value="">-- Select Room --</option>
+        <?php while($r = $rooms->fetch_assoc()): ?>
+          <option value="<?= $r['id'] ?>">Room <?= $r['room_number'] ?></option>
+        <?php endwhile; ?>
+      </select>
+    </div>
+
+    <div class="col-md-2 d-flex align-items-end">
+      <button type="submit" class="btn btn-primary w-100">Assign</button>
+    </div>
+  </form>
+
+</body>
+</html>
