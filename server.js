@@ -7,7 +7,7 @@ import bcrypt from "bcrypt";
 
 // ===================== SETUP ===================== //
 const __filename = fileURLToPath(import.meta.url);
-const _dirname = path.dirname(_filename);
+const __dirname = path.dirname(__filename);
 const app = express();
 
 // ===================== CONFIG ===================== //
@@ -30,7 +30,7 @@ app.use(cors({
     "https://gondola.proxy.rlwy.net",
     "https://your-render-app-name.onrender.com" // ✅ Tambah URL Render bila dah deploy
   ],
-  methods: ["GET", "POST", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type"]
 }));
 app.use(express.json());
@@ -42,7 +42,7 @@ let db;
 try {
   db = await mysql.createPool(DB_CONFIG);
   console.log("✅ Database connected successfully!");
-  console.log(📦 Connected to DB: ${DB_CONFIG.host}:${DB_CONFIG.port});
+  console.log(`📦 Connected to DB: ${DB_CONFIG.host}:${DB_CONFIG.port}`);
 } catch (err) {
   console.error("❌ Database connection failed:", err.message);
   process.exit(1);
@@ -103,7 +103,18 @@ CREATE TABLE IF NOT EXISTS checkin_checkout (
 );
 `);
 
-console.log("✅ Database tables verified/created successfully.");
+// ===================== COMPLAINTS TABLE ===================== //
+await db.query(`
+CREATE TABLE IF NOT EXISTS complaints (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_name VARCHAR(150) NOT NULL,
+  room_no VARCHAR(20) NOT NULL,
+  complaint_text TEXT NOT NULL,
+  date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('Pending', 'In Progress', 'Resolved') DEFAULT 'Pending'
+);
+`);
+console.log("✅ Database tables verified/created successfully (including complaints).");
 
 // ===================== DEFAULT ADMIN ===================== //
 const [adminCheck] = await db.query("SELECT * FROM users WHERE username = 'admin01'");
@@ -127,6 +138,7 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
+// === STUDENTS === //
 app.get("/api/students", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM students ORDER BY student_id DESC");
@@ -140,8 +152,6 @@ app.get("/api/students", async (req, res) => {
 app.post("/api/students", async (req, res) => {
   try {
     const { student_id, name, room, status } = req.body;
-    console.log("📩 Add Student Body:", req.body);
-
     if (!student_id || !name || !room || !status)
       return res.status(400).json({ error: "Missing required fields" });
 
@@ -160,7 +170,6 @@ app.post("/api/students", async (req, res) => {
     );
 
     const [newStudent] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
-    console.log("✅ New student added:", newStudent[0]);
     res.json({ success: true, student: newStudent[0] });
   } catch (err) {
     console.error("❌ Add student error:", err.message);
@@ -174,7 +183,6 @@ app.delete("/api/students/:student_id", async (req, res) => {
     const [result] = await db.query("DELETE FROM students WHERE student_id = ?", [student_id]);
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Student not found" });
-
     res.json({ success: true });
   } catch (err) {
     console.error("❌ Delete student error:", err.message);
@@ -182,6 +190,7 @@ app.delete("/api/students/:student_id", async (req, res) => {
   }
 });
 
+// === LOGIN === //
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -208,6 +217,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+// === CHANGE PASSWORD === //
 app.post("/api/change-password", async (req, res) => {
   try {
     const { user_id, new_password } = req.body;
@@ -227,6 +237,34 @@ app.post("/api/change-password", async (req, res) => {
   }
 });
 
+// === COMPLAINTS === //
+app.get("/api/complaints", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM complaints ORDER BY date_submitted DESC");
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Fetch complaints error:", err.message);
+    res.status(500).json({ error: "Failed to fetch complaints" });
+  }
+});
+
+app.put("/api/complaints/:id", async (req, res) => {
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    const validStatuses = ["Pending", "In Progress", "Resolved"];
+    if (!validStatuses.includes(status))
+      return res.status(400).json({ error: "Invalid status value" });
+
+    await db.query("UPDATE complaints SET status = ? WHERE id = ?", [status, id]);
+    res.json({ success: true, message: "Complaint status updated" });
+  } catch (err) {
+    console.error("❌ Update complaint error:", err.message);
+    res.status(500).json({ error: "Failed to update complaint" });
+  }
+});
+
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -242,5 +280,5 @@ app.get("/change-password", (req, res) => {
 
 // ===================== START SERVER ===================== //
 app.listen(PORT, () =>
-  console.log(🚀 Server running on http://localhost:${PORT})
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
 );
