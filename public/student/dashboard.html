@@ -171,7 +171,8 @@
         <li><a href="student1.html">👨‍🎓 My Profile</a></li>
         <li><a href="registration.html">🛏 Online Registration</a></li>
         <li><a href="studentroom.html">💳 Room Selection</a></li>
-        <li><a href="complaints_list.html">📝 Check-in / Checkout</a></li>
+        <li><a href="checkin.html">📝 Check-in</a></li>
+        <li><a href="checkout.html">📝 Check-out</a></li>
         <li><a href="../../logout.html">🚪 Logout</a></li>
       </ul>
     </div>
@@ -207,35 +208,6 @@
           <button type="submit" style="background:#f0ad4e;">Change Room</button>
         </form>
       </div>
-
-      <!-- Payments -->
-      <div class="dashboard-card">
-        <h3>Payments</h3>
-        <button onclick="viewPayments()">View Payments</button>
-        <form id="makePaymentForm">
-          <input type="number" name="amount" placeholder="Amount">
-          <button type="submit">Make Payment</button>
-        </form>
-      </div>
-
-      <!-- Complaints -->
-      <div class="dashboard-card">
-        <h3>Complaints</h3>
-        <button onclick="viewComplaints()">View Complaints</button>
-        <form id="complaintForm">
-          <textarea name="message" placeholder="Write complaint..."></textarea>
-          <button type="submit" style="background:#d9534f;">Submit Complaint</button>
-        </form>
-      </div>
-
-      <!-- Announcements -->
-      <div class="dashboard-card">
-        <h3>Announcements</h3>
-        <button onclick="viewAnnouncements()">View Announcements</button>
-      </div>
-    </div>
-  </div>
-
   <script>
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("closed");
