@@ -157,11 +157,7 @@
             placeholder="Enter your ID (e.g. DIT0423-001)" 
             name="id" 
             id="id" 
-            required 
-            pattern="^[A-Z]{3}\\d{4}-\\d{3}$" 
-            title="For Example: DIT0423-001" 
-            minlength="11" 
-            maxlength="12" 
+            required   
             style="text-transform:uppercase;"
           >
 
@@ -228,13 +224,6 @@
       const repeat = document.getElementById("psw-repeat").value.trim();
       const gender = document.getElementById("gender").value;
       const role = document.getElementById("role").value;
-
-      // Validate ID pattern
-      const idPattern = /^[A-Z]{3}\d{4}-\d{3}$/;
-      if (!idPattern.test(id)) {
-        alert("❌ ID format invalid! For example: DIT0423-001");
-        return;
-      }
 
       // Validate password match
       if (password !== repeat) {
