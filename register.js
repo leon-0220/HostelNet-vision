@@ -2,28 +2,6 @@ import express from "express";
 import mysql from "mysql2";
 import bcrypt from "bcryptjs";
 import bodyParser from "body-parser";
-<<<<<<< HEAD
-import dotenv from "dotenv";
-
-dotenv.config();
-const app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-// ✅ Connect ke database Railway
-const conn = mysql.createConnection({
-  host: process.env.MYSQLHOST,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT
-});
-
-// ✅ Route untuk register user
-app.post("/register", async (req, res) => {
-  const { username, password } = req.body;
-  const role = "student"; // boleh ubah ikut form
-=======
 import cors from "cors";
 
 const app = express();
@@ -61,40 +39,22 @@ app.post("/register", async (req, res) => {
   const { id, username, password, role } = req.body;
 
   if (!id || !username || !password || !role) {
-    return res.send("<script>alert('⚠️ Please fill in all the information!'); window.location.href='register.html';</script>");
+    return res.send("<script>alert('⚠ Please fill in all the information!'); window.location.href='register.html';</script>");
   }
 
   if (!isValidUserId(id)) {
     return res.send("<script>alert('❌ Format ID tidak sah! Contoh: DIT0423-001 / FIN0423-002'); window.location.href='register.html';</script>");
   }
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
 
   try {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-<<<<<<< HEAD
-    // Simpan ke database
-    const sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
-    conn.query(sql, [username, hashedPassword, role], (err, result) => {
-      if (err) {
-        if (err.code === "ER_DUP_ENTRY") {
-          return res.send("<script>alert('❌ Username sudah wujud'); window.location.href='register.html';</script>");
-        } else {
-          console.error(err);
-          return res.send("<script>alert('⚠️ Ralat server!'); window.location.href='register.html';</script>");
-        }
-      }
-      return res.send("<script>alert('✅ Pendaftaran berjaya!'); window.location.href='login.html';</script>");
-    });
-  } catch (error) {
-    console.error(error);
-=======
     const checkSQL = "SELECT * FROM users WHERE id = ? OR username = ?";
     conn.query(checkSQL, [id, username], (err, result) => {
       if (err) {
         console.error(err);
-        return res.send("<script>alert('⚠️ Error while checking user!'); window.location.href='register.html';</script>");
+        return res.send("<script>alert('⚠ Error while checking user!'); window.location.href='register.html';</script>");
       }
 
       if (result.length > 0) {
@@ -105,26 +65,18 @@ app.post("/register", async (req, res) => {
       conn.query(sql, [id, username, hashedPassword, role], (err2) => {
         if (err2) {
           console.error(err2);
-          return res.send("<script>alert('⚠️ Error while registering user!'); window.location.href='register.html';</script>");
+          return res.send("<script>alert('⚠ Error while registering user!'); window.location.href='register.html';</script>");
         }
         return res.send("<script>alert('✅ Registration successful!'); window.location.href='login.html';</script>");
       });
     });
   } catch (error) {
     console.error("❌ Hash error:", error);
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
     res.status(500).send("Internal Server Error");
   }
 });
 
-<<<<<<< HEAD
-// ✅ Start server
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
-});
-=======
 // ✅ Jalankan server
 app.listen(3000, () => {
   console.log("🚀 Server running on port 3000");
 });
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
