@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HostelNet | Online Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #ff4000, #eef3f8);
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      padding: 30px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #ff4000;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      margin-top: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      color: #333;
+    }
+
+    input, select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      border: none;
+      background: #04AA6D;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #038d59;
+    }
+
+    .status {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    a.back-btn {
+      display: inline-block;
+      margin-top: 15px;
+      text-decoration: none;
+      color: white;
+      background: #d9534f;
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+
+    a.back-btn:hover {
+      background: #b52b27;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Online Hostel Registration</h2>
+    <form id="registrationForm">
+      <label>Student ID</label>
+      <input type="text" name="student_id" placeholder="Enter your student ID" required>
+
+      <label>Full Name</label>
+      <input type="text" name="name" placeholder="Enter your name" required>
+
+      <label>Gender</label>
+      <select name="gender" required>
+        <option value="">Select gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+
+      <label>Room Type</label>
+      <select name="room_type" required>
+        <option value="">Select room type</option>
+        <option value="Single">Single</option>
+        <option value="Double">Double</option>
+        <option value="Triple">Triple</option>
+      </select>
+
+      <label>Duration of Stay</label>
+      <select name="duration" required>
+        <option value="">Select duration</option>
+        <option value="1 Semester">1 Semester</option>
+        <option value="2 Semesters">2 Semesters</option>
+      </select>
+
+      <button type="submit">Register Now</button>
+    </form>
+
+    <div class="status" id="statusMessage"></div>
+
+    <div style="text-align:center;">
+      <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const form = e.target;
+      const data = {
+        student_id: form.student_id.value.trim(),
+        name: form.name.value.trim(),
+        gender: form.gender.value,
+        room_type: form.room_type.value,
+        duration: form.duration.value
+      };
+
+      const statusEl = document.getElementById('statusMessage');
+      statusEl.textContent = "Submitting registration...";
+
+      try {
+        const res = await fetch('https://YOUR-BACKEND-URL.onrender.com/rooms/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          statusEl.style.color = "green";
+          statusEl.textContent = "✅ Registration successful!";
+          form.reset();
+        } else {
+          statusEl.style.color = "red";
+          statusEl.textContent = "❌ " + (result.message || "Registration failed");
+        }
+      } catch (err) {
+        console.error("Error:", err);
+        statusEl.style.color = "red";
+        statusEl.textContent = "⚠️ Network or server error.";
+      }
+    });
+  </script>
+</body>
+</html>
