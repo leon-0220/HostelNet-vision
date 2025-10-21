@@ -3,39 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>HostelNet | Student Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* ---------- RESET & BASE ---------- */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: 'Poppins', Arial, sans-serif;
-      background: linear-gradient(135deg, #ff6a00, #ffb347);
-      color: #333;
-      min-height: 100vh;
-      overflow-x: hidden;
+      margin: 0;
+      font-family: Arial, sans-serif;
     }
 
-    a {
-      text-decoration: none;
-    }
-
-    /* ---------- SIDEBAR ---------- */
     .layout {
       display: flex;
       min-height: 100vh;
     }
 
     .sidebar {
-      width: 240px;
-      background: #fff;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      width: 220px;
+      background: #fff3e0;
       color: #3e2723;
-      padding: 25px 20px;
+      padding: 20px;
       position: fixed;
       top: 0;
       left: 0;
@@ -52,73 +35,63 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
     .logo-box img {
-      width: 120px;
+      width: 100%;
+      max-width: 160px; 
       height: auto;
-      margin-bottom: 10px;
-      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+      margin-bottom: 5px;
     }
 
-    .sidebar h3 {
-      font-size: 1.1rem;
-      text-transform: uppercase;
-      color: #ff6a00;
-      margin-bottom: 15px;
+    .sidebar h2 {
+      margin: 0 0 20px 0;
+      font-size: 1.2rem;
+      text-align: center;
     }
 
     .sidebar ul {
       list-style: none;
       padding: 0;
+      margin: 0;
     }
 
     .sidebar ul li {
-      margin: 12px 0;
+      margin: 15px 0;
     }
 
     .sidebar ul li a {
-      display: block;
-      padding: 10px 15px;
-      border-radius: 8px;
       color: #3e2723;
-      font-weight: 500;
-      transition: all 0.3s;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      border-radius: 5px;
+      transition: 0.3s;
     }
 
-    .sidebar ul li a:hover,
-    .sidebar ul li a.active {
-      background: linear-gradient(90deg, #ff6a00, #ffb347);
-      color: white;
-      transform: translateX(5px);
+    .sidebar ul li a:hover {
+      background: #ed5d2d;
     }
 
-    /* ---------- TOGGLE BUTTON ---------- */
     .toggle-btn {
       position: fixed;
       top: 15px;
       left: 15px;
-      background: #fff;
+      background: #fff3e0;
       border: none;
       cursor: pointer;
-      padding: 10px 14px;
-      border-radius: 8px;
+      padding: 8px 12px;
+      border-radius: 5px;
       z-index: 1100;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-      transition: background 0.3s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
-    .toggle-btn:hover {
-      background: #ffe5d0;
-    }
-
-    /* ---------- MAIN CONTENT ---------- */
     .main-content {
       flex: 1;
-      margin-left: 240px;
-      padding: 40px 25px;
-      background: linear-gradient(180deg, #fffdf9, #f5f5f5);
+      margin-left: 220px;
+      padding: 20px;
+      background: linear-gradient(180deg, #ff4000, #eef3f8);
       transition: margin-left 0.3s ease;
     }
 
@@ -128,79 +101,60 @@
 
     .main-content h2 {
       text-align: center;
-      color: #ff6a00;
-      margin-bottom: 25px;
-      font-size: 1.8rem;
-      letter-spacing: 1px;
+      margin-bottom: 20px;
+      color: #000;
     }
 
-    /* ---------- CARD ---------- */
     .dashboard-card {
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      padding: 25px;
+      max-width: 600px;
+      width: 100%;
+      border-radius: 5px;
+      border: 2px solid #000;
+      background: #fff;
+      padding: 20px;
       margin: 20px auto;
-      max-width: 650px;
-      transition: transform 0.2s;
-    }
-
-    .dashboard-card:hover {
-      transform: translateY(-3px);
     }
 
     .dashboard-card h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
       color: #333;
-      font-size: 1.2rem;
-      margin-bottom: 15px;
-      border-left: 5px solid #ff6a00;
-      padding-left: 10px;
+      font-size: 1.1rem;
     }
 
-    input, select, textarea {
+    .dashboard-card input,
+    .dashboard-card select,
+    .dashboard-card textarea {
       width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      margin-top: 6px;
+      margin-top: 5px;
       margin-bottom: 15px;
-      font-size: 0.95rem;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
 
-    textarea { height: 100px; }
+    .dashboard-card textarea {
+      height: 100px;
+    }
 
-    button, .dashboard-card a {
+    .dashboard-card button,
+    .dashboard-card a {
       display: inline-block;
       width: 100%;
-      background: linear-gradient(90deg, #ff6a00, #ffb347);
+      background: #04AA6D;
       color: white;
+      padding: 10px;
       border: none;
-      padding: 12px;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 1rem;
-      font-weight: 500;
-      transition: all 0.3s;
       text-align: center;
+      margin-top: 5px;
+      text-decoration: none;
     }
-
-    button:hover, .dashboard-card a:hover {
-      background: linear-gradient(90deg, #e65c00, #ff9933);
-      transform: scale(1.02);
-    }
-
-    /* ---------- RESPONSIVE ---------- */
-    @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-      }
-      .sidebar.open {
-        transform: translateX(0);
-      }
-      .main-content {
-        margin-left: 0;
-        padding: 80px 20px;
-      }
+    
+    .dashboard-card button:hover,
+    .dashboard-card a:hover {
+      background: #038d59;
     }
   </style>
 </head>
@@ -213,12 +167,12 @@
         <h3>Menu</h3>
       </div>
       <ul>
-        <li><a href="dashboard.html" class="active">🏠 Home</a></li>
+        <li><a href="dashboard.html">🏠 Home</a></li>
         <li><a href="student1.html">👨‍🎓 My Profile</a></li>
         <li><a href="registration.html">🛏 Online Registration</a></li>
         <li><a href="studentroom.html">💳 Room Selection</a></li>
         <li><a href="checkin.html">📝 Check-in</a></li>
-        <li><a href="checkout.html">📦 Check-out</a></li>
+        <li><a href="checkout.html">📝 Check-out</a></li>
         <li><a href="../../logout.html">🚪 Logout</a></li>
       </ul>
     </div>
@@ -226,9 +180,8 @@
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
 
     <div class="main-content">
-      <h2>🎓 Student Dashboard</h2>
+      <h2>Student Dashboard</h2>
 
-      <!-- Profile Section -->
       <div class="dashboard-card">
         <h3>Profile</h3>
         <button onclick="viewProfile()">View Profile</button>
@@ -240,73 +193,73 @@
         </form>
       </div>
 
-      <!-- Room Management -->
+      <!-- Room -->
       <div class="dashboard-card">
         <h3>Room Management</h3>
         <button onclick="viewRooms()">View Rooms</button>
         <form id="bookRoomForm">
           <a href="checkin.html">Check-In</a>
-          <a href="checkout.html" style="background:linear-gradient(90deg, #d9534f, #ff7675);">Check-Out</a>
+          <a href="checkout.html" style="background:#d9534f;">Check-Out</a>
           <input type="number" name="room_id" placeholder="Room ID">
           <button type="submit">Book Room</button>
         </form>
         <form id="changeRoomForm">
           <input type="number" name="room_id" placeholder="New Room ID">
-          <button type="submit" style="background:linear-gradient(90deg, #f0ad4e, #f8c471);">Change Room</button>
+          <button type="submit" style="background:#f0ad4e;">Change Room</button>
         </form>
       </div>
-    </div>
-  </div>
-
   <script>
     function toggleSidebar() {
-      const sidebar = document.getElementById("sidebar");
-      sidebar.classList.toggle("closed");
+      document.getElementById("sidebar").classList.toggle("closed");
     }
-
-    // Load user profile
-    async function loadProfile() {
-      try {
-        const res = await fetch('/user/profile', { method: 'GET', credentials: 'include' });
-        if (res.ok) {
-          const user = await res.json();
-          document.querySelector('input[name="name"]').value = user.username || '';
-          document.querySelector('input[name="email"]').value = user.email || '';
-          document.querySelector('input[name="phone"]').value = user.phone || '';
-        } else {
-          console.error('Cannot load profile', res.status);
-        }
-      } catch (err) {
-        console.error('Error loading profile', err);
+  // Load user profile bila page load
+  async function loadProfile() {
+    try {
+      const res = await fetch('/user/profile', {
+        method: 'GET',
+        credentials: 'include' // penting untuk hantar cookie session
+      });
+      if(res.ok){
+        const user = await res.json();
+        document.querySelector('input[name="name"]').value = user.username || '';
+        document.querySelector('input[name="email"]').value = user.email || '';
+        document.querySelector('input[name="phone"]').value = user.phone || '';
+      } else {
+        console.error('Cannot load profile', res.status);
       }
+    } catch(err){
+      console.error('Error loading profile', err);
     }
-    loadProfile();
+  }
 
-    // Handle profile update
-    document.getElementById('updateProfileForm').addEventListener('submit', async function(e){
-      e.preventDefault();
-      const name = this.name.value.trim();
-      const email = this.email.value.trim();
-      const phone = this.phone.value.trim();
+  loadProfile();
 
-      try {
-        const res = await fetch('/user/profile/update', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ name, email, phone })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          alert('✅ Profile updated successfully!');
-        } else {
-          alert('❌ Update failed: ' + data.message);
-        }
-      } catch (err) {
-        console.error('Error updating profile', err);
-        alert('❌ Unable to update profile. Check console.');
+  // Handle form submit
+  document.getElementById('updateProfileForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const name = this.name.value.trim();
+    const email = this.email.value.trim();
+    const phone = this.phone.value.trim();
+
+    try{
+      const res = await fetch('/user/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name, email, phone })
+      });
+
+      const data = await res.json();
+      if(res.ok){
+        alert('✅ Profile updated successfully!');
+      } else {
+        alert('❌ Update failed: ' + data.message);
       }
-    });
+    } catch(err){
+      console.error('Error updating profile', err);
+      alert('❌ Unable to update profile. Check console.');
+    }
+  });
   </script>
 </body>
 </html>
