@@ -169,11 +169,7 @@
   </div>
 
   <script>
-<<<<<<< HEAD
-    const API_URL = "http://localhost:8080/api/students";
-=======
     const API_URL = "https://gondola.proxy.rlwy.net/api/students";
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
 
     // Load all students
     async function loadStudents() {
@@ -186,7 +182,7 @@
         tbody.innerHTML = "";
 
         if (data.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5">No students found.</td></tr>`;
+          tbody.innerHTML = <tr><td colspan="5">No students found.</td></tr>;
           return;
         }
 
@@ -205,7 +201,7 @@
         });
       } catch (err) {
         console.error(err);
-        alert("⚠️ Failed to load student data!");
+        alert("⚠ Failed to load student data!");
       }
     }
 
@@ -244,11 +240,11 @@
       if (!confirm("Are you sure you want to delete this student?")) return;
 
       try {
-        const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+        const res = await fetch(${API_URL}/${id}, { method: "DELETE" });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Delete failed");
 
-        alert("🗑️ Student deleted!");
+        alert("🗑 Student deleted!");
         loadStudents();
       } catch (err) {
         console.error(err);
@@ -260,8 +256,4 @@
     loadStudents();
   </script>
 </body>
-<<<<<<< HEAD
 </html>
-=======
-</html>
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
