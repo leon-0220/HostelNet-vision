@@ -24,15 +24,17 @@ const DB_CONFIG = {
 };
 
 // ===================== MIDDLEWARE ===================== //
-app.use(cors({
-  origin: [
-    "https://leon-0220.github.io",
-    "https://gondola.proxy.rlwy.net",
-    "https://your-render-app-name.onrender.com" // ✅ Tambah URL Render bila dah deploy
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type"]
-}));
+app.use(
+  cors({
+    origin: [
+      "https://leon-0220.github.io",
+      "https://gondola.proxy.rlwy.net",
+      "https://your-render-app-name.onrender.com", // ✅ Tambah URL Render bila dah deploy
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -103,7 +105,6 @@ CREATE TABLE IF NOT EXISTS checkin_checkout (
 );
 `);
 
-// ===================== COMPLAINTS TABLE ===================== //
 await db.query(`
 CREATE TABLE IF NOT EXISTS complaints (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -117,7 +118,9 @@ CREATE TABLE IF NOT EXISTS complaints (
 console.log("✅ Database tables verified/created successfully (including complaints).");
 
 // ===================== DEFAULT ADMIN ===================== //
-const [adminCheck] = await db.query("SELECT * FROM users WHERE username = 'admin01'");
+const [adminCheck] = await db.query(
+  "SELECT * FROM users WHERE username = 'admin01'"
+);
 if (adminCheck.length === 0) {
   const hashed = await bcrypt.hash("AdminPass01", 10);
   await db.query(
@@ -262,6 +265,46 @@ app.put("/api/complaints/:id", async (req, res) => {
   } catch (err) {
     console.error("❌ Update complaint error:", err.message);
     res.status(500).json({ error: "Failed to update complaint" });
+  }
+});
+
+// ===================== DASHBOARD API (BARU) ===================== //
+app.get("/api/dashboard", async (req, res) => {
+  try {
+    const [[{ totalStudents }]] = await db.query("SELECT COUNT(*) AS totalStudents FROM students");
+    const [[{ totalRooms }]] = await db.query("SELECT COUNT(*) AS totalRooms FROM rooms");
+    const [[{ checkedIn }]] = await db.query("SELECT COUNT(*) AS checkedIn FROM students WHERE status = 'checked-in'");
+    res.json({ totalStudents, totalRooms, checkedIn });
+  } catch (err) {
+    console.error("❌ Dashboard Error:", err.message);
+    res.status(500).json({ error: "Failed to fetch dashboard data" });
+  }
+});
+
+// === ROOMS === //
+app.get("/api/rooms", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT unit_code, room_number, capacity, status FROM rooms");
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Fetch rooms error:", err.message);
+    res.status(500).json({ error: "Failed to fetch rooms" });
+  }
+});
+
+// === CHECKIN CHECKOUT === //
+app.get("/api/checkins", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT c.record_id AS id, s.name AS student_name, c.checkin_date AS checkin_at, c.checkout_date AS checkout_at
+      FROM checkin_checkout c
+      JOIN students s ON c.student_id = s.student_id
+      ORDER BY c.record_id DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Fetch checkins error:", err.message);
+    res.status(500).json({ error: "Failed to fetch checkins" });
   }
 });
 
