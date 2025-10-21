@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Dashboard - Hostel Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/studentstyle.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="logo-box">
+        <img src="../../images/vision.png" alt="Vision University College Logo">
+      <h4 class="mb-4">HostelNet</h4>
+      </div>
+      <ul class="nav flex-column">
+        <li><a href="dashboard.html">🏠 Dashboard</a></li>
+        <li><a href="student1.html">👨‍🎓 Student</a></li>
+        <li><a href="studentroom.html">🛏 Room</a></li>
+        <li><a href="payments.html">💳 Payment</a></li>
+        <li><a href="complaints_list.html">📝 Complaint</a></li>
+        <li><a href="logout.php">🚪 Logout</a></li>
+      </ul>
+    </div>
+
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+    <div class="main-content">
+    <div class="container-fluid p-4">
+      <h2 class="mb-4">Student Profile</h2>
+
+      <!-- Profile Section -->
+      <div class="card mb-4">
+        <div class="card-header profile-header">My Profile</div>
+        <div class="card-body">
+         <p>Loading profile...</p>
+        </div>
+      </div>
+
+      <!-- Hostel Information -->
+      <div class="card mb-4">
+        <div class="card-header hostel-header">Hostel Information</div>
+        <div class="card-body">
+          <ul>
+            <li>Check-in Date: 7st July 2025</li>
+            <li>Check-out Date: 1st November 2025</li>
+            <li>Status: Active</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Notices -->
+      <div class="card mb-4">
+        <div class="card-header info-header">Latest Notices</div>
+        <div class="card-body">
+          <ul>
+            <li>⚠ Hostel maintenance will be on 15 Sept 2025</li>
+            <li>📢 Fire drill practice scheduled on 20 Sept 2025</li>
+            <li>📌 Payment deadline for Semester 6: 30 Sept 2025</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("closed");
+    }
+
+    const profileBody = document.getElementById("profileBody");
+  const student_id = localStorage.getItem("user_id"); // ambil ID student dari login
+  const API_BASE = "https://hostelnet-vision-3.onrender.com";
+
+  async function loadStudentProfile() {
+    if (!student_id) {
+      profileBody.innerHTML = "<p>⚠ Student not logged in.</p>";
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/student/${student_id}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        profileBody.innerHTML = `<p>⚠ ${data.error || "Failed to load profile."}</p>`;
+        return;
+      }
+
+      profileBody.innerHTML = `
+        <p><strong>Name:</strong> ${data.name}</p>
+        <p><strong>Student ID:</strong> ${data.student_id}</p>
+        <p><strong>Course:</strong> ${data.course}</p>
+        <p><strong>Hostel Unit:</strong> ${data.hostel_unit || "-"}</p>
+        <p><strong>Room Number:</strong> ${data.room_number || "-"}</p>
+      `;
+
+    } catch (err) {
+      console.error(err);
+      profileBody.innerHTML = "<p>⚠ Error loading profile.</p>";
+    }
+  }
+
+  loadStudentProfile();
+  </script>
+</body>
+</html>
