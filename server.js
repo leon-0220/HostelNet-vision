@@ -30,11 +30,12 @@ const DB_CONFIG = {
 app.use(
   cors({
     origin: [
-      "https://leon-0220.github.io", 
+      "https://leon-0220.github.io",
+      "https://leon-0220.github.io/HostelNet-vision",
       "https://leon-0220.github.io/HostelNet-vision/",
       "http://localhost:5500",
       "http://127.0.0.1:5500",
-      "https://hostelnet-vision-3.onrender.com", 
+      "https://hostelnet-vision-3.onrender.com",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type"],
@@ -170,6 +171,22 @@ app.get("/api/test-db", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ success: false, message: "Database connection failed" });
+  }
+});
+
+// === ADMIN RESET ROUTE (sementara) === //
+app.get("/api/reset-admin", async (req, res) => {
+  try {
+    const hashed = await bcrypt.hash("AdminPass01", 10);
+    await db.query("DELETE FROM users WHERE username = 'admin01'");
+    await db.query(
+      "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
+      [null, "admin01", "admin01@gmail.com", hashed, "admin", false]
+    );
+    res.json({ success: true, message: "🛡 Admin reset: admin01 / AdminPass01" });
+  } catch (err) {
+    console.error("❌ Admin reset error:", err);
+    res.status(500).json({ error: "Failed to reset admin" });
   }
 });
 
