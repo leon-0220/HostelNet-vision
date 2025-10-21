@@ -240,7 +240,7 @@
     async function fetchData(url) {
       try {
         const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(HTTP ${res.status});
         return await res.json();
       } catch (err) {
         console.error("Error fetching:", url, err);
@@ -259,28 +259,24 @@
         ? students.map(s => `
           <tr><td>${s.student_id}</td><td>${s.name}</td><td>${s.course || '-'}</td><td>${s.email || '-'}</td></tr>
         `).join("")
-        : `<tr><td colspan="4">No student data found</td></tr>`;
+        : <tr><td colspan="4">No student data found</td></tr>;
 
       const rooms = await fetchData("/api/rooms");
       document.querySelector("#roomTable tbody").innerHTML = rooms.length
         ? rooms.map(r => `
           <tr><td>${r.unit_code}</td><td>${r.room_number}</td><td>${r.capacity}</td><td>${r.status}</td></tr>
         `).join("")
-        : `<tr><td colspan="4">No room data found</td></tr>`;
+        : <tr><td colspan="4">No room data found</td></tr>;
 
       const checkins = await fetchData("/api/checkins");
       document.querySelector("#checkTable tbody").innerHTML = checkins.length
         ? checkins.map(c => `
           <tr><td>${c.id}</td><td>${c.student_name}</td><td>${c.checkin_at || '-'}</td><td>${c.checkout_at || '-'}</td></tr>
         `).join("")
-        : `<tr><td colspan="4">No check-in records</td></tr>`;
+        : <tr><td colspan="4">No check-in records</td></tr>;
     }
 
     init();
   </script>
 </body>
-<<<<<<< HEAD
 </html>
-=======
-</html>
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
