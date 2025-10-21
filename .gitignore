@@ -1,0 +1,44 @@
+# =============================
+# Node.js & Environment files
+# =============================
+node_modules/
+.env
+.env.local
+.env.production
+.env.development
+
+# =============================
+# Logs & Debug files
+# =============================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# =============================
+# OS generated files
+# =============================
+.DS_Store
+Thumbs.db
+
+# =============================
+# Build output
+# =============================
+dist/
+build/
+.cache/
+.tmp/
+
+# =============================
+# Editor specific
+# =============================
+.vscode/
+.idea/
+
+# =============================
+# Other
+# =============================
+*.bak
+*.swp
