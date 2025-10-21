@@ -173,7 +173,7 @@
       <li><a href="dashboard.html">🏠 Dashboard</a></li>
       <li><a href=profile.html"> My Profile</a></li>
       <li><a href="../admin/student_list.html">👨‍🎓 Manage Students</a></li>
-      <li><a href="../adminroom.html">🛏️ Room Allocation</a></li>
+      <li><a href="../adminroom.html">🛏 Room Allocation</a></li>
       <li><a href="report.html">📝 Complaints</a></li>
       <li><a href="announcements.html"> Announcements</a></li>
       <li><a href="../../logout.html">🚪 Logout</a></li>
@@ -209,7 +209,7 @@
         <div class="card-header info-header">Latest Notices</div>
         <div class="card-body">
           <ul>
-            <li>⚠️ Hostel inspection scheduled on 12 Oct 2025</li>
+            <li>⚠ Hostel inspection scheduled on 12 Oct 2025</li>
             <li>📢 Meeting with student representatives on 18 Oct 2025</li>
           </ul>
         </div>
@@ -237,19 +237,19 @@
             <p><strong>Warden ID:</strong> ${user.user_ref_id}</p>
             <p><strong>Position:</strong> ${user.role === 'warden' ? 'Warden' : user.role}</p>
             <p><strong>Email:</strong> ${user.email}</p>
-            ${user.phone ? `<p><strong>Phone:</strong> ${user.phone}</p>` : ""}
+            ${user.phone ? <p><strong>Phone:</strong> ${user.phone}</p> : ""}
           `;
         } else if (res.status === 401) {
           document.getElementById("wardenProfile").innerHTML =
-            '<p style="color:red;">⚠️ Session expired. Please <a href="/index.html">login again</a>.</p>';
+            '<p style="color:red;">⚠ Session expired. Please <a href="/index.html">login again</a>.</p>';
         } else {
           document.getElementById("wardenProfile").innerHTML =
-            '<p style="color:red;">⚠️ Unable to load profile.</p>';
+            '<p style="color:red;">⚠ Unable to load profile.</p>';
         }
       } catch (err) {
         console.error("❌ Load profile error:", err);
         document.getElementById("wardenProfile").innerHTML =
-          '<p style="color:red;">⚠️ Unable to load profile. Check your connection.</p>';
+          '<p style="color:red;">⚠ Unable to load profile. Check your connection.</p>';
       }
     }
 
@@ -258,4 +258,3 @@
   </script>
 </body>
 </html>
-
