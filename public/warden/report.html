@@ -138,7 +138,7 @@
             <td><span class="status ${r.status}">${r.status}</span></td>
             <td>
               ${r.status === 'pending' ? 
-                `<button class="btn resolve" onclick="markResolved(${r.id})">Mark Resolved</button>` 
+                <button class="btn resolve" onclick="markResolved(${r.id})">Mark Resolved</button> 
                 : '✅ Done'}
             </td>
           </tr>`;
@@ -149,7 +149,7 @@
     }
 
     async function markResolved(id) {
-      const res = await fetch(`/reports/${id}/resolve`, { method: "PUT" });
+      const res = await fetch(/reports/${id}/resolve, { method: "PUT" });
       const result = await res.json();
       if (result.success) {
         fetchReports();
