@@ -153,7 +153,7 @@ let db;
 
 // ===================== API ROUTES ===================== //
 
-// Test DB
+// === TEST DB === //
 app.get("/api/test-db", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT NOW() AS time");
@@ -166,6 +166,46 @@ app.get("/api/test-db", async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Database connection failed" });
+  }
+});
+
+// === REGISTER === //
+app.post("/api/register", async (req, res) => {
+  try {
+    const { student_id, name, gender, username, email, password } = req.body;
+
+    if (!student_id || !name || !gender || !username || !email || !password) {
+      return res.status(400).json({ error: "Please fill in all fields" });
+    }
+
+    // Check existing user
+    const [exists] = await db.query(
+      "SELECT * FROM users WHERE username = ? OR email = ?",
+      [username, email]
+    );
+    if (exists.length > 0) {
+      return res.status(400).json({ error: "Username or email already exists" });
+    }
+
+    // Hash password
+    const hashed = await bcrypt.hash(password, 10);
+
+    // Insert into students table
+    await db.query(
+      "INSERT IGNORE INTO students (student_id, name, gender) VALUES (?, ?, ?)",
+      [student_id, name, gender]
+    );
+
+    // Insert into users table
+    await db.query(
+      "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
+      [student_id, username, email, hashed, "student", false]
+    );
+
+    res.json({ success: true, message: "Registration successful!" });
+  } catch (err) {
+    console.error("❌ Register Error:", err);
+    res.status(500).json({ error: "Server error during registration" });
   }
 });
 
@@ -202,7 +242,6 @@ app.post("/api/login", async (req, res) => {
 app.get("/api/hostels/:gender", async (req, res) => {
   try {
     const { gender } = req.params;
-
     const [rows] = await db.query(
       `SELECT 
           hu.unit_code, 
