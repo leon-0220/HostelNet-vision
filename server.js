@@ -7,7 +7,7 @@ import bcrypt from "bcrypt";
 
 // ===================== SETUP ===================== //
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const _dirname = path.dirname(_filename);
 const app = express();
 
 // ===================== CONFIG ===================== //
@@ -42,7 +42,7 @@ let db;
 try {
   db = await mysql.createPool(DB_CONFIG);
   console.log("✅ Database connected successfully!");
-  console.log(`📦 Connected to DB: ${DB_CONFIG.host}:${DB_CONFIG.port}`);
+  console.log(📦 Connected to DB: ${DB_CONFIG.host}:${DB_CONFIG.port});
 } catch (err) {
   console.error("❌ Database connection failed:", err.message);
   process.exit(1);
@@ -113,7 +113,7 @@ if (adminCheck.length === 0) {
     "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
     [null, "admin01", "admin01@gmail.com", hashed, "admin", false]
   );
-  console.log("🛡️ Default admin created: admin01 / AdminPass01");
+  console.log("🛡 Default admin created: admin01 / AdminPass01");
 }
 
 // ===================== API ROUTES ===================== //
@@ -242,5 +242,5 @@ app.get("/change-password", (req, res) => {
 
 // ===================== START SERVER ===================== //
 app.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
+  console.log(🚀 Server running on http://localhost:${PORT})
 );
