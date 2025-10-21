@@ -198,15 +198,34 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// === GET HOSTELS BY GENDER === //
+// === GET AVAILABLE HOSTELS BY GENDER === //
 app.get("/api/hostels/:gender", async (req, res) => {
   try {
     const { gender } = req.params;
+
     const [rows] = await db.query(
-      "SELECT unit_code, unit_name FROM hostel_units WHERE gender = ?",
+      `SELECT 
+          hu.unit_code, 
+          hu.unit_name, 
+          hu.gender,
+          COUNT(r.room_number) AS total_rooms,
+          SUM(r.available) AS available_beds
+       FROM hostel_units hu
+       JOIN rooms r ON hu.unit_code = r.unit_code
+       WHERE hu.gender = ? 
+         AND hu.gender IS NOT NULL
+         AND r.available > 0
+         AND r.status = 'active'
+       GROUP BY hu.unit_code, hu.unit_name, hu.gender
+       ORDER BY hu.unit_name ASC`,
       [gender]
     );
-    res.json(rows);
+
+    res.json({
+      success: true,
+      count: rows.length,
+      hostels: rows,
+    });
   } catch (err) {
     console.error("❌ Error fetching hostel units:", err);
     res.status(500).json({ error: "Failed to load hostel units" });
