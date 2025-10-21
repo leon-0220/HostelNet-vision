@@ -75,7 +75,7 @@
     // 🧠 Check connection ke backend dulu
     async function testConnection() {
       try {
-        const res = await fetch(`${API_BASE}/api/test-db`);
+        const res = await fetch(`https://hostelnet-vision-3.onrender.com/api/test-db`);
         if (res.ok) {
           console.log("✅ Backend connection OK!");
         } else {
