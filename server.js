@@ -1,3 +1,4 @@
+// ===================== IMPORTS ===================== //
 import express from "express";
 import mysql from "mysql2/promise";
 import cors from "cors";
@@ -15,11 +16,11 @@ const app = express();
 // ===================== CONFIG ===================== //
 const PORT = process.env.PORT || 8080;
 const DB_CONFIG = {
-  host: process.env.DB_HOST || "gondola.proxy.rlwy.net",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "JwOzMilejTKDdMkSNJklrBplJbYzXQNo",
-  database: process.env.DB_NAME || "railway",
-  port: process.env.DB_PORT || 30273,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -29,12 +30,12 @@ const DB_CONFIG = {
 app.use(
   cors({
     origin: [
-      "https://leon-0220.github.io",
-      "https://gondola.proxy.rlwy.net",
-      "https://hostelnet-vision-3.onrender.com",
+      "https://leon-0220.github.io", // frontend GitHub Pages
+      "https://hostelnet-vision-3.onrender.com", // backend Render
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type"],
+    credentials: true,
   })
 );
 
@@ -82,7 +83,7 @@ let db;
       unit_code VARCHAR(20) NOT NULL,
       room_number VARCHAR(20) NOT NULL,
       capacity INT NOT NULL DEFAULT 4,
-      available INT NOT NULL DEFAULT 0,
+      available INT NOT NULL DEFAULT 4,
       status ENUM('active','inactive','maintenance') DEFAULT 'active',
       PRIMARY KEY (unit_code, room_number),
       FOREIGN KEY (unit_code) REFERENCES hostel_units(unit_code) ON DELETE CASCADE
@@ -165,9 +166,7 @@ app.get("/api/test-db", async (req, res) => {
       time: rows[0].time,
     });
   } catch (err) {
-    res
-      .status(500)
-      .json({ success: false, message: "Database connection failed" });
+    res.status(500).json({ success: false, message: "Database connection failed" });
   }
 });
 
@@ -180,7 +179,6 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ error: "Please fill in all fields" });
     }
 
-    // Check existing user
     const [exists] = await db.query(
       "SELECT * FROM users WHERE username = ? OR email = ?",
       [username, email]
@@ -189,19 +187,16 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ error: "Username or email already exists" });
     }
 
-    // Hash password
     const hashed = await bcrypt.hash(password, 10);
 
-    // Insert into students table
     await db.query(
       "INSERT IGNORE INTO students (student_id, name, gender) VALUES (?, ?, ?)",
       [student_id, name, gender]
     );
 
-    // Insert into users table
     await db.query(
       "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
-      [student_id, username, email, hashed, "student", false]
+      [student_id, username, email, hashed, "student", true]
     );
 
     res.json({ success: true, message: "Registration successful!" });
@@ -218,9 +213,7 @@ app.post("/api/login", async (req, res) => {
     if (!username || !password)
       return res.status(400).json({ error: "Missing username or password" });
 
-    const [users] = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
-    ]);
+    const [users] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
     if (users.length === 0)
       return res.status(401).json({ error: "Invalid username or password" });
 
@@ -231,6 +224,7 @@ app.post("/api/login", async (req, res) => {
 
     res.json({
       success: true,
+      username: user.username,
       student_id: user.student_id,
       role: user.role,
       must_change_password: !!user.must_change_password,
@@ -254,7 +248,6 @@ app.get("/api/hostels/:gender", async (req, res) => {
        FROM hostel_units hu
        JOIN rooms r ON hu.unit_code = r.unit_code
        WHERE hu.gender = ? 
-         AND hu.gender IS NOT NULL
          AND r.available > 0
          AND r.status = 'active'
        GROUP BY hu.unit_code, hu.unit_name, hu.gender
@@ -262,11 +255,7 @@ app.get("/api/hostels/:gender", async (req, res) => {
       [gender]
     );
 
-    res.json({
-      success: true,
-      count: rows.length,
-      hostels: rows,
-    });
+    res.json({ success: true, count: rows.length, hostels: rows });
   } catch (err) {
     console.error("❌ Error fetching hostel units:", err);
     res.status(500).json({ error: "Failed to load hostel units" });
@@ -275,14 +264,10 @@ app.get("/api/hostels/:gender", async (req, res) => {
 
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
-  res.send(
-    "✅ Backend is running. Visit frontend at https://leon-0220.github.io/HostelNet-vision/"
-  );
+  res.send("✅ Backend is running. Visit frontend at https://leon-0220.github.io/HostelNet-vision/");
 });
 
 // ===================== START SERVER ===================== //
-app.listen(PORT, () =>
-  console.log(
-    `🚀 Server running at https://hostelnet-vision-3.onrender.com (PORT: ${PORT})`
-  )
-);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at https://hostelnet-vision-3.onrender.com (PORT: ${PORT})`);
+});
