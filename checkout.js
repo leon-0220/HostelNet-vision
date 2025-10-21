@@ -22,7 +22,7 @@ app.post("/checkout", (req, res) => {
   const { student_id, room_no, checkout_date } = req.body;
 
   if (!student_id || !room_no || !checkout_date) {
-    return res.status(400).send("⚠️ Semua field wajib diisi.");
+    return res.status(400).send("⚠ Semua field wajib diisi.");
   }
 
   const sql = `
@@ -40,7 +40,7 @@ app.post("/checkout", (req, res) => {
     const updateRoom = "UPDATE rooms SET status='Available' WHERE id=?";
     conn.query(updateRoom, [room_no], (updateErr) => {
       if (updateErr) {
-        console.error("⚠️ Error update status bilik:", updateErr);
+        console.error("⚠ Error update status bilik:", updateErr);
         return res.status(500).send("Checkout berjaya tapi status bilik tak dikemas kini.");
       }
 
@@ -52,8 +52,4 @@ app.post("/checkout", (req, res) => {
 // ✅ Jalankan server (kalau fail ni standalone)
 app.listen(3001, () => {
   console.log("Checkout service running on port 3001");
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
