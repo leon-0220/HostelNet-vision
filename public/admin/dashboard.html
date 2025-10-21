@@ -133,9 +133,15 @@
       transition: transform 0.2s;
     }
 
-    .card:hover { transform: translateY(-4px); }
+    .card:hover { 
+      transform: translateY(-4px); 
+    }
 
-    .card h3 { margin: 0; font-size: 1rem; color: var(--text); }
+    .card h3 { 
+      margin: 0; 
+      font-size: 1rem; 
+      color: var(--text); 
+    }
 
     .card span {
       display: block;
@@ -237,13 +243,15 @@
       main.classList.toggle("full");
     }
 
-    async function fetchData(url) {
+     const API_BASE = "https://hostelnet-vision-3.onrender.com";
+
+    async function fetchData(endpoint) {
       try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(HTTP ${res.status});
+        const res = await fetch(`${API_BASE}${endpoint}`);
+        if (!res.ok) throw new Error("HTTP " + res.status);
         return await res.json();
       } catch (err) {
-        console.error("Error fetching:", url, err);
+        console.error("Error fetching:", endpoint, err);
         return [];
       }
     }
@@ -257,21 +265,36 @@
       const students = await fetchData("/api/students");
       document.querySelector("#studentTable tbody").innerHTML = students.length
         ? students.map(s => `
-          <tr><td>${s.student_id}</td><td>${s.name}</td><td>${s.course || '-'}</td><td>${s.email || '-'}</td></tr>
+          <tr>
+            <td>${s.student_id}</td>
+            <td>${s.name}</td>
+            <td>${s.course || '-'}</td>
+            <td>${s.email || '-'}</td>
+            </tr>
         `).join("")
         : <tr><td colspan="4">No student data found</td></tr>;
 
       const rooms = await fetchData("/api/rooms");
       document.querySelector("#roomTable tbody").innerHTML = rooms.length
         ? rooms.map(r => `
-          <tr><td>${r.unit_code}</td><td>${r.room_number}</td><td>${r.capacity}</td><td>${r.status}</td></tr>
+          <tr>
+            <td>${r.unit_code}</td>
+            <td>${r.room_number}</td>
+            <td>${r.capacity}</td>
+            <td>${r.status}</td>
+            </tr>
         `).join("")
         : <tr><td colspan="4">No room data found</td></tr>;
 
       const checkins = await fetchData("/api/checkins");
       document.querySelector("#checkTable tbody").innerHTML = checkins.length
         ? checkins.map(c => `
-          <tr><td>${c.id}</td><td>${c.student_name}</td><td>${c.checkin_at || '-'}</td><td>${c.checkout_at || '-'}</td></tr>
+          <tr>
+            <td>${c.id}</td>
+            <td>${c.student_name}</td>
+            <td>${c.checkin_at || '-'}</td>
+            <td>${c.checkout_at || '-'}</td>
+            </tr>
         `).join("")
         : <tr><td colspan="4">No check-in records</td></tr>;
     }
