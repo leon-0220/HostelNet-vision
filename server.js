@@ -30,8 +30,10 @@ const DB_CONFIG = {
 app.use(
   cors({
     origin: [
-      "https://leon-0220.github.io", // frontend GitHub Pages
-      "https://hostelnet-vision-3.onrender.com", // backend Render
+      "https://leon-0220.github.io", 
+      "https://leon-0220.github.io/HostelNet-vision",
+      "https://localhost:5500",
+      "https://hostelnet-vision-3.onrender.com", 
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type"],
