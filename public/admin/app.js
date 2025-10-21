@@ -38,7 +38,7 @@ async function loadSummary(){
     tbody.innerHTML = "";
     students.filter(r => r.allocation_id).slice(0,8).forEach(r => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.room_no || "-")}</td><td>${escapeHtml(r.semester || "-")}</td>`;
+      tr.innerHTML = <td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.room_no || "-")}</td><td>${escapeHtml(r.semester || "-")}</td>;
       tbody.appendChild(tr);
     });
   } catch (e) {
@@ -59,7 +59,7 @@ async function loadStudents(){
       <td>${escapeHtml(s.email || "")}</td>
       <td>${escapeHtml(s.registration_status || "pending")}</td>
       <td>
-        ${s.registration_status === "pending" ? `<button data-id="${s.id}" class="approve">Approve</button>` : ""}
+        ${s.registration_status === "pending" ? <button data-id="${s.id}" class="approve">Approve</button> : ""}
       </td>`;
     tbody.appendChild(tr);
   });
@@ -82,7 +82,7 @@ async function loadAvailableRooms(){
   const freeStudents = students.filter(s => !s.allocation_id);
   const allocStudent = document.getElementById("allocStudentId");
   allocStudent.value = "";
-  allocStudent.placeholder = freeStudents.length ? `e.g. ${freeStudents[0].id}` : "No free student";
+  allocStudent.placeholder = freeStudents.length ? e.g. ${freeStudents[0].id} : "No free student";
 
   const rooms = await apiGet("/api/rooms/available");
   const roomSelect = document.getElementById("allocRoom");
@@ -93,7 +93,7 @@ async function loadAvailableRooms(){
     rooms.forEach(r => {
       const opt = document.createElement("option");
       opt.value = r.id;
-      opt.textContent = `${r.room_no} (${r.type})`;
+      opt.textContent = ${r.room_no} (${r.type});
       roomSelect.appendChild(opt);
     });
   }
@@ -152,7 +152,7 @@ async function loadAllocations(){
       const alloc = b.dataset.alloc;
       const res = await apiPost("/api/checkin", { allocation_id: Number(alloc) });
       if (res.success){
-        document.getElementById(`ci-${alloc}`).textContent = new Date(res.checkin_at).toLocaleString();
+        document.getElementById(ci-${alloc}).textContent = new Date(res.checkin_at).toLocaleString();
         loadSummary();
       } else {
         alert(res.error || "error");
@@ -170,7 +170,7 @@ async function loadAllocations(){
       if (!checkin_id) return;
       const res = await apiPost("/api/checkout", { checkin_id: Number(checkin_id) });
       if (res.success){
-        document.getElementById(`co-${alloc}`).textContent = new Date(res.checkout_at).toLocaleString();
+        document.getElementById(co-${alloc}).textContent = new Date(res.checkout_at).toLocaleString();
         loadSummary();
       } else {
         alert(res.error || "error");
