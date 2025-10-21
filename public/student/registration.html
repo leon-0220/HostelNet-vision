@@ -90,18 +90,15 @@
       <input type="text" name="name" placeholder="Enter your name" required>
 
       <label>Gender</label>
-      <select name="gender" required>
+      <select name="gender" id="gender" required>
         <option value="">Select gender</option>
         <option value="Male">Male</option>
         <option value="Female">Female</option>
       </select>
 
-      <label>Room Type</label>
-      <select name="room_type" required>
-        <option value="">Select room type</option>
-        <option value="Single">Single</option>
-        <option value="Double">Double</option>
-        <option value="Triple">Triple</option>
+      <label>Hostel Unit</label>
+      <select name="hostel_unit" id="hostel_unit" required>
+        <option value="">Select hostel unit</option>
       </select>
 
       <label>Duration of Stay</label>
@@ -122,6 +119,62 @@
   </div>
 
   <script>
+    // ===== Hostel Data ===== //
+    const hostelUnits = {
+      Male: [
+        "Kelana Parkview D401",
+        "Kelana Parkview D402",
+        "SS4D/8 21A",
+        "SS4D/8 21B",
+        "SS4C/15 14",
+        "SS5D/6A 20",
+        "SS4B/13 11A",
+        "SS5C/11 32",
+        "Spacepod 38-1",
+        "Spacepod 36-1",
+        "Spacepod 20-1"
+      ],
+      Female: [
+        "Kelana Parkview D201",
+        "Kelana Parkview D202",
+        "Kelana Parkview D204",
+        "Kelana Parkview D301",
+        "Kelana Parkview D404",
+        "SS5D/8 12",
+        "Ayamas 18A4",
+        "Focus Point 20B2",
+        "Focus Point 20B3",
+        "Focus Point 20B4",
+        "7-11 24B3",
+        "7-11 24A4",
+        "SS6/8 5B",
+        "SS6/8 5C",
+        "Spacepod 38-2",
+        "Spacepod 36-2",
+        "Spacepod 38-3",
+        "Spacepod 36-3",
+        "Spacepod 20-2",
+        "Spacepod 20-3"
+      ]
+    };
+
+    // ===== Populate Hostel List when Gender Selected ===== //
+    document.getElementById('gender').addEventListener('change', function() {
+      const gender = this.value;
+      const hostelSelect = document.getElementById('hostel_unit');
+      hostelSelect.innerHTML = '<option value="">Select hostel unit</option>';
+
+      if (hostelUnits[gender]) {
+        hostelUnits[gender].forEach(unit => {
+          const option = document.createElement('option');
+          option.value = unit;
+          option.textContent = unit;
+          hostelSelect.appendChild(option);
+        });
+      }
+    });
+
+    // ===== Submit Registration Form ===== //
     document.getElementById('registrationForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -130,7 +183,7 @@
         student_id: form.student_id.value.trim(),
         name: form.name.value.trim(),
         gender: form.gender.value,
-        room_type: form.room_type.value,
+        hostel_unit: form.hostel_unit.value,
         duration: form.duration.value
       };
 
@@ -138,7 +191,7 @@
       statusEl.textContent = "Submitting registration...";
 
       try {
-        const res = await fetch('https://YOUR-BACKEND-URL.onrender.com/rooms/register', {
+        const res = await fetch('https://hostelnet-vision-3.onrender.comrooms/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
