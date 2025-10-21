@@ -27,14 +27,15 @@ const DB_CONFIG = {
 app.use(
   cors({
     origin: [
-      "https://leon-0220.github.io",
-      "https://gondola.proxy.rlwy.net",
-      "https://your-render-app-name.onrender.com", // ✅ Tambah URL Render bila dah deploy
+      "https://leon-0220.github.io", // ✅ GitHub Pages frontend
+      "https://gondola.proxy.rlwy.net", // ✅ DB host
+      "https://hostelnet-vision-3.onrender.com" // ✅ Render backend
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type"],
   })
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -268,7 +269,7 @@ app.put("/api/complaints/:id", async (req, res) => {
   }
 });
 
-// ===================== DASHBOARD API (BARU) ===================== //
+// === DASHBOARD === //
 app.get("/api/dashboard", async (req, res) => {
   try {
     const [[{ totalStudents }]] = await db.query("SELECT COUNT(*) AS totalStudents FROM students");
@@ -292,7 +293,7 @@ app.get("/api/rooms", async (req, res) => {
   }
 });
 
-// === CHECKIN CHECKOUT === //
+// === CHECKINS === //
 app.get("/api/checkins", async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -310,18 +311,10 @@ app.get("/api/checkins", async (req, res) => {
 
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-app.get("/dashboard", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
-});
-
-app.get("/change-password", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "change-password.html"));
+  res.send("✅ Backend is running. Visit frontend at https://leon-0220.github.io/HostelNet-vision/");
 });
 
 // ===================== START SERVER ===================== //
 app.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
+  console.log(`🚀 Server running at https://hostelnet-vision-3.onrender.com (PORT: ${PORT})`)
 );
