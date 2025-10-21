@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ms">
 <head>
   <meta charset="utf-8">
@@ -232,7 +232,7 @@ confirmBtn.addEventListener('click', ()=>{
     recipientNameEl.value = rname;
     recipientBox.classList.remove("hidden");
     amountBox.classList.remove("hidden");
-    result.textContent = "ℹ️ Please enter the amount and confirm payment.";
+    result.textContent = "ℹ Please enter the amount and confirm payment.";
     result.style.color = "black";
     
     confirmBtn.textContent = "Confirm Payment";
@@ -241,7 +241,7 @@ confirmBtn.addEventListener('click', ()=>{
 
   // Step 2: Validate amount & show OTP modal
   if(!amount || amount < 1){
-    result.textContent = "⚠️ Minimum transfer is RM1.";
+    result.textContent = "⚠ Minimum transfer is RM1.";
     return;
   }
 
