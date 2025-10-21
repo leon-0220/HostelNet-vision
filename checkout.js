@@ -52,4 +52,8 @@ app.post("/checkout", (req, res) => {
 // ✅ Jalankan server (kalau fail ni standalone)
 app.listen(3001, () => {
   console.log("Checkout service running on port 3001");
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 1901beb2f163c484de401e79da921f161dd7742f

@@ -36,4 +36,8 @@ import bcrypt from "bcrypt";
   } catch (err) {
     console.error("❌ Error hashing passwords:", err);
   }
+<<<<<<< HEAD
 })();
+=======
+})();
+>>>>>>> 1901beb2f163c484de401e79da921f161dd7742f

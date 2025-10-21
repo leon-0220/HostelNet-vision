@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Room Management</title>
+  <style>
+    body { font-family: Arial; background: #fff9f3; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #ff4000; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    button { background: #04AA6D; color: #fff; border: none; padding: 8px 12px; cursor: pointer; }
+    button:hover { background: #038d59; }
+    input { padding: 6px; margin-right: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Room Management</h1>
+
+  <form id="addRoomForm">
+    <input type="text" id="room_no" placeholder="Room No" required>
+    <input type="text" id="type" placeholder="Type (Single/Double)" required>
+    <input type="number" id="capacity" placeholder="Capacity" required>
+    <button type="submit">Add Room</button>
+  </form>
+
+  <table id="roomTable">
+    <thead>
+      <tr>
+        <th>ID</th><th>Room No</th><th>Type</th><th>Capacity</th><th>Allocated</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function loadRooms() {
+      const res = await fetch("/api/rooms");
+      const data = await res.json();
+      const tbody = document.querySelector("#roomTable tbody");
+      tbody.innerHTML = "";
+      data.forEach(r => {
+        const row = `<tr>
+          <td>${r.id}</td>
+          <td>${r.room_no}</td>
+          <td>${r.type}</td>
+          <td>${r.capacity}</td>
+          <td>${r.allocated ? "Yes" : "No"}</td>
+          <td><button onclick="deleteRoom(${r.id})">Delete</button></td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+
+    async function deleteRoom(id) {
+      if (confirm("Delete this room?")) {
+        await fetch("/api/rooms/" + id, { method: "DELETE" });
+        loadRooms();
+      }
+    }
+
+    document.getElementById("addRoomForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const room_no = document.getElementById("room_no").value;
+      const type = document.getElementById("type").value;
+      const capacity = document.getElementById("capacity").value;
+      await fetch("/api/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ room_no, type, capacity })
+      });
+      e.target.reset();
+      loadRooms();
+    });
+
+    loadRooms();
+  </script>
+</body>
+</html>

@@ -4,4 +4,8 @@ services:
     env: php
     plan: free
     buildCommand: ""
+<<<<<<< HEAD
     startCommand: "php -S 0.0.0.0:$PORT -t ."
+=======
+    startCommand: "php -S 0.0.0.0:$PORT -t ."
+>>>>>>> 1901beb2f163c484de401e79da921f161dd7742f

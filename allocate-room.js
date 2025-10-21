@@ -72,4 +72,8 @@ app.post("/allocate-room", (req, res) => {
 // ✅ Jalankan server
 app.listen(3000, () => {
   console.log("Server running on port 3000");
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 1901beb2f163c484de401e79da921f161dd7742f

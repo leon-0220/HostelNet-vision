@@ -12,4 +12,8 @@ router.get("/test-db", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 export default router;
+=======
+export default router;
+>>>>>>> 1901beb2f163c484de401e79da921f161dd7742f

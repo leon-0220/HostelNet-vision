@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HostelNet | Student Rooms</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 0; 
+      background: #f8f9fa; 
+    }
+
+    /* Layout & Sidebar */
+    .layout { 
+      display:flex; 
+      min-height:100vh; 
+    }
+    .sidebar {
+  width: 220px;
+  background: #fff3e0;
+  color: #3e2723;
+  padding: 20px;
+  transition: transform 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow-y: auto;
+  z-index: 1000;
+}
+    .sidebar.closed { 
+      transform: translateX(-100%); 
+    }
+    .logo-box { 
+      display:flex; 
+      flex-direction:column; 
+      align-items:center; 
+      margin-bottom:20px; 
+    }
+    .logo-box img { 
+      width:100%; 
+      max-width:160px; 
+      height:auto; 
+      margin-bottom:5px; 
+    }
+    .sidebar h3 { 
+      margin-bottom:20px; 
+      text-align:center; 
+    }
+    .sidebar ul { 
+      list-style:none; 
+      padding:0; 
+      margin:0; 
+    }
+    .sidebar ul li { 
+      margin:15px 0; 
+    }
+    .sidebar ul li a { 
+      color:#3e2723; 
+      text-decoration:none; 
+      display:block; 
+      padding:10px; 
+      border-radius:5px; 
+      transition:0.3s; 
+    }
+    .sidebar ul li a:hover { 
+      background:#ed5d2d; 
+    }
+    .toggle-btn { 
+      position:fixed; 
+      top:15px; 
+      left:15px; 
+      background:#fff3e0; 
+      border:none; 
+      cursor:pointer; 
+      padding:8px 12px; 
+      border-radius:5px; 
+      z-index:1100; 
+      box-shadow:0 2px 4px rgba(0,0,0,0.2); 
+    }
+
+    /* Main Content */
+    .main-content { 
+      flex:1; 
+      margin-left:220px; 
+      padding:20px; 
+      background:linear-gradient(180deg,#ff4000,#eef3f8); 
+      transition: margin-left 0.3s ease; 
+      min-height: 100vh;
+    }
+    .sidebar.closed ~ .main-content { 
+      margin-left:0; 
+    }
+    .main-content h2 { 
+      text-align:center; 
+      margin-bottom:20px; 
+      color:#000; 
+    }
+
+    /* Rooms Table */
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin-top: 20px; 
+      background: white; 
+    }
+    th, td { 
+      border: 1px solid #ccc; 
+      padding: 10px; 
+      text-align: center; 
+    }
+    th { 
+      background: #eee; 
+    }
+    .available { 
+      color: green; 
+      font-weight: bold; 
+      cursor: pointer; 
+    }
+    .occupied { 
+      color: red; 
+      font-weight: bold; 
+    }
+
+    /* Booking Form */
+    #bookingForm { 
+      display: none; 
+      margin-top: 20px; 
+      background: #fff; 
+      padding: 20px; 
+      border-radius: 10px; 
+      border: 2px solid #000; 
+    }
+    #bookingForm label { 
+      font-weight: bold; 
+    }
+    #bookingForm input { 
+      width:100%; 
+      padding:10px; 
+      margin-bottom:15px; 
+      border:1px solid #ccc; 
+      border-radius:4px; 
+    }
+    #bookingForm button { 
+      width:100%; 
+      background:#04AA6D; 
+      color:#fff; 
+      padding:10px; 
+      border:none; 
+      border-radius:5px; 
+      cursor:pointer; 
+    }
+    #bookingForm button:hover { 
+      background:#038d59; 
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="logo-box">
+      <img src="../../images/2.png" alt="Vision University College Logo">
+      <h3>HostelNet</h3>
+    </div>
+    <ul>
+      <li><a href="dashboard.html">🏠 Dashboard</a></li>
+      <li><a href="students.html">👨‍🎓 Student</a></li>
+      <li><a href="studentroom.html" class="active">🛏️ Room</a></li>
+      <li><a href="payments.html">💳 Payment</a></li>
+      <li><a href="../admin/reports.html">📝 Complaint</a></li>
+      <li><a href="../../logout.php">🚪 Logout</a></li>
+    </ul>
+  </div>
+
+  <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <h2>Available Rooms</h2>
+    <p>Click on an available room to book.</p>
+
+    <div id="roomsContainer"></div>
+
+    <!-- Booking Form -->
+    <div id="bookingForm">
+      <h4>Book This Room</h4>
+      <form id="studentBookingForm">
+        <label>Full Name</label>
+        <input type="text" name="name" required>
+        <label>Student ID</label>
+        <input type="text" name="student_id" required>
+        <label>Course</label>
+        <input type="text" name="course" required>
+        <label>Hostel Unit</label>
+        <input type="text" name="hostel_unit" readonly>
+        <label>Room Number</label>
+        <input type="text" name="room_number" readonly>
+        <button type="submit">Confirm Booking</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+const rooms = [
+  {gender:"Male", hostel:"Kelana Parkview", room_id:"D401", status:"Occupied"},
+  {gender:"Male", hostel:"Kelana Parkview", room_id:"D402", status:"Available"},
+  {gender:"Male", hostel:"SS4D/8", room_id:"21A", status:"Available"},
+  {gender:"Male", hostel:"SS4D/8", room_id:"21B", status:"Available"},
+  {gender:"Female", hostel:"Kelana Parkview", room_id:"D201", status:"Available"},
+  {gender:"Female", hostel:"Kelana Parkview", room_id:"D202", status:"Occupied"},
+  {gender:"Female", hostel:"Focus Point", room_id:"20B2", status:"Available"},
+  {gender:"Female", hostel:"Spacepod", room_id:"36-3", status:"Occupied"},
+];
+
+const roomsContainer = document.getElementById('roomsContainer');
+const bookingForm = document.getElementById('bookingForm');
+const studentBookingForm = document.getElementById('studentBookingForm');
+const hostelInput = studentBookingForm.querySelector('input[name="hostel_unit"]');
+const roomInput = studentBookingForm.querySelector('input[name="room_number"]');
+let selectedRoomIndex = null;
+
+function renderRooms() {
+  let tableHTML = '<table><tr><th>Gender</th><th>Hostel</th><th>Room No</th><th>Status</th></tr>';
+  rooms.forEach((room, index) => {
+    const statusClass = room.status === "Available" ? "available" : "occupied";
+    const clickable = room.status === "Available" ? `onclick="bookRoom(${index})"` : '';
+    tableHTML += `<tr>
+      <td>${room.gender}</td>
+      <td>${room.hostel}</td>
+      <td>${room.room_id}</td>
+      <td class="${statusClass}" ${clickable}>${room.status}</td>
+    </tr>`;
+  });
+  tableHTML += '</table>';
+  roomsContainer.innerHTML = tableHTML;
+}
+
+function bookRoom(index) {
+  selectedRoomIndex = index;
+  hostelInput.value = rooms[index].hostel;
+  roomInput.value = rooms[index].room_id;
+  bookingForm.style.display = "block";
+}
+
+studentBookingForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (selectedRoomIndex !== null) {
+    rooms[selectedRoomIndex].status = "Occupied";
+    alert("✅ Booking successful for room " + rooms[selectedRoomIndex].room_id);
+    bookingForm.style.display = "none";
+    studentBookingForm.reset();
+    renderRooms();
+  }
+});
+
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("closed");
+}
+
+// Initial render
+renderRooms();
+</script>
+</body>
+</html>
+
+
+
