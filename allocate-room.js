@@ -46,7 +46,7 @@ app.post("/allocate-room", (req, res) => {
   const { student_id, room_id } = req.body;
 
   if (!student_id || !room_id) {
-    return res.status(400).send("⚠️ Missing student_id or room_id.");
+    return res.status(400).send("⚠ Missing student_id or room_id.");
   }
 
   // Masukkan ke table allocations
@@ -62,7 +62,7 @@ app.post("/allocate-room", (req, res) => {
     conn.query(updateSQL, [room_id], (err2) => {
       if (err2) {
         console.error(err2);
-        return res.status(500).send("⚠️ Allocation inserted, but room status update failed.");
+        return res.status(500).send("⚠ Allocation inserted, but room status update failed.");
       }
       res.send("✅ Room allocated successfully!");
     });
@@ -72,8 +72,4 @@ app.post("/allocate-room", (req, res) => {
 // ✅ Jalankan server
 app.listen(3000, () => {
   console.log("Server running on port 3000");
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
