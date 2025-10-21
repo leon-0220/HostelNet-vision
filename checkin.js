@@ -22,7 +22,7 @@ app.post("/checkin", (req, res) => {
   const { studentId, studentName, course, block, roomNo, checkinDate } = req.body;
 
   if (!studentId || !studentName || !course || !block || !roomNo || !checkinDate) {
-    return res.status(400).send("⚠️ All fields are required.");
+    return res.status(400).send("⚠ All fields are required.");
   }
 
   const sql = `
@@ -40,7 +40,7 @@ app.post("/checkin", (req, res) => {
     const updateSQL = "UPDATE rooms SET status='Occupied' WHERE id=?";
     conn.query(updateSQL, [roomNo], (updateErr) => {
       if (updateErr) {
-        console.error("⚠️ Error updating room status:", updateErr);
+        console.error("⚠ Error updating room status:", updateErr);
         return res.status(500).send("Check-in saved, but room status not updated.");
       }
 
@@ -52,8 +52,4 @@ app.post("/checkin", (req, res) => {
 // ✅ Jalankan server (kalau fail ni standalone)
 app.listen(3000, () => {
   console.log("Check-in service running on port 3000");
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
