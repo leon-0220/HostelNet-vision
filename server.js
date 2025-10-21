@@ -174,7 +174,7 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
-// === ADMIN RESET ROUTE (sementara) === //
+// === ADMIN RESET (KEKALKAN) === //
 app.get("/api/reset-admin", async (req, res) => {
   try {
     const hashed = await bcrypt.hash("AdminPass01", 10);
@@ -190,7 +190,7 @@ app.get("/api/reset-admin", async (req, res) => {
   }
 });
 
-// === REGISTER === //
+// === REGISTER (AUTO LOGIN) === //
 app.post("/api/register", async (req, res) => {
   try {
     const { student_id, name, gender, username, email, password } = req.body;
@@ -219,7 +219,15 @@ app.post("/api/register", async (req, res) => {
       [student_id, username, email, hashed, "student", true]
     );
 
-    res.json({ success: true, message: "Registration successful!" });
+    // === AUTO LOGIN RESPONSE ===
+    res.json({
+      success: true,
+      message: "Registration successful!",
+      username,
+      student_id,
+      role: "student",
+      must_change_password: true,
+    });
   } catch (err) {
     console.error("❌ Register Error:", err);
     res.status(500).json({ error: "Server error during registration" });
@@ -250,11 +258,12 @@ app.post("/api/login", async (req, res) => {
       must_change_password: !!user.must_change_password,
     });
   } catch (err) {
+    console.error("❌ Login error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// === GET AVAILABLE HOSTELS BY GENDER === //
+// === GET HOSTELS BY GENDER === //
 app.get("/api/hostels/:gender", async (req, res) => {
   try {
     const { gender } = req.params;
