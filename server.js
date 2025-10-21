@@ -243,8 +243,4 @@ app.get("/change-password", (req, res) => {
 // ===================== START SERVER ===================== //
 app.listen(PORT, () =>
   console.log(`🚀 Server running on http://localhost:${PORT}`)
-<<<<<<< HEAD
 );
-=======
-);
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f

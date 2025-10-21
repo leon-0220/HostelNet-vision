@@ -72,8 +72,4 @@ app.post("/reset-password", async (req, res) => {
 });
 
 // ✅ Start server
-<<<<<<< HEAD
 app.listen(3000, () => console.log("Server running on port 3000"));
-=======
-app.listen(3000, () => console.log("Server running on port 3000"));
->>>>>>> 1901beb2f163c484de401e79da921f161dd7742f
