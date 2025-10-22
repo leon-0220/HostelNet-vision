@@ -45,6 +45,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
+// === SESSION SETUP === //
+import session from "express-session";
+
+app.use(session({
+  secret: "hostelnet-secret-key", 
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: true, 
+    httpOnly: false,
+    maxAge: 1000 * 60 * 60 
+}));
+
 // ===================== DATABASE INIT ===================== //
 let db;
 (async () => {
@@ -214,20 +227,48 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ error: "Missing username or password" });
+    if (!username || !password) 
+      return res.status(400).json({ error: "Missing username or password" });
 
     const [users] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
-    if (users.length === 0) return res.status(401).json({ error: "Invalid username or password" });
+    if (users.length === 0) 
+      return res.status(401).json({ error: "Invalid username or password" });
 
     const user = users[0];
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: "Invalid username or password" });
+    if (!match) 
+      return res.status(401).json({ error: "Invalid username or password" });
 
-    res.json({ success: true, username: user.username, student_id: user.student_id, role: user.role, must_change_password: !!user.must_change_password });
+    req.session.user = {
+      username: user.username,
+      student_id: user.student_id,
+      role: user.role
+    }
+
+    res.json({ 
+      success: true, 
+      message: "Login successful!",
+      user: req.session.user
+    });
   } catch (err) {
     console.error("❌ Login error:", err);
     res.status(500).json({ error: "Server error" });
   }
+});
+
+// === GET CURRENT USER (check session) === //
+app.get("/api/current-user", (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "No active session" });
+  }
+  res.json({ loggedIn: true, user: req.session.user });
+});
+
+// === LOGOUT === //
+app.post("/api/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.json({ success: true, message: "Logged out successfully" });
+  });
 });
 
 // === GET STUDENT PROFILE BY ID === //
