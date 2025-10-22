@@ -233,7 +233,6 @@ app.post("/api/register", async (req, res) => {
       username,
       student_id,
       role: userRole,           
-      must_change_password: true,
     });
   } catch (err) {
     console.error("❌ Register Error:", err);
