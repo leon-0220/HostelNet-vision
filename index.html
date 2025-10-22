@@ -139,7 +139,7 @@
 
         localStorage.setItem("user_id", data.student_id || data.user_id);
 
-        switch(data.role) {
+        switch(data.role.toLowerCase()) {
           case "admin":
             window.location.href = "public/admin/dashboard.html";
             break;
