@@ -209,15 +209,20 @@ app.post("/api/register", async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    await db.query(
-      "INSERT IGNORE INTO students (student_id, name, gender) VALUES (?, ?, ?)",
-      [student_id, name, gender]
-    );
+    const { student_id, name, gender, username, email, password, role } = req.body;
 
-    await db.query(
-      "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
-      [student_id, username, email, hashed, "student", true]
-    );
+// Default ke "student" kalau tak bagi role
+const userRole = role === "admin" ? "admin" : "student";
+
+await db.query(
+  "INSERT IGNORE INTO students (student_id, name, gender) VALUES (?, ?, ?)",
+  [student_id, name, gender]
+);
+
+await db.query(
+  "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
+  [student_id, username, email, hashed, userRole, true]
+);
 
     // === AUTO LOGIN RESPONSE ===
     res.json({
