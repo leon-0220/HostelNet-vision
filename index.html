@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HostelNet Login</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon"/>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #ff4d4d, #ff9966);
+      background: linear-gradient(180deg, #ff4000, #eef3f8);
       height: 100vh;
       display: flex;
       align-items: center;
@@ -22,9 +23,18 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
       text-align: center;
     }
+    .login-box img {
+      width: 100px;
+      margin-bottom: 15px;
+    }
     h2 {
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       color: #ff4d4d;
+    }
+    p.text-muted {
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #888;
     }
     input {
       width: 100%;
@@ -48,6 +58,12 @@
     button:hover {
       background-color: #ff3333;
     }
+    .links {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-top: 15px;
+    }
     .error {
       color: red;
       font-size: 14px;
@@ -57,12 +73,23 @@
 </head>
 <body>
   <div class="login-box">
+    <!-- Logo -->
+    <img src="images/vision.png" alt="Vision University College Logo">
+
     <h2>HostelNet Login</h2>
+    <p class="text-muted">Login Page</p>
+
     <form id="loginForm">
       <input type="text" id="username" placeholder="Username or Student ID" required />
       <input type="password" id="password" placeholder="Password" required />
+
       <button type="submit">Login</button>
       <p id="error" class="error"></p>
+
+      <div class="links">
+        <a href="forgot_password.html">Forgot password?</a>
+        <a href="register.html">Sign Up</a>
+      </div>
     </form>
   </div>
 
@@ -70,12 +97,11 @@
     const form = document.getElementById("loginForm");
     const errorBox = document.getElementById("error");
 
-    const API_BASE = "https://hostelnet-vision-3.onrender.com"; // ✅ backend Render URL
+    const API_BASE = "https://hostelnet-vision-3.onrender.com"; // backend Render URL
 
-    // 🧠 Check connection ke backend dulu
     async function testConnection() {
       try {
-        const res = await fetch(`https://hostelnet-vision-3.onrender.com/api/test-db`);
+        const res = await fetch(`${API_BASE}/api/test-db`);
         if (res.ok) {
           console.log("✅ Backend connection OK!");
         } else {
@@ -87,9 +113,8 @@
       }
     }
 
-    testConnection(); // test bila page load
+    testConnection();
 
-    // 🧩 Login form submit
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       errorBox.textContent = "";
@@ -105,7 +130,6 @@
         });
 
         const data = await res.json();
-
         console.log("🔍 API Response:", data);
 
         if (!res.ok) {
@@ -115,7 +139,6 @@
 
         localStorage.setItem("user_id", data.student_id || data.user_id);
 
-        // ✅ Success → redirect ikut role
         switch(data.role) {
           case "admin":
             window.location.href = "public/admin/dashboard.html";
