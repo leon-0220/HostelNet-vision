@@ -276,7 +276,7 @@ form button:hover {
 
   if (!studentId) {
     alert("Please log in first!");
-    window.location.href = "../../login.html";
+    window.location.href = "../../index.html";
     return;
   }
 
@@ -299,11 +299,38 @@ form button:hover {
   }
 }
 
+document.addEventListener("DMContentLoaded", loadStudentData);
+
+document.querySelector("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const student_id = document.getElementById("studentId").value;
+  const unit_code = document.getElementById("block").value;
+  const room_number = document.getElementById("roomNo").value;
+  const checkin_date = document.getElementById("checkinDate").value;
+
+  try {
+    const res = await fetch("https://hostelnet-vision-3.onrender.com/api/checkin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id, unit_code, room_number, checkin_date }),
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      alert("✅ Check-in successful!");
+      window.location.href = "dashboard.html";
+    } else {
+      alert("❌ " + result.error);
+    }
+  } catch (err) {
+    alert("Server error during check-in");
+  }
+});
+
   function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("closed");
 }
-
-document.addEventListener("DOMContentLoaded", loadStudentData);
 </script>
 </body>
 </html>
