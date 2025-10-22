@@ -284,6 +284,48 @@ app.get("/api/hostels/:gender", async (req, res) => {
   }
 });
 
+// === STUDENT CHECK-IN === //
+app.post("/api/checkin", async (req, res) => {
+  try {
+    const { student_id, unit_code, room_number, checkin_date } = req.body;
+
+    if (!student_id || !unit_code || !room_number || !checkin_date) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+
+    // Check student exist
+    const [studentCheck] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
+    if (studentCheck.length === 0) return res.status(404).json({ error: "Student not found" });
+
+    // Prevent double check-in (if not checked out)
+    const [existing] = await db.query(
+      "SELECT * FROM checkin_checkout WHERE student_id = ? AND checkout_date IS NULL",
+      [student_id]
+    );
+    if (existing.length > 0) {
+      return res.status(400).json({ error: "Student already checked in." });
+    }
+
+    // Insert new check-in
+    await db.query(
+      `INSERT INTO checkin_checkout (student_id, unit_code, room_number, checkin_date)
+       VALUES (?, ?, ?, ?)`,
+      [student_id, unit_code, room_number, checkin_date]
+    );
+
+    // Update student status
+    await db.query("UPDATE students SET status = 'checked-in', room = ? WHERE student_id = ?", [
+      room_number,
+      student_id,
+    ]);
+
+    res.json({ success: true, message: "✅ Check-in successful!" });
+  } catch (err) {
+    console.error("❌ Check-in error:", err);
+    res.status(500).json({ error: "Server error during check-in" });
+  }
+});
+
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
   res.send("✅ Backend is running. Visit frontend at https://leon-0220.github.io/HostelNet-vision/");
