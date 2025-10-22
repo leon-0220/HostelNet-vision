@@ -191,14 +191,16 @@ app.get("/api/reset-admin", async (req, res) => {
 });
 
 // === REGISTER (AUTO LOGIN) === //
+// === REGISTER (AUTO LOGIN) === //
 app.post("/api/register", async (req, res) => {
   try {
-    const { student_id, name, gender, username, email, password } = req.body;
+    const { student_id, name, gender, username, email, password, role } = req.body;
 
     if (!student_id || !name || !gender || !username || !email || !password) {
       return res.status(400).json({ error: "Please fill in all fields" });
     }
 
+    // Check if username/email already exists
     const [exists] = await db.query(
       "SELECT * FROM users WHERE username = ? OR email = ?",
       [username, email]
@@ -209,20 +211,35 @@ app.post("/api/register", async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const { student_id, name, gender, username, email, password, role } = req.body;
+    // Default ke "student" jika role bukan "admin"
+    const userRole = role === "admin" ? "admin" : "student";
 
-// Default ke "student" kalau tak bagi role
-const userRole = role === "admin" ? "admin" : "student";
+    // Masukkan student jika belum ada
+    await db.query(
+      "INSERT IGNORE INTO students (student_id, name, gender) VALUES (?, ?, ?)",
+      [student_id, name, gender]
+    );
 
-await db.query(
-  "INSERT IGNORE INTO students (student_id, name, gender) VALUES (?, ?, ?)",
-  [student_id, name, gender]
-);
+    // Masukkan user
+    await db.query(
+      "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
+      [student_id, username, email, hashed, userRole, true]
+    );
 
-await db.query(
-  "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
-  [student_id, username, email, hashed, userRole, true]
-);
+    // RESPONSE ikut role sebenar
+    res.json({
+      success: true,
+      message: "Registration successful!",
+      username,
+      student_id,
+      role: userRole,           
+      must_change_password: true,
+    });
+  } catch (err) {
+    console.error("❌ Register Error:", err);
+    res.status(500).json({ error: "Server error during registration" });
+  }
+});
 
     // === AUTO LOGIN RESPONSE ===
     res.json({
