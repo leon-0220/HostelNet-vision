@@ -32,7 +32,6 @@ app.use(
     origin: [
       "https://leon-0220.github.io",
       "https://leon-0220.github.io/HostelNet-vision",
-      "https://leon-0220.github.io/HostelNet-vision/",
       "http://localhost:5500",
       "http://127.0.0.1:5500",
       "https://hostelnet-vision-3.onrender.com",
@@ -42,7 +41,6 @@ app.use(
     credentials: true,
   })
 );
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -53,13 +51,13 @@ let db;
   try {
     db = await mysql.createPool(DB_CONFIG);
     console.log("✅ Database connected successfully!");
-    console.log(`📦 Connected to DB: ${DB_CONFIG.host}:${DB_CONFIG.port}`);
 
     // ====== CREATE TABLES ====== //
     await db.query(`CREATE TABLE IF NOT EXISTS students (
       student_id VARCHAR(20) PRIMARY KEY,
       name VARCHAR(150) NOT NULL,
       gender ENUM('Male','Female') NOT NULL,
+      course VARCHAR(100),
       room VARCHAR(50),
       status ENUM('pending','checked-in','checked-out') DEFAULT 'pending'
     );`);
@@ -164,17 +162,13 @@ let db;
 app.get("/api/test-db", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT NOW() AS time");
-    res.json({
-      success: true,
-      message: "✅ Database connected!",
-      time: rows[0].time,
-    });
+    res.json({ success: true, message: "✅ Database connected!", time: rows[0].time });
   } catch (err) {
     res.status(500).json({ success: false, message: "Database connection failed" });
   }
 });
 
-// === ADMIN RESET (KEKALKAN) === //
+// === ADMIN RESET === //
 app.get("/api/reset-admin", async (req, res) => {
   try {
     const hashed = await bcrypt.hash("AdminPass01", 10);
@@ -190,65 +184,26 @@ app.get("/api/reset-admin", async (req, res) => {
   }
 });
 
-// === REGISTER (AUTO LOGIN) === //
-// === REGISTER (AUTO LOGIN) === //
+// === REGISTER === //
 app.post("/api/register", async (req, res) => {
   try {
-    const { student_id, name, gender, username, email, password, role } = req.body;
-
-    if (!student_id || !name || !gender || !username || !email || !password) {
+    const { student_id, name, gender, course, username, email, password, role } = req.body;
+    if (!student_id || !name || !gender || !username || !email || !password)
       return res.status(400).json({ error: "Please fill in all fields" });
-    }
 
-    // Check if username/email already exists
-    const [exists] = await db.query(
-      "SELECT * FROM users WHERE username = ? OR email = ?",
-      [username, email]
-    );
-    if (exists.length > 0) {
-      return res.status(400).json({ error: "Username or email already exists" });
-    }
+    const [exists] = await db.query("SELECT * FROM users WHERE username = ? OR email = ?", [username, email]);
+    if (exists.length > 0) return res.status(400).json({ error: "Username or email already exists" });
 
     const hashed = await bcrypt.hash(password, 10);
-
-    // Default ke "student" jika role bukan "admin"
     const userRole = role === "admin" ? "admin" : "student";
 
-    // Masukkan student jika belum ada
-    await db.query(
-      "INSERT IGNORE INTO students (student_id, name, gender) VALUES (?, ?, ?)",
-      [student_id, name, gender]
-    );
-
-    // Masukkan user
+    await db.query("INSERT IGNORE INTO students (student_id, name, gender, course) VALUES (?, ?, ?, ?)", [student_id, name, gender, course]);
     await db.query(
       "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
       [student_id, username, email, hashed, userRole, true]
     );
 
-    // RESPONSE ikut role sebenar
-    res.json({
-      success: true,
-      message: "Registration successful!",
-      username,
-      student_id,
-      role: userRole,           
-    });
-  } catch (err) {
-    console.error("❌ Register Error:", err);
-    res.status(500).json({ error: "Server error during registration" });
-  }
-});
-
-    // === AUTO LOGIN RESPONSE ===
-    res.json({
-      success: true,
-      message: "Registration successful!",
-      username,
-      student_id,
-      role: "student",
-      must_change_password: true,
-    });
+    res.json({ success: true, message: "Registration successful!", username, student_id, role: userRole });
   } catch (err) {
     console.error("❌ Register Error:", err);
     res.status(500).json({ error: "Server error during registration" });
@@ -259,28 +214,52 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password)
-      return res.status(400).json({ error: "Missing username or password" });
+    if (!username || !password) return res.status(400).json({ error: "Missing username or password" });
 
     const [users] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
-    if (users.length === 0)
-      return res.status(401).json({ error: "Invalid username or password" });
+    if (users.length === 0) return res.status(401).json({ error: "Invalid username or password" });
 
     const user = users[0];
     const match = await bcrypt.compare(password, user.password);
-    if (!match)
-      return res.status(401).json({ error: "Invalid username or password" });
+    if (!match) return res.status(401).json({ error: "Invalid username or password" });
 
-    res.json({
-      success: true,
-      username: user.username,
-      student_id: user.student_id,
-      role: user.role,
-      must_change_password: !!user.must_change_password,
-    });
+    res.json({ success: true, username: user.username, student_id: user.student_id, role: user.role, must_change_password: !!user.must_change_password });
   } catch (err) {
     console.error("❌ Login error:", err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+// === GET STUDENT PROFILE BY ID === //
+app.get("/api/students/:studentID", async (req, res) => {
+  try {
+    const { studentID } = req.params;
+    const [studentRows] = await db.query(
+      `SELECT s.student_id, s.name, s.gender, s.course, s.status AS student_status,
+              c.unit_code, c.room_number, c.checkin_date, c.checkout_date
+       FROM students s
+       LEFT JOIN checkin_checkout c ON s.student_id = c.student_id AND c.checkout_date IS NULL
+       WHERE s.student_id = ?`,
+      [studentID]
+    );
+
+    if (studentRows.length === 0) return res.status(404).json({ error: "Student not found" });
+
+    const student = studentRows[0];
+    res.json({
+      student_id: student.student_id,
+      name: student.name,
+      gender: student.gender,
+      course: student.course || "N/A",
+      hostel_unit: student.unit_code || "N/A",
+      room_number: student.room_number || "N/A",
+      check_in_date: student.checkin_date ? new Date(student.checkin_date).toISOString().split("T")[0] : "N/A",
+      check_out_date: student.checkout_date ? new Date(student.checkout_date).toISOString().split("T")[0] : "N/A",
+      status: student.student_status || (student.checkout_date ? "Checked-out" : "Active"),
+    });
+  } catch (err) {
+    console.error("❌ Error fetching student profile:", err);
+    res.status(500).json({ error: "Failed to fetch student profile" });
   }
 });
 
@@ -289,108 +268,19 @@ app.get("/api/hostels/:gender", async (req, res) => {
   try {
     const { gender } = req.params;
     const [rows] = await db.query(
-      `SELECT 
-          hu.unit_code, 
-          hu.unit_name, 
-          hu.gender,
-          COUNT(r.room_number) AS total_rooms,
-          SUM(r.available) AS available_beds
+      `SELECT hu.unit_code, hu.unit_name, hu.gender,
+              COUNT(r.room_number) AS total_rooms, SUM(r.available) AS available_beds
        FROM hostel_units hu
        JOIN rooms r ON hu.unit_code = r.unit_code
-       WHERE hu.gender = ? 
-         AND r.available > 0
-         AND r.status = 'active'
+       WHERE hu.gender = ? AND r.available > 0 AND r.status = 'active'
        GROUP BY hu.unit_code, hu.unit_name, hu.gender
        ORDER BY hu.unit_name ASC`,
       [gender]
     );
-
     res.json({ success: true, count: rows.length, hostels: rows });
   } catch (err) {
     console.error("❌ Error fetching hostel units:", err);
     res.status(500).json({ error: "Failed to load hostel units" });
-  }
-});
-
-// === GET STUDENT PROFILE BY ID === //
-app.get("/api/students/:studentID", async (req, res) => {
-  try {
-    const { studentID } = req.params;
-
-    // Dapatkan maklumat student
-    const [studentRows] = await db.query(
-      `SELECT s.student_id, s.name, s.gender, s.room, s.status,
-              c.unit_code, c.room_number, c.checkin_date, c.checkout_date
-       FROM students s
-       LEFT JOIN checkin_checkout c 
-         ON s.student_id = c.student_id AND c.checkout_date IS NULL
-       WHERE s.student_id = ?`,
-      [studentID]
-    );
-
-    if (studentRows.length === 0) {
-      return res.status(404).json({ error: "Student not found" });
-    }
-
-    const student = studentRows[0];
-
-    res.json({
-      student_id: student.student_id,
-      name: student.name,
-      gender: student.gender,
-      course: student.course || "N/A", // jika ada field course dalam table, kalau belum ada boleh set default
-      hostel_unit: student.unit_code || "N/A",
-      room_number: student.room_number || "N/A",
-      check_in_date: student.checkin_date ? student.checkin_date.toISOString().split("T")[0] : "N/A",
-      check_out_date: student.checkout_date ? student.checkout_date.toISOString().split("T")[0] : "N/A",
-      status: student.status || "N/A",
-    });
-  } catch (err) {
-    console.error("❌ Error fetching student profile:", err);
-    res.status(500).json({ error: "Failed to fetch student profile" });
-  }
-});
-
-// === GET STUDENT PROFILE BY ID === //
-app.get("/api/students/:studentID", async (req, res) => {
-  try {
-    const { studentID } = req.params;
-
-    // Dapatkan maklumat student + checkin aktif
-    const [studentRows] = await db.query(
-      `SELECT s.student_id, s.name, s.gender, s.course, s.status AS student_status,
-              c.unit_code, c.room_number, c.checkin_date, c.checkout_date
-       FROM students s
-       LEFT JOIN checkin_checkout c 
-         ON s.student_id = c.student_id AND c.checkout_date IS NULL
-       WHERE s.student_id = ?`,
-      [studentID]
-    );
-
-    if (studentRows.length === 0) {
-      return res.status(404).json({ error: "Student not found" });
-    }
-
-    const student = studentRows[0];
-
-    res.json({
-      student_id: student.student_id,
-      name: student.name,
-      gender: student.gender,
-      course: student.course || "N/A",
-      hostel_unit: student.unit_code || "N/A",
-      room_number: student.room_number || "N/A",
-      check_in_date: student.checkin_date
-        ? new Date(student.checkin_date).toISOString().split("T")[0]
-        : "N/A",
-      check_out_date: student.checkout_date
-        ? new Date(student.checkout_date).toISOString().split("T")[0]
-        : "N/A",
-      status: student.student_status || (student.checkout_date ? "Checked-out" : "Active"),
-    });
-  } catch (err) {
-    console.error("❌ Error fetching student profile:", err);
-    res.status(500).json({ error: "Failed to fetch student profile" });
   }
 });
 
