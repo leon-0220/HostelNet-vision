@@ -97,7 +97,24 @@
     const form = document.getElementById("loginForm");
     const errorBox = document.getElementById("error");
 
-    const API_BASE = "https://hostelnet-vision-3.onrender.com"; // backend Render URL
+    const API_BASE = "https://hostelnet-vision-3.onrender.com"; 
+
+    // =================== AUTO REDIRECT IF ALREADY LOGGED IN =================== //
+fetch("https://hostelnet-vision-3.onrender.com/api/current-user", {
+  method: "GET",
+  credentials: "include"
+})
+.then(res => res.json())
+.then(data => {
+  if (data.loggedIn) {
+    // Redirect ikut role
+    if (data.user.role === "admin") {
+      window.location.href = "admin/dashboard.html";
+    } else {
+      window.location.href = "student/dashboard.html";
+    }
+  }
+});
 
     async function testConnection() {
       try {
