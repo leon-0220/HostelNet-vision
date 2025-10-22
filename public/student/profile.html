@@ -10,22 +10,22 @@
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="logo-box">
-        <img src="../../images/vision.png" alt="Vision University College Logo">
+      <img src="../../images/vision.png" alt="Vision University College Logo">
       <h4 class="mb-4">HostelNet</h4>
-      </div>
-      <ul class="nav flex-column">
-        <li><a href="dashboard.html">🏠 Dashboard</a></li>
-        <li><a href="student1.html">👨‍🎓 Student</a></li>
-        <li><a href="studentroom.html">🛏 Room</a></li>
-        <li><a href="payments.html">💳 Payment</a></li>
-        <li><a href="complaints_list.html">📝 Complaint</a></li>
-        <li><a href="logout.php">🚪 Logout</a></li>
-      </ul>
     </div>
+    <ul class="nav flex-column">
+      <li><a href="dashboard.html">🏠 Dashboard</a></li>
+      <li><a href="student1.html">👨‍🎓 Student</a></li>
+      <li><a href="studentroom.html">🛏 Room</a></li>
+      <li><a href="payments.html">💳 Payment</a></li>
+      <li><a href="complaints_list.html">📝 Complaint</a></li>
+      <li><a href="logout.php">🚪 Logout</a></li>
+    </ul>
+  </div>
 
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+  <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
 
-    <div class="main-content">
+  <div class="main-content">
     <div class="container-fluid p-4">
       <h2 class="mb-4">Student Profile</h2>
 
@@ -33,7 +33,11 @@
       <div class="card mb-4">
         <div class="card-header profile-header">My Profile</div>
         <div class="card-body">
-         <p>Loading profile...</p>
+          <p><strong>Name:</strong> <span id="studentName">Loading...</span></p>
+          <p><strong>Student ID:</strong> <span id="studentID">Loading...</span></p>
+          <p><strong>Course:</strong> <span id="studentCourse">Loading...</span></p>
+          <p><strong>Hostel Unit:</strong> <span id="hostelUnit">Loading...</span></p>
+          <p><strong>Room Number:</strong> <span id="roomNumber">Loading...</span></p>
         </div>
       </div>
 
@@ -42,9 +46,9 @@
         <div class="card-header hostel-header">Hostel Information</div>
         <div class="card-body">
           <ul>
-            <li>Check-in Date: 7st July 2025</li>
-            <li>Check-out Date: 1st November 2025</li>
-            <li>Status: Active</li>
+            <li>Check-in Date: <span id="checkIn">Loading...</span></li>
+            <li>Check-out Date: <span id="checkOut">Loading...</span></li>
+            <li>Status: <span id="status">Loading...</span></li>
           </ul>
         </div>
       </div>
@@ -63,45 +67,44 @@
     </div>
   </div>
 
+  <script src="../../js/studentscript.js"></script>
   <script>
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("closed");
     }
 
-    const profileBody = document.getElementById("profileBody");
-  const student_id = localStorage.getItem("user_id"); // ambil ID student dari login
-  const API_BASE = "https://hostelnet-vision-3.onrender.com";
-
-  async function loadStudentProfile() {
-    if (!student_id) {
-      profileBody.innerHTML = "<p>⚠ Student not logged in.</p>";
-      return;
+    // Ambil student_id dari localStorage
+    const studentID = localStorage.getItem("user_id"); 
+    if (!studentID) {
+      alert("❌ Not logged in!");
+      window.location.href = "../../index.html";
     }
 
-    try {
-      const res = await fetch(`${API_BASE}/api/student/${student_id}`);
-      const data = await res.json();
+    // Fetch student details dari backend
+    async function loadStudentProfile() {
+      try {
+        const res = await fetch(`https://hostelnet-vision-3.onrender.com/api/students/${studentID}`);
+        if (!res.ok) throw new Error("Failed to fetch student data");
 
-      if (!res.ok) {
-        profileBody.innerHTML = `<p>⚠ ${data.error || "Failed to load profile."}</p>`;
-        return;
+        const data = await res.json();
+
+        // Update HTML
+        document.getElementById("studentName").textContent = data.name;
+        document.getElementById("studentID").textContent = data.student_id;
+        document.getElementById("studentCourse").textContent = data.course;
+        document.getElementById("hostelUnit").textContent = data.hostel_unit;
+        document.getElementById("roomNumber").textContent = data.room_number;
+        document.getElementById("checkIn").textContent = data.check_in_date;
+        document.getElementById("checkOut").textContent = data.check_out_date;
+        document.getElementById("status").textContent = data.status;
+
+      } catch (error) {
+        console.error(error);
+        alert("⚠ Unable to load student profile.");
       }
-
-      profileBody.innerHTML = `
-        <p><strong>Name:</strong> ${data.name}</p>
-        <p><strong>Student ID:</strong> ${data.student_id}</p>
-        <p><strong>Course:</strong> ${data.course}</p>
-        <p><strong>Hostel Unit:</strong> ${data.hostel_unit || "-"}</p>
-        <p><strong>Room Number:</strong> ${data.room_number || "-"}</p>
-      `;
-
-    } catch (err) {
-      console.error(err);
-      profileBody.innerHTML = "<p>⚠ Error loading profile.</p>";
     }
-  }
 
-  loadStudentProfile();
+    loadStudentProfile();
   </script>
 </body>
 </html>

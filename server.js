@@ -291,6 +291,45 @@ app.get("/api/hostels/:gender", async (req, res) => {
   }
 });
 
+// === GET STUDENT PROFILE BY ID === //
+app.get("/api/students/:studentID", async (req, res) => {
+  try {
+    const { studentID } = req.params;
+
+    // Dapatkan maklumat student
+    const [studentRows] = await db.query(
+      `SELECT s.student_id, s.name, s.gender, s.room, s.status,
+              c.unit_code, c.room_number, c.checkin_date, c.checkout_date
+       FROM students s
+       LEFT JOIN checkin_checkout c 
+         ON s.student_id = c.student_id AND c.checkout_date IS NULL
+       WHERE s.student_id = ?`,
+      [studentID]
+    );
+
+    if (studentRows.length === 0) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    const student = studentRows[0];
+
+    res.json({
+      student_id: student.student_id,
+      name: student.name,
+      gender: student.gender,
+      course: student.course || "N/A", // jika ada field course dalam table, kalau belum ada boleh set default
+      hostel_unit: student.unit_code || "N/A",
+      room_number: student.room_number || "N/A",
+      check_in_date: student.checkin_date ? student.checkin_date.toISOString().split("T")[0] : "N/A",
+      check_out_date: student.checkout_date ? student.checkout_date.toISOString().split("T")[0] : "N/A",
+      status: student.status || "N/A",
+    });
+  } catch (err) {
+    console.error("❌ Error fetching student profile:", err);
+    res.status(500).json({ error: "Failed to fetch student profile" });
+  }
+});
+
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
   res.send("✅ Backend is running. Visit frontend at https://leon-0220.github.io/HostelNet-vision/");
