@@ -271,9 +271,39 @@ form button:hover {
     </div>
   </div>
   <script>
+    async function loadStudentData() {
+  const studentId = localStorage.getItem("student_id");
+
+  if (!studentId) {
+    alert("Please log in first!");
+    window.location.href = "../../login.html";
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://hostelnet-vision-3.onrender.com/api/students/${studentId}`);
+    if (!response.ok) throw new Error("Failed to fetch student data");
+
+    const data = await response.json();
+
+    // Auto-fill form
+    document.getElementById("studentId").value = data.student_id || "";
+    document.getElementById("studentName").value = data.full_name || "";
+    document.getElementById("course").value = data.course || "";
+    document.getElementById("block").value = data.hostel_block || "";
+    document.getElementById("roomNo").value = data.room_number || "";
+
+  } catch (err) {
+    console.error("Error loading student data:", err);
+    alert("Error loading student info. Please try again later.");
+  }
+}
+
   function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("closed");
 }
+
+document.addEventListener("DOMContentLoaded", loadStudentData);
 </script>
 </body>
 </html>
