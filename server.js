@@ -214,7 +214,6 @@ app.post("/api/register", async (req, res) => {
       [student_id, name, gender]
     );
 
-    const { role } = req.body;
     await db.query(
       "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
       [student_id, username, email, hashed, "student", true]
