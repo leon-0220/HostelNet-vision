@@ -16,11 +16,14 @@ const app = express();
 // ===================== CONFIG ===================== //
 const PORT = process.env.PORT || 8080;
 const DB_CONFIG = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
+  host: process.env.DB_HOST || "hostelnet-0220-hostelnet-db.g.aivencloud.com",
+  user: process.env.DB_USER || "avnadmin",
+  password: process.env.DB_PASSWORD || "AVNS_exgb7fcLJ3IbAbkYyjk",
+  database: process.env.DB_NAME || "defaultdb",
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT): 13379,
+  ssl: {
+    rejectUnauthorized: true,
+  },
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
