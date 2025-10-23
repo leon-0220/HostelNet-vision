@@ -22,7 +22,7 @@ const DB_CONFIG = {
   database: process.env.DB_NAME || "defaultdb",
   port: process.env.DB_PORT ? Number(process.env.DB_PORT): 13379,
   ssl: {
-    rejectUnauthorized: true,
+    rejectUnauthorized: false,
   },
   waitForConnections: true,
   connectionLimit: 10,
@@ -59,6 +59,7 @@ app.use(session({
     secure: true, 
     httpOnly: false,
     maxAge: 1000 * 60 * 60 
+  }
 }));
 
 // ===================== DATABASE INIT ===================== //
