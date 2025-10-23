@@ -271,8 +271,13 @@ form button:hover {
     </div>
   </div>
   <script>
+    if (!localStorage.getItem("user_id")) {
+      alert("Please log in first!");
+      window.location.href = "../../index.html";
+    }
+    
     async function loadStudentData() {
-  const studentId = localStorage.getItem("student_id");
+  const studentId = localStorage.getItem("user_id");
 
   if (!studentId) {
     alert("Please log in first!");
@@ -299,7 +304,7 @@ form button:hover {
   }
 }
 
-document.addEventListener("DMContentLoaded", loadStudentData);
+document.addEventListener("DOMContentLoaded", loadStudentData);
 
 document.querySelector("form").addEventListener("submit", async (e) => {
   e.preventDefault();
