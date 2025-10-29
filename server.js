@@ -540,6 +540,42 @@ app.post("/api/checkin", async (req, res) => {
   }
 });
 
+// ===================== CHANGE PASSWORD ===================== //
+app.post("/api/change-password", async (req, res) => {
+  try {
+    if (!req.session.user || !req.session.user.username) {
+      return res.status(401).json({ success: false, error: "Not logged in" });
+    }
+
+    const { new_password, confirm_password } = req.body;
+
+    if (!new_password || !confirm_password) {
+      return res.status(400).json({ success: false, error: "Both fields are required" });
+    }
+
+    if (new_password !== confirm_password) {
+      return res.status(400).json({ success: false, error: "Passwords do not match" });
+    }
+
+    // Hash baru
+    const hashed = await bcrypt.hash(new_password, 10);
+
+    // Update user
+    await db.query(
+      "UPDATE users SET password = ?, must_change_password = FALSE WHERE username = ?",
+      [hashed, req.session.user.username]
+    );
+
+    // Update session flag
+    req.session.user.must_change_password = false;
+
+    res.json({ success: true, message: "Password updated successfully!" });
+  } catch (err) {
+    console.error("❌ Change password error:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
   res.send("✅ Backend is running. Visit frontend at https://leon-0220.github.io/HostelNet-vision/");
