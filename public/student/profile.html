@@ -1,111 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Student Dashboard - Hostel Management System</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="../../css/studentstyle.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HostelNet | Profile</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f5f6fa;
+      margin:0;
+      padding:0;
+    }
+    .container {
+      max-width: 450px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .profile-pic {
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      object-fit:cover;
+      margin:0 auto 10px;
+      display:block;
+      border:2px solid #ff4d4d;
+      cursor:pointer;
+      transition:0.3s;
+    }
+    .profile-pic:hover {
+      transform: scale(1.05);
+      border-color:#ff3333;
+    }
+    h2 {
+      text-align:center;
+      margin-bottom: 20px;
+      color: #ff4d4d;
+    }
+    .info-group {
+      display:flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .info-group .label {
+      font-weight: 600;
+      color:#555;
+    }
+    form {
+      margin-top: 25px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display:block;
+      margin-bottom:5px;
+      color:#333;
+      font-weight:500;
+    }
+    input[type="text"], input[type="password"] {
+      width:100%;
+      padding:10px;
+      border:1px solid #ddd;
+      border-radius:8px;
+      font-size:14px;
+    }
+    .btn-submit {
+      width:100%;
+      padding:12px;
+      background:#ff4d4d;
+      border:none;
+      color:white;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:16px;
+      margin-top:5px;
+      transition:0.3s;
+    }
+    .btn-submit:hover {
+      background:#ff3333;
+    }
+    .message {
+      margin-top:8px;
+      font-size:14px;
+    }
+    .message.error { color:red; }
+    .message.success { color:green; }
+    #profilePictureInput { display:none; }
+  </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar" id="sidebar">
-    <div class="logo-box">
-      <img src="../../images/vision.png" alt="Vision University College Logo">
-      <h4 class="mb-4">HostelNet</h4>
-    </div>
-    <ul class="nav flex-column">
-      <li><a href="dashboard.html">🏠 Home</a></li>
-      <li><a href="profile.html">👨‍🎓 My Profile</a></li>
-      <li><a href="registration.html">🛏 Online Registration</a></li>
-      <li><a href="studentroom.html">💳 Room Selection</a></li>
-      <li><a href="checkin.html">📝 Check-in</a></li>
-      <li><a href="checkout.html">📝 Check-out</a></li>
-      <li><a href="../../logout.html">🚪 Logout</a></li>
-    </ul>
+  <div class="container">
+    <!-- Profile Picture -->
+    <img src="images/vision.png" alt="Profile Picture" class="profile-pic" id="profilePicture" title="Click to change">
+
+    <input type="file" id="profilePictureInput" accept="image/*">
+
+    <h2 id="full_name">Loading Name…</h2>
+
+    <!-- Info Display -->
+    <div class="info-group"><span class="label">Student ID:</span> <span id="student_id">—</span></div>
+    <div class="info-group"><span class="label">Email:</span> <span id="email">—</span></div>
+    <div class="info-group"><span class="label">Phone:</span> <span id="phone">—</span></div>
+    <div class="info-group"><span class="label">Hostel Unit:</span> <span id="hostel_unit">—</span></div>
+    <div class="info-group"><span class="label">Room Number:</span> <span id="room_number">—</span></div>
+    <div class="info-group"><span class="label">Check-in Date:</span> <span id="checkin_date">—</span></div>
+
+    <!-- Profile Update -->
+    <form id="profileForm">
+      <h3>Update Info</h3>
+      <div class="form-group">
+        <label for="edit_course">Course</label>
+        <input type="text" id="edit_course" placeholder="Enter Course">
+      </div>
+      <div class="form-group">
+        <label for="edit_phone">Phone Number</label>
+        <input type="text" id="edit_phone" placeholder="Enter Phone">
+      </div>
+      <button type="submit" class="btn-submit">Save</button>
+      <p id="profileMsg" class="message"></p>
+    </form>
+
+    <!-- Change Password -->
+    <form id="passwordForm" style="margin-top:30px;">
+      <h3>Change Password</h3>
+      <div class="form-group">
+        <label for="new_password">New Password</label>
+        <input type="password" id="new_password" placeholder="Enter New Password">
+      </div>
+      <div class="form-group">
+        <label for="confirm_password">Confirm New Password</label>
+        <input type="password" id="confirm_password" placeholder="Confirm New Password">
+      </div>
+      <button type="submit" class="btn-submit">Change Password</button>
+      <p id="passwordMsg" class="message"></p>
+    </form>
   </div>
 
-  <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-
-  <div class="main-content">
-    <div class="container-fluid p-4">
-      <h2 class="mb-4">Student Profile</h2>
-
-      <!-- Profile Section -->
-      <div class="card mb-4">
-        <div class="card-header profile-header">My Profile</div>
-        <div class="card-body">
-          <p><strong>Name:</strong> <span id="studentName">Loading...</span></p>
-          <p><strong>Student ID:</strong> <span id="studentID">Loading...</span></p>
-          <p><strong>Course:</strong> <span id="studentCourse">Loading...</span></p>
-          <p><strong>Hostel Unit:</strong> <span id="hostelUnit">Loading...</span></p>
-          <p><strong>Room Number:</strong> <span id="roomNumber">Loading...</span></p>
-        </div>
-      </div>
-
-      <!-- Hostel Information -->
-      <div class="card mb-4">
-        <div class="card-header hostel-header">Hostel Information</div>
-        <div class="card-body">
-          <ul>
-            <li>Check-in Date: <span id="checkIn">Loading...</span></li>
-            <li>Check-out Date: <span id="checkOut">Loading...</span></li>
-            <li>Status: <span id="status">Loading...</span></li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Notices -->
-      <div class="card mb-4">
-        <div class="card-header info-header">Latest Notices</div>
-        <div class="card-body">
-          <ul>
-            <li>⚠ Hostel maintenance will be on 15 Sept 2025</li>
-            <li>📢 Fire drill practice scheduled on 20 Sept 2025</li>
-            <li>📌 Payment deadline for Semester 6: 30 Sept 2025</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="../../js/studentscript.js"></script>
   <script>
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("closed");
-    }
+const API_BASE = "https://hostelnet-vision-3.onrender.com";
 
-    // Ambil student_id dari localStorage
-    const studentID = localStorage.getItem("user_id"); 
-    if (!studentID) {
-      alert("❌ Not logged in!");
-      window.location.href = "../../index.html";
-    }
-
-    // Fetch student details dari backend
-    async function loadStudentProfile() {
-      try {
-        const res = await fetch(`https://hostelnet-vision-3.onrender.com/api/students/${studentID}`);
-        if (!res.ok) throw new Error("Failed to fetch student data");
-
-        const data = await res.json();
-
-        // Update HTML
-        document.getElementById("studentName").textContent = data.name;
-        document.getElementById("studentID").textContent = data.student_id;
-        document.getElementById("studentCourse").textContent = data.course;
-        document.getElementById("hostelUnit").textContent = data.hostel_unit;
-        document.getElementById("roomNumber").textContent = data.room_number;
-        document.getElementById("checkIn").textContent = data.check_in_date;
-        document.getElementById("checkOut").textContent = data.check_out_date;
-        document.getElementById("status").textContent = data.status;
-
-      } catch (error) {
-        console.error(error);
-        alert("⚠ Unable to load student profile.");
+// Load user profile
+async function loadProfile() {
+  try {
+    const res = await fetch(`${API_BASE}/api/my-details`, { credentials: "include" });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById("full_name").innerText = data.full_name;
+      document.getElementById("student_id").innerText = data.student_id;
+      document.getElementById("email").innerText = data.student_id + "@hostelnet.com";
+      document.getElementById("phone").innerText = data.phone || "—";
+      document.getElementById("hostel_unit").innerText = data.hostel_unit || "—";
+      document.getElementById("room_number").innerText = data.room_number || "—";
+      document.getElementById("checkin_date").innerText = data.check_in_date || "—";
+      document.getElementById("edit_course").value = data.course || "";
+      document.getElementById("edit_phone").value = data.phone || "";
+      if (data.profile_pic) {
+        document.getElementById("profilePicture").src = `/uploads/${data.profile_pic}`;
       }
     }
+  } catch (err) {
+    console.error("Error loading profile:", err);
+  }
+}
+loadProfile();
 
-    loadStudentProfile();
-  </script>
+// Profile update
+document.getElementById("profileForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const course = document.getElementById("edit_course").value.trim();
+  const phone = document.getElementById("edit_phone").value.trim();
+  try {
+    const res = await fetch(`${API_BASE}/api/update-profile`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ course, phone })
+    });
+    const result = await res.json();
+    const msgEl = document.getElementById("profileMsg");
+    msgEl.innerText = result.success ? result.message : result.error;
+    msgEl.className = "message " + (result.success ? "success" : "error");
+    if (result.success) loadProfile();
+  } catch (err) {
+    const msgEl = document.getElementById("profileMsg");
+    msgEl.innerText = "Server error";
+    msgEl.className = "message error";
+  }
+});
+
+// Change password
+document.getElementById("passwordForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const new_password = document.getElementById("new_password").value.trim();
+  const confirm_password = document.getElementById("confirm_password").value.trim();
+  const msgEl = document.getElementById("passwordMsg");
+
+  if (new_password !== confirm_password) {
+    msgEl.innerText = "Passwords do not match";
+    msgEl.className = "message error";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/change-password`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ new_password, confirm_password })
+    });
+    const result = await res.json();
+    msgEl.innerText = result.success ? result.message : result.error;
+    msgEl.className = "message " + (result.success ? "success" : "error");
+  } catch (err) {
+    msgEl.innerText = "Server error";
+    msgEl.className = "message error";
+  }
+});
+
+// Profile picture upload
+const profilePic = document.getElementById("profilePicture");
+const profileInput = document.getElementById("profilePictureInput");
+
+profilePic.addEventListener("click", () => profileInput.click());
+
+profileInput.addEventListener("change", async () => {
+  const file = profileInput.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("profile_pic", file);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/upload-profile-pic`, {
+      method: "POST",
+      credentials: "include",
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      profilePic.src = `/uploads/${data.filename}?t=${new Date().getTime()}`; // force reload
+      alert(data.message);
+    } else {
+      alert(data.error || "Upload failed");
+    }
+  } catch (err) {
+    alert("Server error during upload");
+    console.error(err);
+  }
+});
+</script>
 </body>
 </html>

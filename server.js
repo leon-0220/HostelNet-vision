@@ -6,6 +6,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
+import multer from "multer";
+import fs from "fs";
 dotenv.config();
 
 // ===================== SETUP ===================== //
@@ -172,6 +174,94 @@ let db;
     process.exit(1);
   }
 })();
+
+// ===================== PROFILE PICTURE UPLOAD ===================== //
+const uploadDir = path.join(__dirname, "public/uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = file.originalname.split(".").pop();
+    cb(null, `${req.session.user.student_id}_${Date.now()}.${ext}`);
+  }
+});
+const upload = multer({ storage });
+
+// ===================== UPDATE PROFILE INFO ===================== //
+app.post("/api/update-profile", async (req, res) => {
+  try {
+    if (!req.session.user || !req.session.user.student_id)
+      return res.status(401).json({ success: false, error: "Not logged in" });
+
+    const student_id = req.session.user.student_id;
+    const { full_name, course, phone } = req.body;
+
+    if (!full_name || !course)
+      return res.status(400).json({ success: false, error: "Full name and course required" });
+
+    await db.query(
+      `UPDATE students SET name=?, course=?, phone=? WHERE student_id=?`,
+      [full_name, course, phone || null, student_id]
+    );
+
+    res.json({ success: true, message: "Profile updated successfully!" });
+  } catch (err) {
+    console.error("❌ Update profile error:", err);
+    res.status(500).json({ success: false, error: "Server error updating profile" });
+  }
+});
+
+// ===================== UPDATE PASSWORD ===================== //
+app.post("/api/update-password", async (req, res) => {
+  try {
+    if (!req.session.user || !req.session.user.student_id)
+      return res.status(401).json({ success: false, error: "Not logged in" });
+
+    const student_id = req.session.user.student_id;
+    const { old_password, new_password } = req.body;
+
+    if (!old_password || !new_password)
+      return res.status(400).json({ success: false, error: "Both old and new password required" });
+
+    const [users] = await db.query("SELECT * FROM users WHERE student_id=?", [student_id]);
+    if (!users.length) return res.status(404).json({ error: "User not found" });
+
+    const user = users[0];
+    const match = await bcrypt.compare(old_password, user.password);
+    if (!match) return res.status(400).json({ error: "Old password incorrect" });
+
+    const hashed = await bcrypt.hash(new_password, 10);
+    await db.query("UPDATE users SET password=?, must_change_password=0 WHERE student_id=?", [hashed, student_id]);
+
+    res.json({ success: true, message: "Password updated successfully!" });
+  } catch (err) {
+    console.error("❌ Update password error:", err);
+    res.status(500).json({ success: false, error: "Server error updating password" });
+  }
+});
+
+// ===================== UPLOAD PROFILE PICTURE ===================== //
+app.post("/api/upload-profile-pic", upload.single("profile_pic"), async (req, res) => {
+  try {
+    if (!req.session.user || !req.session.user.student_id)
+      return res.status(401).json({ success: false, error: "Not logged in" });
+
+    if (!req.file) return res.status(400).json({ success: false, error: "No file uploaded" });
+
+    const student_id = req.session.user.student_id;
+    const filename = req.file.filename;
+
+    // Pastikan column profile_pic ada
+    await db.query("ALTER TABLE students ADD COLUMN IF NOT EXISTS profile_pic VARCHAR(255) DEFAULT NULL");
+    await db.query("UPDATE students SET profile_pic=? WHERE student_id=?", [filename, student_id]);
+
+    res.json({ success: true, message: "Profile picture uploaded!", filename });
+  } catch (err) {
+    console.error("❌ Upload profile pic error:", err);
+    res.status(500).json({ success: false, error: "Server error uploading profile picture" });
+  }
+});
 
 // ===================== API ROUTES ===================== //
 
@@ -573,6 +663,46 @@ app.post("/api/change-password", async (req, res) => {
   } catch (err) {
     console.error("❌ Change password error:", err);
     res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// ===================== PROFILE PICTURE UPLOAD ===================== //
+// Folder simpan gambar
+const uploadDir = path.join(__dirname, "public/uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+// Multer config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    if (!req.session.user || !req.session.user.student_id) return cb(new Error("Not logged in"));
+    const ext = file.originalname.split(".").pop();
+    cb(null, `${req.session.user.student_id}_${Date.now()}.${ext}`);
+  }
+});
+const upload = multer({ storage });
+
+// Upload route
+app.post("/api/upload-profile-picture", upload.single("profile_pic"), async (req, res) => {
+  try {
+    if (!req.session.user || !req.session.user.student_id)
+      return res.status(401).json({ success: false, error: "Not logged in" });
+
+    if (!req.file) return res.status(400).json({ success: false, error: "No file uploaded" });
+
+    const filename = req.file.filename;
+    const student_id = req.session.user.student_id;
+
+    // Tambah column jika belum ada
+    await db.query("ALTER TABLE students ADD COLUMN IF NOT EXISTS profile_pic VARCHAR(255) DEFAULT NULL");
+
+    // Update DB
+    await db.query("UPDATE students SET profile_pic=? WHERE student_id=?", [filename, student_id]);
+
+    res.json({ success: true, message: "Profile picture uploaded!", filename });
+  } catch (err) {
+    console.error("❌ Upload profile picture error:", err);
+    res.status(500).json({ success: false, error: "Server error uploading profile picture" });
   }
 });
 

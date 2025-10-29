@@ -174,3 +174,22 @@ CREATE TABLE IF NOT EXISTS rooms (
 );
 
 ALTER TABLE hostel_units ADD COLUMN gender ENUM('male','female') NOT NULL DEFAULT 'male';
+
+ALTER TABLE checkin_checkout
+ADD CONSTRAINT fk_student
+FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE;
+
+ALTER TABLE checkin_checkout
+ADD CONSTRAINT fk_room
+FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number);
+
+CREATE TABLE IF NOT EXISTS checkin_checkout (
+    record_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(20) NOT NULL,
+    unit_code VARCHAR(20) NOT NULL,
+    room_number VARCHAR(20) NOT NULL,
+    checkin_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    checkout_date TIMESTAMP NULL,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number)
+);
