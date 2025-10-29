@@ -4,18 +4,8 @@
   <meta charset="UTF-8">
   <title>HostelNet | Checkout</title>
   <style>
-    :root{
-      --bg: #ff4000;
-      --card: #ffffff;
-      --accent: #f39c12;
-      --muted: #6b7280;
-      --radius: 12px;
-    }
-
-    body, html {
+    body {
       margin: 0;
-      padding: 0;
-      height: 100%;
       font-family: Arial, sans-serif;
     }
 
@@ -24,7 +14,7 @@
       min-height: 100vh;
     }
 
-    /* Sidebar */
+    /* ===== SIDEBAR ===== */
     .sidebar {
       width: 220px;
       background: #fff3e0;
@@ -34,85 +24,90 @@
       top: 0;
       left: 0;
       height: 100%;
-      overflow-y: auto;
       transition: transform 0.3s ease;
       z-index: 1000;
     }
 
-    .sidebar.closed { 
-    transform: translateX(-100%); 
+    .sidebar.closed {
+      transform: translateX(-100%);
     }
 
-    .logo-box { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    margin-bottom: 20px; 
-    }
-    .logo-box img { 
-    width: 100px; 
-    height: auto; 
-    margin-bottom: 8px; 
-    }
-    .logo-box h2 { 
-    margin: 0; 
-    font-size: 1rem; 
-    color: #3e2723; 
+    .logo-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
     }
 
-    .sidebar ul { 
-    list-style: none; 
-    padding: 0; 
-    margin: 0; 
+    .logo-box img {
+      width: 140px;
+      height: auto;
+      margin-bottom: 5px;
+      border-radius: 10px;
     }
-    .sidebar ul li { 
-    margin: 15px 0; 
+
+    .sidebar h3 {
+      text-align: center;
+      color: #3e2723;
+      font-size: 1.1rem;
+      margin-top: 5px;
     }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar ul li {
+      margin: 15px 0;
+    }
+
     .sidebar ul li a {
-      color: #3e2723; 
-      text-decoration: none; 
-      display: block; 
-      padding: 8px 12px; 
-      border-radius: 5px; 
+      color: #3e2723;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      border-radius: 5px;
       transition: 0.3s;
     }
-    .sidebar ul li a:hover { 
-    background: #ed5d2d; 
-    color: white; 
+
+    .sidebar ul li a:hover {
+      background: #ed5d2d;
+      color: white;
     }
 
+    /* ===== TOGGLE BUTTON ===== */
     .toggle-btn {
-      position: fixed; 
-      top: 15px; 
+      position: fixed;
+      top: 15px;
       left: 15px;
-      background: #fff3e0; 
-      border: none; 
+      background: #fff3e0;
+      border: none;
       cursor: pointer;
-      padding: 8px 12px; 
-      border-radius: 5px; 
+      padding: 8px 12px;
+      border-radius: 5px;
       z-index: 1100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
-    .sidebar.closed + .toggle-btn { 
-    left: 70px; 
-    }
-
+    /* ===== MAIN CONTENT ===== */
     .main-content {
-      flex: 1; 
+      flex: 1;
+      margin-left: 220px;
       padding: 20px;
       background: linear-gradient(180deg, #ff4000, #eef3f8);
-      margin-left: 220px;
       transition: margin-left 0.3s ease;
     }
 
-    .sidebar.closed ~ .main-content { 
-    margin-left: 0; 
+    .sidebar.closed ~ .main-content {
+      margin-left: 0;
     }
 
-    .main-content h2 { 
-    text-align: center; 
-    color: #000; 
-    margin-bottom: 20px; 
+    .main-content h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #000;
     }
 
     form {
@@ -125,30 +120,33 @@
     }
 
     form label { 
-    font-weight: bold; 
-    display: block; 
-    margin-top: 10px; 
+      font-weight: bold; 
+      display: block; 
+      margin-top: 10px; 
     }
+
     form input, form select { 
-    width: 100%; 
-    padding: 10px; 
-    margin-top: 5px; 
-    margin-bottom: 15px; 
-    border-radius: 5px; 
-    border: 1px solid #ccc; 
+      width: 100%; 
+      padding: 10px; 
+      margin-top: 5px; 
+      margin-bottom: 15px; 
+      border-radius: 5px; 
+      border: 1px solid #ccc; 
     }
+
     form button { 
-    background-color: #19de85; 
-    color: white; 
-    border: none; 
-    padding: 10px; 
-    width: 100%; 
-    border-radius: 5px; 
-    cursor: pointer; 
-    font-weight: bold; 
+      background-color: #19de85; 
+      color: white; 
+      border: none; 
+      padding: 10px; 
+      width: 100%; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      font-weight: bold; 
     }
+
     form button:hover { 
-    background-color: #ff5500; 
+      background-color: #ff5500; 
     }
   </style>
 </head>
@@ -158,7 +156,7 @@
     <div class="sidebar" id="sidebar">
       <div class="logo-box">
         <img src="../../images/2.png" alt="Vision University College Logo">
-        <h2>HostelNet</h2>
+        <h3>Menu</h3>
       </div>
       <ul>
         <li><a href="dashboard.html">🏠 Home</a></li>
@@ -194,31 +192,76 @@
     </div>
   </div>
 
-  <script>
-    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("closed"); }
+<script>
+const API_BASE = "https://hostelnet-vision-3.onrender.com";
 
-    // Auto-fill student details
-    async function loadCheckoutData() {
-      const API_BASE = "https://hostelnet-vision-3.onrender.com";
+// ✅ SESSION CHECK
+const studentId = localStorage.getItem("user_id");
+const userRole = localStorage.getItem("role");
 
-      try {
-        const res = await fetch(`${API_BASE}/api/my-details`, { credentials: "include" });
-        const data = await res.json();
+if (!studentId) {
+  alert("Please log in first!");
+  window.location.href = "../../index.html"; // redirect kalau takde session
+} else if (userRole && userRole.toLowerCase() === "admin") {
+  alert("Admins cannot access this page!");
+  window.location.href = "../../public/admin/dashboard.html";
+}
 
-        document.getElementById("student_id").value = data.student_id || "";
-        document.getElementById("block").value = data.hostel_unit || "";
-        document.getElementById("room_no").value = data.room_number || "";
+// Sidebar toggle
+function toggleSidebar() { document.getElementById("sidebar").classList.toggle("closed"); }
 
-        // Set checkout date default to today
-        const today = new Date().toISOString().split("T")[0];
-        document.getElementById("checkout_date").value = today;
+// Load student details
+async function loadCheckoutData() {
+  try {
+    const res = await fetch(`${API_BASE}/api/my-details`, { credentials: "include" });
+    const data = await res.json();
 
-      } catch(err) {
-        console.error("Failed to load student data:", err);
-      }
+    document.getElementById("student_id").value = data.student_id || "";
+    document.getElementById("block").value = data.hostel_unit || "";
+    document.getElementById("room_no").value = data.room_number || "";
+
+    // Set checkout date default to today
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("checkout_date").value = today;
+
+  } catch(err) {
+    console.error("Failed to load student data:", err);
+    alert("Error loading your details.");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadCheckoutData);
+
+// Optional: handle checkout form submit via fetch instead of PHP form
+document.getElementById("checkoutForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const student_id = document.getElementById("student_id").value;
+  const unit_code = document.getElementById("block").value;
+  const room_number = document.getElementById("room_no").value;
+  const checkout_date = document.getElementById("checkout_date").value;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/checkout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id, unit_code, room_number, checkout_date }),
+      credentials: "include"
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      alert("✅ Checkout successful!");
+      window.location.href = "dashboard.html";
+    } else {
+      alert("❌ " + result.error);
     }
 
-    document.addEventListener("DOMContentLoaded", loadCheckoutData);
-  </script>
+  } catch(err) {
+    console.error(err);
+    alert("Server error during checkout.");
+  }
+});
+</script>
 </body>
 </html>

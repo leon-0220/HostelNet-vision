@@ -5,30 +5,124 @@
   <title>HostelNet | Online Registration</title>
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
       background: linear-gradient(180deg, #ff4000, #eef3f8);
-      margin: 0;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #fff3e0;
+      color: #3e2723;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+
+    .sidebar.closed {
+      transform: translateX(-100%);
+    }
+
+    .logo-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-box img {
+      width: 140px;
+      height: auto;
+      margin-bottom: 5px;
+      border-radius: 10px;
+    }
+
+    .sidebar h3 {
+      text-align: center;
+      color: #3e2723;
+      font-size: 1.1rem;
+      margin-top: 5px;
+    }
+
+    .sidebar ul {
+      list-style: none;
       padding: 0;
+      margin: 0;
+    }
+
+    .sidebar ul li {
+      margin: 15px 0;
+    }
+
+    .sidebar ul li a {
+      color: #3e2723;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+
+    .sidebar ul li a:hover {
+      background: #ed5d2d;
+      color: white;
+    }
+
+    .toggle-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #fff3e0;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 5px;
+      z-index: 1100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 220px;
+      padding: 20px;
+      transition: margin-left 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .sidebar.closed ~ .main-content {
+      margin-left: 0;
     }
 
     .container {
       max-width: 700px;
-      margin: 50px auto;
+      width: 100%;
       background: #fff;
+      padding: 30px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      padding: 30px;
+      margin: 50px auto;
     }
 
     h2 {
       text-align: center;
       color: #ff4000;
+      margin-bottom: 20px;
     }
 
     form {
       display: flex;
       flex-direction: column;
-      margin-top: 20px;
     }
 
     label {
@@ -76,6 +170,7 @@
       background: #d9534f;
       padding: 10px 20px;
       border-radius: 5px;
+      text-align: center;
     }
 
     a.back-btn:hover {
@@ -84,120 +179,97 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Online Hostel Registration</h2>
-    <form id="registrationForm">
-      <label>Student ID</label>
-      <input type="text" id="student_id" name="student_id" placeholder="Enter your student ID" required>
+  <div class="layout">
+    <div class="sidebar" id="sidebar">
+      <div class="logo-box">
+        <img src="../../images/2.png" alt="Vision University College Logo">
+        <h3>Menu</h3>
+      </div>
+      <ul>
+        <li><a href="dashboard.html">🏠 Home</a></li>
+        <li><a href="profile.html">👨‍🎓 My Profile</a></li>
+        <li><a href="registration.html">🛏 Online Registration</a></li>
+        <li><a href="studentroom.html">💳 Room Selection</a></li>
+        <li><a href="checkin.html">📝 Check-in</a></li>
+        <li><a href="checkout.html">📝 Check-out</a></li>
+        <li><a href="../../logout.html">🚪 Logout</a></li>
+      </ul>
+    </div>
 
-      <label>Full Name</label>
-      <input type="text" name="name" placeholder="Enter your name" required>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
 
-      <label>Course</label>
-      <input type="text" id="course" name="course" placeholder="Auto-detected from Student ID" readonly required>
+    <div class="main-content">
+      <div class="container">
+        <h2>Online Hostel Registration</h2>
+        <form id="registrationForm">
+          <label>Student ID</label>
+          <input type="text" id="student_id" name="student_id" placeholder="Enter your student ID" required>
 
-      <label>Phone Number</label>
-      <input type="tel" name="phone" placeholder="Enter your phone number" required pattern="[0-9]{10,12}">
+          <label>Full Name</label>
+          <input type="text" name="name" placeholder="Enter your name" required>
 
-      <label>Gender</label>
-      <select name="gender" id="gender" required>
-        <option value="">Select gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-      </select>
+          <label>Course</label>
+          <input type="text" id="course" name="course" placeholder="Auto-detected from Student ID" readonly required>
 
-      <label>Hostel Unit</label>
-      <select name="hostel_unit" id="hostel_unit" required>
-        <option value="">Select hostel unit</option>
-      </select>
+          <label>Phone Number</label>
+          <input type="tel" name="phone" placeholder="Enter your phone number" required pattern="[0-9]{10,12}">
 
-      <label>Duration of Stay</label>
-      <select name="duration" required>
-        <option value="">Select duration</option>
-        <option value="1 Semester">1 Semester</option>
-        <option value="2 Semesters">2 Semesters</option>
-      </select>
+          <label>Gender</label>
+          <select name="gender" id="gender" required>
+            <option value="">Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
 
-      <button type="submit">Register Now</button>
-    </form>
+          <label>Hostel Unit</label>
+          <select name="hostel_unit" id="hostel_unit" required>
+            <option value="">Select hostel unit</option>
+          </select>
 
-    <div class="status" id="statusMessage"></div>
+          <label>Duration of Stay</label>
+          <select name="duration" required>
+            <option value="">Select duration</option>
+            <option value="1 Semester">1 Semester</option>
+            <option value="2 Semesters">2 Semesters</option>
+          </select>
 
-    <div style="text-align:center;">
-      <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+          <button type="submit">Register Now</button>
+        </form>
+
+        <div class="status" id="statusMessage"></div>
+      </div>
     </div>
   </div>
 
   <script>
-    // ===== Auto-detect Course ===== //
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("closed");
+    }
+
+    // Auto-detect Course
     document.getElementById("student_id").addEventListener("input", function() {
       const studentId = this.value.trim().toUpperCase();
       const courseField = document.getElementById("course");
-
-      if (studentId.startsWith("DIT")) {
-        courseField.value = "Diploma in Information Technology";
-      } else if (studentId.startsWith("DBA")) {
-        courseField.value = "Diploma in Business Administration";
-      } else if (studentId.startsWith("DIP")) {
-        courseField.value = "Diploma in Physiotherapy";
-        } else if (studentId.startsWith("DMI")) {
-        courseField.value = "Diploma in Medical Imaging";
-      } else if (studentId.startsWith("DLE")) {
-        courseField.value = "Diploma in Law Enforcement";
-      } else if (studentId.startsWith("DLM")) {
-        courseField.value = "Diploma in Logistic Management";
-      } else if (studentId.startsWith("DNS")) {
-        courseField.value = "Diploma in Nursing";
-      } else {
-        courseField.value = "";
-      }
+      if (studentId.startsWith("DIT")) courseField.value = "Diploma in Information Technology";
+      else if (studentId.startsWith("DBA")) courseField.value = "Diploma in Business Administration";
+      else if (studentId.startsWith("DIP")) courseField.value = "Diploma in Physiotherapy";
+      else if (studentId.startsWith("DMI")) courseField.value = "Diploma in Medical Imaging";
+      else if (studentId.startsWith("DLE")) courseField.value = "Diploma in Law Enforcement";
+      else if (studentId.startsWith("DLM")) courseField.value = "Diploma in Logistic Management";
+      else if (studentId.startsWith("DNS")) courseField.value = "Diploma in Nursing";
+      else courseField.value = "";
     });
 
-    // ===== Hostel Data ===== //
+    // Populate Hostel Units
     const hostelUnits = {
-      Male: [
-        "Kelana Parkview D401", 
-        "Kelana Parkview D402", 
-        "SS4D/8 21A",
-        "SS4D/8 21B", 
-        "SS4C/15 14", 
-        "SS5D/6A 20", 
-        "SS4B/13 11A",
-        "SS5C/11 32", 
-        "Spacepod 38-1", 
-        "Spacepod 36-1", 
-        "Spacepod 20-1"
-      ],
-      Female: [
-        "Kelana Parkview D201", 
-        "Kelana Parkview D202", 
-        "Kelana Parkview D204",
-        "Kelana Parkview D301", 
-        "Kelana Parkview D404", 
-        "SS5D/8 12",
-        "Ayamas 18A4", 
-        "Focus Point 20B2", 
-        "Focus Point 20B3",
-        "Focus Point 20B4", 
-        "7-11 24B3", 
-        "7-11 24A4",
-        "SS6/8 5B", 
-        "SS6/8 5C", 
-        "Spacepod 38-2", 
-        "Spacepod 36-2",
-        "Spacepod 38-3", 
-        "Spacepod 36-3", 
-        "Spacepod 20-2", 
-        "Spacepod 20-3"
-      ]
+      Male: ["Kelana Parkview D401","Kelana Parkview D402","SS4D/8 21A","SS4D/8 21B","SS4C/15 14","SS5D/6A 20","SS4B/13 11A","SS5C/11 32","Spacepod 38-1","Spacepod 36-1","Spacepod 20-1"],
+      Female: ["Kelana Parkview D201","Kelana Parkview D202","Kelana Parkview D204","Kelana Parkview D301","Kelana Parkview D404","SS5D/8 12","Ayamas 18A4","Focus Point 20B2","Focus Point 20B3","Focus Point 20B4","7-11 24B3","7-11 24A4","SS6/8 5B","SS6/8 5C","Spacepod 38-2","Spacepod 36-2","Spacepod 38-3","Spacepod 36-3","Spacepod 20-2","Spacepod 20-3"]
     };
 
-    // ===== Populate Hostel List ===== //
     document.getElementById('gender').addEventListener('change', function() {
       const gender = this.value;
       const hostelSelect = document.getElementById('hostel_unit');
       hostelSelect.innerHTML = '<option value="">Select hostel unit</option>';
-
       if (hostelUnits[gender]) {
         hostelUnits[gender].forEach(unit => {
           const option = document.createElement('option');
@@ -208,10 +280,9 @@
       }
     });
 
-    // ===== Submit Registration ===== //
+    // Submit Registration
     document.getElementById('registrationForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const form = e.target;
       const data = {
         student_id: form.student_id.value.trim(),
@@ -222,19 +293,15 @@
         hostel_unit: form.hostel_unit.value,
         duration: form.duration.value
       };
-
       const statusEl = document.getElementById('statusMessage');
       statusEl.textContent = "Submitting registration...";
-
       try {
         const res = await fetch('https://hostelnet-vision-3.onrender.com/api/rooms/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
-
         const result = await res.json();
-
         if (res.ok) {
           statusEl.style.color = "green";
           statusEl.textContent = "✅ Registration successful!";
@@ -245,7 +312,7 @@
           statusEl.textContent = "❌ " + (result.message || "Registration failed");
         }
       } catch (err) {
-        console.error("Error:", err);
+        console.error(err);
         statusEl.style.color = "red";
         statusEl.textContent = "⚠️ Network or server error.";
       }

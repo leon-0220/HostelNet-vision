@@ -212,11 +212,24 @@
     </div>
   </div>
 
-  <script>
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("closed");
-    }
-    // Auto-load My Details
+<script>
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("closed");
+}
+
+// ===== SESSION CHECK =====
+const userId = localStorage.getItem("user_id");
+const userRole = localStorage.getItem("role");
+
+if (!userId) {
+  alert("Please log in first!");
+  window.location.href = "../../index.html"; // redirect kalau takde session
+} else if (userRole && userRole.toLowerCase() === "admin") {
+  alert("Admins cannot access this page!");
+  window.location.href = "../../public/admin/dashboard.html"; // redirect kalau admin
+}
+
+// Auto-load My Details
 fetch("https://hostelnet-vision-3.onrender.com/api/my-details", { credentials: "include" })
   .then(res => res.json())
   .then(data => {
@@ -228,6 +241,6 @@ fetch("https://hostelnet-vision-3.onrender.com/api/my-details", { credentials: "
     document.getElementById("room").innerText = data.room_number;
   })
   .catch(err => console.error(err));
-  </script>
+</script>
 </body>
 </html>

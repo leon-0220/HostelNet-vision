@@ -94,85 +94,118 @@
   </div>
 
   <script>
-    const form = document.getElementById("loginForm");
-    const errorBox = document.getElementById("error");
+const form = document.getElementById("loginForm");
+const errorBox = document.getElementById("error");
+const API_BASE = "https://hostelnet-vision-3.onrender.com"; 
 
-    const API_BASE = "https://hostelnet-vision-3.onrender.com"; 
+// =================== AUTO REDIRECT IF ALREADY LOGGED IN =================== //
+async function checkLoggedIn() {
+  const storedId = localStorage.getItem("user_id");
+  const storedRole = localStorage.getItem("role");
 
-    // =================== AUTO REDIRECT IF ALREADY LOGGED IN =================== //
-fetch("https://hostelnet-vision-3.onrender.com/api/current-user", {
-  method: "GET",
-  credentials: "include"
-})
-.then(res => res.json())
-.then(data => {
-  if (data.loggedIn) {
-    // Redirect ikut role
-    if (data.user.role === "admin") {
+  if (storedId && storedRole) {
+    // redirect ikut role
+    if (storedRole.toLowerCase() === "admin") {
       window.location.href = "admin/dashboard.html";
-    } else {
+    } else if (storedRole.toLowerCase() === "student") {
       window.location.href = "student/dashboard.html";
     }
+    return;
+  }
+
+if (data.requirePasswordChange) {
+  localStorage.setItem("user_id", data.user_id);
+  window.location.href = "change-password.html"; // redirect ke page tukar password
+  return;
+}
+
+  // fallback: check backend session
+  try {
+    const res = await fetch(`${API_BASE}/api/current-user`, {
+      method: "GET",
+      credentials: "include"
+    });
+    const data = await res.json();
+    if (data.loggedIn) {
+      localStorage.setItem("user_id", data.user.student_id || data.user.user_id);
+      localStorage.setItem("role", data.user.role);
+      if (data.user.role.toLowerCase() === "admin") {
+        window.location.href = "admin/dashboard.html";
+      } else {
+        window.location.href = "student/dashboard.html";
+      }
+    }
+  } catch (err) {
+    console.error("Error checking session:", err);
+  }
+}
+
+// jalankan auto-check
+checkLoggedIn();
+
+// =================== TEST BACKEND CONNECTION =================== //
+async function testConnection() {
+  try {
+    const res = await fetch(`${API_BASE}/api/test-db`);
+    if (res.ok) console.log("✅ Backend connection OK!");
+    else console.warn("⚠️ Backend reachable tapi ada issue:", await res.text());
+  } catch (err) {
+    console.error("❌ Backend not reachable:", err);
+    errorBox.textContent = "Server currently offline. Try again later.";
+  }
+}
+testConnection();
+
+// =================== LOGIN SUBMIT =================== //
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  errorBox.textContent = "";
+
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  try {
+    const res = await fetch(`${API_BASE}/api/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+      credentials: "include"  // penting supaya backend session cookie tersimpan
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      errorBox.textContent = data.error || "Invalid username or password.";
+      return;
+    }
+
+    // simpan session di localStorage
+    localStorage.setItem("user_id", data.student_id || data.user_id);
+    localStorage.setItem("role", data.role);
+
+    // redirect ikut role
+    if (data.role.toLowerCase() === "admin") {
+      window.location.href = "admin/dashboard.html";
+    } else if (data.role.toLowerCase() === "student") {
+      window.location.href = "student/dashboard.html";
+    }
+
+  } catch (err) {
+    console.error("❌ Error connecting to backend:", err);
+    errorBox.textContent = "Server not responding. Please try again later.";
   }
 });
 
-    async function testConnection() {
-      try {
-        const res = await fetch(`${API_BASE}/api/test-db`);
-        if (res.ok) {
-          console.log("✅ Backend connection OK!");
-        } else {
-          console.warn("⚠️ Backend reachable tapi ada issue response:", await res.text());
-        }
-      } catch (err) {
-        console.error("❌ Backend not reachable:", err);
-        errorBox.textContent = "Server currently offline. Try again later.";
-      }
-    }
-
-    testConnection();
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      errorBox.textContent = "";
-
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      try {
-        const res = await fetch(`${API_BASE}/api/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password }),
-        });
-
-        const data = await res.json();
-        console.log("🔍 API Response:", data);
-
-        if (!res.ok) {
-          errorBox.textContent = data.error || "Invalid username or password.";
-          return;
-        }
-
-        localStorage.setItem("user_id", data.student_id || data.user_id);
-
-        switch(data.role.toLowerCase()) {
-          case "admin":
-            window.location.href = "public/admin/dashboard.html";
-            break;
-          case "student":
-            window.location.href = "public/student/dashboard.html";
-            break;
-          default:
-            alert("Login successful, but role unknown.");
-            break;
-        }
-
-      } catch (err) {
-        console.error("❌ Error connecting to backend:", err);
-        errorBox.textContent = "Server not responding. Please try again later.";
-      }
-    });
+// =================== LOGOUT FUNCTION =================== //
+async function logout() {
+  localStorage.removeItem("user_id");
+  localStorage.removeItem("role");
+  try {
+    await fetch(`${API_BASE}/api/logout`, { method: "POST", credentials: "include" });
+  } catch(err) {
+    console.warn("Logout API failed:", err);
+  }
+  window.location.href = "index.html";
+}
   </script>
 </body>
 </html>

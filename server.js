@@ -383,6 +383,73 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+// ===================== GET MY DETAILS ===================== //
+app.get("/api/my-details", async (req, res) => {
+  try {
+    if (!req.session.user || !req.session.user.username) {
+      return res.status(401).json({ error: "Not logged in" });
+    }
+
+    const { username, student_id, role } = req.session.user;
+
+    if (role === "student") {
+      const [rows] = await db.query(
+        `SELECT s.student_id, s.name AS full_name, s.gender, s.course, s.phone,
+                s.profile_pic,
+                c.unit_code AS hostel_unit, c.room_number,
+                c.checkin_date
+         FROM students s
+         LEFT JOIN checkin_checkout c 
+           ON s.student_id = c.student_id AND c.checkout_date IS NULL
+         WHERE s.student_id = ?`,
+        [student_id]
+      );
+
+      if (rows.length === 0) return res.status(404).json({ error: "Student not found" });
+
+      const student = rows[0];
+
+      return res.json({
+        role: "student",
+        full_name: student.full_name || "N/A",
+        student_id: student.student_id || "N/A",
+        email: username + "@hostelnet.com",
+        phone: student.phone || "N/A",
+        course: student.course || "N/A",
+        hostel_unit: student.hostel_unit || "N/A",
+        room_number: student.room_number || "N/A",
+        check_in_date: student.checkin_date ? new Date(student.checkin_date).toISOString().split("T")[0] : "N/A",
+        profile_pic: student.profile_pic || null
+      });
+    }
+
+    if (role === "admin") {
+      const [users] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
+      if (users.length === 0) return res.status(404).json({ error: "Admin not found" });
+
+      const admin = users[0];
+
+      return res.json({
+        role: "admin",
+        full_name: admin.username,
+        student_id: "—",
+        email: admin.email,
+        phone: "—",
+        course: "—",
+        hostel_unit: "—",
+        room_number: "—",
+        check_in_date: "—",
+        profile_pic: null
+      });
+    }
+
+    res.status(400).json({ error: "Unknown role" });
+  } catch (err) {
+    console.error("❌ Error fetching my details:", err);
+    res.status(500).json({ error: "Failed to fetch my details" });
+  }
+});
+
 // === GET CURRENT USER (check session) === //
 app.get("/api/current-user", (req, res) => {
   if (!req.session.user) {
@@ -491,45 +558,6 @@ app.post("/api/checkin", async (req, res) => {
   } catch (err) {
     console.error("❌ Check-in error:", err);
     res.status(500).json({ error: "Server error during check-in" });
-  }
-});
-
-// === GET MY DETAILS === //
-app.get("/api/my-details", async (req, res) => {
-  try {
-    // Pastikan user login
-    if (!req.session.user || !req.session.user.student_id) {
-      return res.status(401).json({ error: "Not logged in" });
-    }
-
-    const studentID = req.session.user.student_id;
-
-    // Ambil data dari students + checkin_checkout
-    const [rows] = await db.query(
-      `SELECT s.student_id, s.name AS full_name, s.gender, s.course, s.phone,
-              c.unit_code AS hostel_unit, c.room_number
-       FROM students s
-       LEFT JOIN checkin_checkout c 
-       ON s.student_id = c.student_id AND c.checkout_date IS NULL
-       WHERE s.student_id = ?`,
-      [studentID]
-    );
-
-    if (rows.length === 0) return res.status(404).json({ error: "Student not found" });
-
-    const student = rows[0];
-
-    res.json({
-      full_name: student.full_name || "N/A",
-      course: student.course || "N/A",
-      student_id: student.student_id || "N/A",
-      phone: student.phone || "N/A",
-      hostel_unit: student.hostel_unit || "N/A",
-      room_number: student.room_number || "N/A"
-    });
-  } catch (err) {
-    console.error("❌ Error fetching my details:", err);
-    res.status(500).json({ error: "Failed to fetch my details" });
   }
 });
 
