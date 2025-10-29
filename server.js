@@ -323,13 +323,10 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ error: "Username already exists." });
     }
 
-    // ✅ Hash password
     const hashed = await bcrypt.hash(password, 10);
 
-    // Tentukan role ikut input
     const userRole = role.toLowerCase() === "admin" ? "admin" : "student";
 
-    // Jika student, insert ke students table dulu
     if (userRole === "student") {
       await db.query(
         `INSERT INTO students 
@@ -339,7 +336,6 @@ app.post("/api/register", async (req, res) => {
       );
     }
 
-    // Insert ke users table
     await db.query(
       `INSERT INTO users
         (student_id, username, email, password, role, must_change_password)
@@ -703,6 +699,20 @@ app.post("/api/upload-profile-picture", upload.single("profile_pic"), async (req
   } catch (err) {
     console.error("❌ Upload profile picture error:", err);
     res.status(500).json({ success: false, error: "Server error uploading profile picture" });
+  }
+});
+
+app.get("/api/registered-students", async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT id, name, email, program, room_number
+      FROM students
+      WHERE hostel_registered = 1
+    `);
+    res.json(rows);
+  } catch (error) {
+    console.error("❌ Error fetching students:", error);
+    res.status(500).json({ message: "Database error" });
   }
 });
 
