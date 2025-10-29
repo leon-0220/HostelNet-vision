@@ -6,256 +6,194 @@
   <title>HostelNet | Dashboard</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon"/>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
+    body { margin:0; font-family: Arial, sans-serif; }
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: #fff3e0; color: #3e2723; padding: 20px; position: fixed; top: 0; left: 0; height: 100%; transition: transform 0.3s ease; z-index:1000; }
+    .sidebar.closed { transform: translateX(-100%); }
+    .logo-box { display:flex; flex-direction: column; align-items:center; margin-bottom:20px; }
+    .logo-box img { width:100%; max-width:160px; margin-bottom:5px; }
+    .sidebar ul { list-style:none; padding:0; margin:0; }
+    .sidebar ul li { margin:15px 0; }
+    .sidebar ul li a { color:#3e2723; text-decoration:none; display:block; padding:10px; border-radius:5px; transition:0.3s; }
+    .sidebar ul li a:hover { background:#ed5d2d; }
+    .toggle-btn { position:fixed; top:15px; left:15px; background:#fff3e0; border:none; cursor:pointer; padding:8px 12px; border-radius:5px; z-index:1100; box-shadow:0 2px 4px rgba(0,0,0,0.2);}
+    .main-content { flex:1; margin-left:220px; padding:20px; background: linear-gradient(180deg, #ff4000, #eef3f8); transition: margin-left 0.3s ease;}
+    .sidebar.closed ~ .main-content { margin-left:0; }
+    .main-content h2 { text-align:center; margin-bottom:20px; color:#000; }
+    .dashboard-card { max-width:900px; width:100%; border-radius:5px; border:2px solid #000; background:#fff; padding:20px; margin:20px auto; }
+    .dashboard-card h3 { margin-top:0; margin-bottom:15px; color:#333; font-size:1.1rem; }
+    .dashboard-card table { width:100%; border-collapse:collapse; margin-top:10px; }
+    .dashboard-card table th, .dashboard-card table td { border:1px solid #ccc; padding:8px; text-align:center; }
+    .dashboard-card button, .dashboard-card a { display:inline-block; background:#04AA6D; color:white; padding:8px 15px; border:none; border-radius:4px; cursor:pointer; text-align:center; margin-top:5px; text-decoration:none; }
+    .dashboard-card button:hover, .dashboard-card a:hover { background:#038d59; }
 
-    .layout {
-      display: flex;
-      min-height: 100vh;
-    }
-
-    .sidebar {
-      width: 220px;
-      background: #fff3e0;
-      color: #3e2723;
-      padding: 20px;
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      transition: transform 0.3s ease;
-      z-index: 1000;
-    }
-    
-    .sidebar.closed {
-      transform: translateX(-100%);
-    }
-
-    .logo-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .logo-box img {
-      width: 100%;
-      max-width: 160px; 
-      height: auto;
-      margin-bottom: 5px;
-    }
-
-    .sidebar h2 {
-      margin: 0 0 20px 0;
-      font-size: 1.2rem;
-      text-align: center;
-    }
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .sidebar ul li {
-      margin: 15px 0;
-    }
-    .sidebar ul li a {
-      color: #3e2723;
-      text-decoration: none;
-      display: block;
-      padding: 10px;
-      border-radius: 5px;
-      transition: 0.3s;
-    }
-    
-    .sidebar ul li a:hover {
-      background: #ed5d2d;
-    }
-
-    .toggle-btn {
-      position: fixed;
-      top: 15px;
-      left: 15px;
-      background: #fff3e0;
-      border: none;
-      cursor: pointer;
-      padding: 8px 12px;
-      border-radius: 5px;
-      z-index: 1100;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .main-content {
-      flex: 1;
-      margin-left: 220px;
-      padding: 20px;
-      background: linear-gradient(180deg, #ff4000, #eef3f8);
-      transition: margin-left 0.3s ease;
-    }
-
-    .sidebar.closed ~ .main-content {
-      margin-left: 0;
-    }
-
-    .main-content h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #000;
-    }
-
-    .dashboard-card {
-      max-width: 900px;
-      width: 100%;
-      border-radius: 5px;
-      border: 2px solid #000;
-      background: #fff;
-      padding: 20px;
-      margin: 20px auto;
-    }
-
-    .dashboard-card h3 {
-      margin-top: 0;
-      margin-bottom: 15px;
-      color: #333;
-      font-size: 1.1rem;
-    }
-
-    .dashboard-card table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    .dashboard-card table th,
-    .dashboard-card table td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
-
-    .dashboard-card button,
-    .dashboard-card a {
-      display: inline-block;
-      background: #04AA6D;
-      color: white;
-      padding: 8px 15px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-align: center;
-      margin-top: 5px;
-      text-decoration: none;
-    }
-    
-    .dashboard-card button:hover,
-    .dashboard-card a:hover {
-      background: #038d59;
-    }
+    /* Modal Styles */
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:2000; }
+    .modal-content { background:#fff; padding:20px; border-radius:5px; max-width:400px; width:90%; }
+    .modal-content h3 { margin-top:0; }
+    .modal-content input, .modal-content select { width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ccc; }
+    .modal-content button { width:auto; margin-right:10px; }
   </style>
 </head>
 <body>
-  <div class="layout">
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-      <div class="logo-box">
-        <img src="../../images/2.png" alt="Vision University College Logo">
-        <h3>Menu</h3>
-      </div>
-      <ul>
-        <li><a href="dashboard2.html">🏠 Dashboard</a></li>
-        <li><a href="profile.html"> My Profile</a></li>
-        <li><a href="student_list.html">👨‍🎓 Student Registration</a></li>
-        <li><a href="../warden/profile.html">👩‍🏫 Room Allocation</a></li>
-        <li><a href="../finance/profile.html">💳 Check-in / Check-out</a></li>
-        <li><a href="../../logout.html">🚪 Logout</a></li>
-      </ul>
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="logo-box">
+      <img src="../../images/2.png" alt="Vision University College Logo">
+      <h3>Menu</h3>
     </div>
-
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-
-    <div class="main-content">
-      <h2>Admin Dashboard</h2>
-
-      <div class="dashboard-card">
-        <h3>Dashboard Overview</h3>
-        <p>Total Students: <b>651</b></p>
-        <p>Occupied Rooms: <b>68</b></p>
-        <p>Pending Payments: <b>12</b></p>
-        <p>Active Complaints: <b>20</b></p>
-      </div>
-
-      <!-- Students Section -->
-      <div class="dashboard-card">
-        <h3>Student Management</h3>
-        <button>Add Student</button>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th><th>Name</th><th>Room</th><th>Contact</th><th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>1</td><td>Ali</td><td>101</td><td>0123456789</td><td>Active</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Rooms Section -->
-      <div class="dashboard-card">
-        <h3>Room Management</h3>
-        <button>Add Room</button>
-        <table>
-          <thead>
-            <tr>
-              <th>No.</th><th>Type</th><th>Capacity</th><th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>101</td><td>Single</td><td>1</td><td>Occupied</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      
-<!-- Payments Section -->
-      <div class="dashboard-card">
-        <h3>Payments</h3>
-        <button>Record Payment</button>
-        <table>
-          <thead>
-            <tr>
-              <th>Receipt</th><th>Student</th><th>Amount</th><th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>R001</td><td>Ali</td><td>RM500</td><td>Paid</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <!-- Complaints Section -->
-      <div class="dashboard-card">
-        <h3>Complaints</h3>
-        <button>Add Complaint</button>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th><th>Student</th><th>Issue</th><th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>C001</td><td>Ali</td><td>No water</td><td>Pending</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-    </div>
+    <ul>
+      <li><a href="dashboard2.html">🏠 Dashboard</a></li>
+      <li><a href="profile.html"> My Profile</a></li>
+      <li><a href="student_list.html">👨‍🎓 Student Registration</a></li>
+      <li><a href="../warden/profile.html">👩‍🏫 Room Allocation</a></li>
+      <li><a href="../../logout.html">🚪 Logout</a></li>
+    </ul>
   </div>
 
-  <script>
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("closed");
-    }
-  </script>
+  <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+  <div class="main-content">
+    <h2>Admin Dashboard</h2>
+
+    <div class="dashboard-card">
+      <h3>Dashboard Overview</h3>
+      <p>Total Students: <b id="total-students">651</b></p>
+      <p>Occupied Rooms: <b id="occupied-rooms">68</b></p>
+    </div>
+
+    <!-- Students Section -->
+    <div class="dashboard-card">
+      <h3>Student Management</h3>
+      <button onclick="showModal('student')">Add Student</button>
+      <table id="student-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Name</th><th>Room</th><th>Contact</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Ali</td><td>101</td><td>0123456789</td><td>Active</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Rooms Section -->
+    <div class="dashboard-card">
+      <h3>Room Management</h3>
+      <button onclick="showModal('room')">Add Room</button>
+      <table id="room-table">
+        <thead>
+          <tr>
+            <th>No.</th><th>Type</th><th>Capacity</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>101</td><td>Single</td><td>1</td><td>Occupied</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Student Form Modal -->
+<div id="student-modal" class="modal">
+  <div class="modal-content">
+    <h3>Add Student</h3>
+    <form id="student-form">
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="text" name="room" placeholder="Room" required>
+      <input type="text" name="contact" placeholder="Contact" required>
+      <select id="student-status">
+        <option value="">Select Status</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+      <button type="button" conclik="addStudent()">Save</button>
+      <button type="button" onclick="closeModal('student')">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<!-- Room Form Modal -->
+<div id="room-modal" class="modal">
+  <div class="modal-content">
+    <h3>Add Room</h3>
+    <form id="room-form">
+      <input type="text" name="room_no" placeholder="Room Number" required>
+      <input type="text" name="type" placeholder="Type" required>
+      <input type="number" name="capacity" placeholder="Capacity" required>
+      <select name="status" required>
+        <option value="">Select Status</option>
+        <option value="Occupied">Occupied</option>
+        <option value="Vacant">Vacant</option>
+      </select>
+      <button type="submit">Save</button>
+      <button type="button" onclick="closeModal('room')">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function toggleSidebar() { document.getElementById("sidebar").classList.toggle("closed"); }
+
+// Show / Close Modal
+function showModal(type) { document.getElementById(type+'-modal').style.display='flex'; }
+function closeModal(type) { document.getElementById(type+'-modal').style.display='none'; }
+
+// Update dashboard counts
+function updateDashboardCounts() {
+  const studentCount = document.getElementById('student-table').getElementsByTagName('tbody')[0].rows.length;
+  document.getElementById('total-students').innerText = studentCount;
+  const occupiedRooms = Array.from(document.getElementById('room-table').getElementsByTagName('tbody')[0].rows)
+    .filter(r => r.cells[3].innerText.toLowerCase()==='occupied').length;
+  document.getElementById('occupied-rooms').innerText = occupiedRooms;
+}
+
+// Handle Student Form Submit
+document.getElementById('student-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(this).entries());
+  fetch('http://localhost:3000/api/add-student',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  })
+  .then(res=>res.json())
+  .then(resp=>{
+    alert(resp.message);
+    const table = document.getElementById('student-table').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+    newRow.innerHTML = `<td>${resp.id}</td><td>${data.name}</td><td>${data.room}</td><td>${data.contact}</td><td>${data.status}</td>`;
+    closeModal('student');
+    updateDashboardCounts();
+    this.reset();
+  })
+  .catch(err=>alert('Error: '+err.message));
+});
+
+// Handle Room Form Submit
+document.getElementById('room-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(this).entries());
+  fetch('http://localhost:3000/api/add-room',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  })
+  .then(res=>res.json())
+  .then(resp=>{
+    alert(resp.message);
+    const table = document.getElementById('room-table').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+    newRow.innerHTML = `<td>${data.room_no}</td><td>${data.type}</td><td>${data.capacity}</td><td>${data.status}</td>`;
+    closeModal('room');
+    updateDashboardCounts();
+    this.reset();
+  })
+  .catch(err=>alert('Error: '+err.message));
+});
+</script>
 </body>
 </html>

@@ -743,6 +743,56 @@ app.get("/api/registered-students", async (req, res) => {
     res.status(500).json({ message: "Database error" });
   }
 });
+app.post("/api/add-student", async (req, res) => {
+  try {
+    const { name, room, contact, status } = req.body;
+    if (!name || !room || !contact || !status) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // Insert into students table
+    const [result] = await db.query(
+      "INSERT INTO students (name, room, phone, status) VALUES (?, ?, ?, ?)",
+      [name, room, contact, status]
+    );
+
+    res.json({ message: "Student added successfully!", id: result.insertId });
+  } catch (err) {
+    console.error("❌ Add student error:", err);
+    res.status(500).json({ message: "Server error adding student" });
+  }
+});
+
+app.post("/api/add-room", async (req, res) => {
+  try {
+    const { room_no, type, capacity, status } = req.body;
+    if (!room_no || !type || !capacity || !status) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // Insert into rooms table
+    await db.query(
+      "INSERT INTO rooms (room_number, type, capacity, status) VALUES (?, ?, ?, ?)",
+      [room_no, type, capacity, status]
+    );
+
+    res.json({ message: "Room added successfully!" });
+  } catch (err) {
+    console.error("❌ Add room error:", err);
+    res.status(500).json({ message: "Server error adding room" });
+  }
+});
+
+app.get("/api/dashboard-stats", async (req, res) => {
+  try {
+    const [[{ total_students }]] = await db.query("SELECT COUNT(*) AS total_students FROM students");
+    const [[{ occupied_rooms }]] = await db.query("SELECT COUNT(*) AS occupied_rooms FROM rooms WHERE status='Occupied'");
+    res.json({ total_students, occupied_rooms });
+  } catch (err) {
+    console.error("❌ Dashboard stats error:", err);
+    res.status(500).json({ message: "Server error fetching dashboard stats" });
+  }
+});
 
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
