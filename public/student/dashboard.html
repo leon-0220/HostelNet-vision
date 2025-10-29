@@ -14,6 +14,7 @@
       min-height: 100vh;
     }
 
+    /* ===== SIDEBAR ===== */
     .sidebar {
       width: 220px;
       background: #fff3e0;
@@ -39,16 +40,17 @@
     }
 
     .logo-box img {
-      width: 100%;
-      max-width: 160px; 
+      width: 140px;
       height: auto;
       margin-bottom: 5px;
+      border-radius: 10px;
     }
 
-    .sidebar h2 {
-      margin: 0 0 20px 0;
-      font-size: 1.2rem;
+    .sidebar h3 {
       text-align: center;
+      color: #3e2723;
+      font-size: 1.1rem;
+      margin-top: 5px;
     }
 
     .sidebar ul {
@@ -72,6 +74,7 @@
 
     .sidebar ul li a:hover {
       background: #ed5d2d;
+      color: white;
     }
 
     .toggle-btn {
@@ -87,6 +90,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
+    /* ===== MAIN CONTENT ===== */
     .main-content {
       flex: 1;
       margin-left: 220px;
@@ -105,6 +109,7 @@
       color: #000;
     }
 
+    /* ===== CARD STYLE ===== */
     .dashboard-card {
       max-width: 600px;
       width: 100%;
@@ -151,11 +156,14 @@
       margin-top: 5px;
       text-decoration: none;
     }
-    
+
     .dashboard-card button:hover,
     .dashboard-card a:hover {
       background: #038d59;
     }
+
+    .btn-danger { background: #d9534f; }
+    .btn-warning { background: #f0ad4e; }
   </style>
 </head>
 <body>
@@ -180,86 +188,47 @@
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
 
     <div class="main-content">
-      <h2>Student Dashboard</h2>
+      <h2>Welcome, <span id="username">Student</span> 👋</h2>
 
+      <!-- Profile Section -->
       <div class="dashboard-card">
-        <h3>Profile</h3>
-        <button onclick="viewProfile()">View Profile</button>
-        <form id="updateProfileForm">
-          <input type="text" name="name" placeholder="Name">
-          <input type="email" name="email" placeholder="Email">
-          <input type="text" name="phone" placeholder="Phone">
-          <button type="submit">Update Profile</button>
-        </form>
+        <h3>👤 My Details</h3>
+        <p><strong>Full Name:</strong> <span id="full_name">Loading...</span></p>
+        <p><strong>Course:</strong> <span id="course">Loading...</span></p>
+        <p><strong>Student ID:</strong> <span id="student_id">Loading...</span></p>
+        <p><strong>Phone Number:</strong> <span id="phone">Loading...</span></p>
+        <p><strong>Hostel Unit:</strong> <span id="hostel_unit">Not assigned</span></p>
+        <p><strong>Room Number:</strong> <span id="room">Not assigned</span></p>
       </div>
 
-      <!-- Room -->
+      <!-- Room Management -->
       <div class="dashboard-card">
-        <h3>Room Management</h3>
-        <button onclick="viewRooms()">View Rooms</button>
-        <form id="bookRoomForm">
-          <a href="checkin.html">Check-In</a>
-          <a href="checkout.html" style="background:#d9534f;">Check-Out</a>
-          <input type="number" name="room_id" placeholder="Room ID">
-          <button type="submit">Book Room</button>
-        </form>
-        <form id="changeRoomForm">
-          <input type="number" name="room_id" placeholder="New Room ID">
-          <button type="submit" style="background:#f0ad4e;">Change Room</button>
-        </form>
+        <h3>🏠 Room Management</h3>
+        <button onclick="window.location.href='studentroom.html'">View Available Rooms</button>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <a href="checkin.html" class="btn-success">Check-In</a>
+          <a href="checkout.html" class="btn-danger">Check-Out</a>
+        </div>
       </div>
+    </div>
+  </div>
+
   <script>
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("closed");
     }
-  // Load user profile bila page load
-  async function loadProfile() {
-    try {
-      const res = await fetch('/user/profile', {
-        method: 'GET',
-        credentials: 'include' // penting untuk hantar cookie session
-      });
-      if(res.ok){
-        const user = await res.json();
-        document.querySelector('input[name="name"]').value = user.username || '';
-        document.querySelector('input[name="email"]').value = user.email || '';
-        document.querySelector('input[name="phone"]').value = user.phone || '';
-      } else {
-        console.error('Cannot load profile', res.status);
-      }
-    } catch(err){
-      console.error('Error loading profile', err);
-    }
-  }
-
-  loadProfile();
-
-  // Handle form submit
-  document.getElementById('updateProfileForm').addEventListener('submit', async function(e){
-    e.preventDefault();
-    const name = this.name.value.trim();
-    const email = this.email.value.trim();
-    const phone = this.phone.value.trim();
-
-    try{
-      const res = await fetch('/user/profile/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ name, email, phone })
-      });
-
-      const data = await res.json();
-      if(res.ok){
-        alert('✅ Profile updated successfully!');
-      } else {
-        alert('❌ Update failed: ' + data.message);
-      }
-    } catch(err){
-      console.error('Error updating profile', err);
-      alert('❌ Unable to update profile. Check console.');
-    }
-  });
+    // Auto-load My Details
+fetch("https://hostelnet-vision-3.onrender.com/api/my-details", { credentials: "include" })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("full_name").innerText = data.full_name;
+    document.getElementById("course").innerText = data.course;
+    document.getElementById("student_id").innerText = data.student_id;
+    document.getElementById("phone").innerText = data.phone;
+    document.getElementById("hostel_unit").innerText = data.hostel_unit;
+    document.getElementById("room").innerText = data.room_number;
+  })
+  .catch(err => console.error(err));
   </script>
 </body>
 </html>
