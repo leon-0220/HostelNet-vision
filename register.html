@@ -31,7 +31,7 @@
 
     .page-wrapper {
       width: 100%;
-      max-width: 450px;
+      max-width: 500px;
       padding: 20px;
     }
 
@@ -59,29 +59,15 @@
       font-size: 14px;
     }
 
-    .login-box form .container p {
-      margin-bottom: 15px;
-      font-size: 14px;
-    }
-
-    .login-box hr {
-      border: none;
-      height: 1px;
-      background: #ddd;
-      margin: 15px 0;
-    }
-
     .login-box label {
       display: block;
       text-align: left;
       margin-bottom: 5px;
-      font-weight: 200;
+      font-weight: 500;
       color: #555;
     }
 
-    .login-box input[type="text"],
-    .login-box input[type="email"],
-    .login-box input[type="password"],
+    .login-box input,
     .login-box select {
       width: 100%;
       padding: 10px 12px;
@@ -110,7 +96,7 @@
     }
 
     .login-box button.registerbtn:hover {
-      background: #d93619;
+      background: #bf2e10;
     }
 
     .login-box .container.signin {
@@ -128,11 +114,14 @@
       text-decoration: underline;
     }
 
+    .hidden {
+      display: none;
+    }
+
     @media (max-width: 480px) {
       .login-box {
         padding: 25px 15px;
       }
-
       .login-box img {
         width: 80px;
       }
@@ -145,56 +134,67 @@
       <img src="images/vision.png" alt="Vision University College Logo">
       <h4 class="mb-3">HOSTEL MANAGEMENT SYSTEM (HOSTELNET)</h4>
       <p class="text-muted">Register Page</p>
-      
+
       <form id="registerForm">
         <div class="container">
           <p>Please fill in this form to create an account.</p>
           <hr>
 
-          <label for="id"><b>Student ID</b></label>
-          <input 
-            type="text" 
-            placeholder="Enter your ID (e.g. DIT0423-001)" 
-            name="id" 
-            id="id" 
-            required   
-            style="text-transform:uppercase;"
-          >
+          <label for="full_name"><b>Full Name</b></label>
+          <input type="text" id="full_name" name="full_name" placeholder="Enter full name" required>
 
-          <label for="name"><b>Full Name</b></label>
-          <input type="text" placeholder="Enter your full name" name="name" id="name" required>
+          <label for="username"><b>Username</b></label>
+          <input type="text" id="username" name="username" placeholder="Enter username" required>
 
-          <label for="uname"><b>Username</b></label> 
-          <input type="text" placeholder="Your Username" name="uname" id="uname" required>
+          <label for="password"><b>Password</b></label>
+          <input type="password" id="password" name="password" placeholder="Enter password" required>
 
-          <label for="email"><b>Email</b></label>
-          <input type="email" placeholder="Your Email" name="email" id="email" required>
+          <label for="confirm_password"><b>Repeat Password</b></label>
+          <input type="password" id="confirm_password" placeholder="Repeat password" required>
 
-          <label for="psw"><b>Password</b></label> 
-          <input type="password" placeholder="Enter Password" name="psw" id="psw" required>
-
-          <label for="psw-repeat"><b>Repeat Password</b></label> 
-          <input type="password" placeholder="Repeat Password" name="psw-repeat" id="psw-repeat" required>
+          <label for="phone_number"><b>Phone Number</b></label>
+          <input type="text" id="phone_number" name="phone_number" placeholder="Enter phone number" required>
 
           <label for="gender"><b>Gender</b></label>
-          <select name="gender" id="gender" required>
+          <select id="gender" name="gender" required onchange="filterHostelOptions()">
             <option value="">-- Select Gender --</option>
-            <option value="man">Man</option>
-            <option value="woman">Woman</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
           </select>
 
           <label for="role"><b>Role</b></label>
-          <select name="role" id="role" required>
+          <select id="role" name="role" required onchange="toggleRoleFields()">
             <option value="">-- Select Role --</option>
             <option value="student">Student</option>
-            <option value="warden">Warden</option>
-            <option value="finance">Finance</option>
             <option value="admin">Admin</option>
-            <option value="maintenance">Maintenance</option>
           </select>
+
+          <!-- Student Fields -->
+          <div id="studentFields">
+            <label for="course"><b>Course</b></label>
+            <input type="text" id="course" name="course" placeholder="Enter course (e.g. DIT, FIN)" />
+
+            <label for="student_id"><b>Student ID</b></label>
+            <input type="text" id="student_id" name="student_id" placeholder="Enter Student ID (e.g. DIT0423-001)" style="text-transform:uppercase;"/>
+
+            <label for="room_number"><b>Room Number</b></label>
+            <input type="text" id="room_number" name="room_number" placeholder="Enter Room Number" />
+
+            <label for="hostel_unit"><b>Hostel Unit</b></label>
+            <select id="hostel_unit" name="hostel_unit">
+              <option value="">-- Select Hostel Unit --</option>
+            </select>
+          </div>
+
+          <!-- Admin Fields -->
+          <div id="adminFields" class="hidden">
+            <label for="staff_id"><b>Staff ID</b></label>
+            <input type="text" id="staff_id" name="staff_id" placeholder="Enter Staff ID" />
+          </div>
 
           <hr>
           <p>By creating an account, you agree to our <a href="#">Terms & Privacy</a>.</p>
+
           <button type="submit" class="registerbtn">Register</button>
         </div>
 
@@ -206,53 +206,127 @@
   </div>
 
   <script>
-    // Auto uppercase untuk ID input
-    const idInput = document.getElementById("id");
-    idInput.addEventListener("input", () => {
-      idInput.value = idInput.value.toUpperCase();
+    // Hostel data by gender
+    const hostels = {
+      male: [
+        "Kelana Parkview D401",
+        "Kelana Parkview D402",
+        "SS4D/8 21A",
+        "SS4D/8 21B",
+        "SS4C/15 14",
+        "SS5D/6A 20",
+        "SS4B/13 11A",
+        "SS5C/11 32",
+        "Spacepod 38-1",
+        "Spacepod 36-1",
+        "Spacepod 20-1"
+      ],
+      female: [
+        "Kelana Parkview D201",
+        "Kelana Parkview D202",
+        "Kelana Parkview D204",
+        "Kelana Parkview D301",
+        "Kelana Parkview D404",
+        "SS5D/8 12",
+        "Ayamas 18A4",
+        "Focus Point 20B2",
+        "Focus Point 20B3",
+        "Focus Point 20B4",
+        "7-11 24B3",
+        "7-11 24A4",
+        "SS6/8 5B",
+        "SS6/8 5C",
+        "Spacepod 38-2",
+        "Spacepod 36-2",
+        "Spacepod 38-3",
+        "Spacepod 36-3",
+        "Spacepod 20-2",
+        "Spacepod 20-3"
+      ]
+    };
+
+    function toggleRoleFields() {
+      const role = document.getElementById("role").value;
+      const studentFields = document.getElementById("studentFields");
+      const adminFields = document.getElementById("adminFields");
+
+      if (role === "student") {
+        studentFields.classList.remove("hidden");
+        adminFields.classList.add("hidden");
+      } else if (role === "admin") {
+        studentFields.classList.add("hidden");
+        adminFields.classList.remove("hidden");
+      } else {
+        studentFields.classList.add("hidden");
+        adminFields.classList.add("hidden");
+      }
+    }
+
+    // Filter hostel ikut gender
+    function filterHostelOptions() {
+      const gender = document.getElementById("gender").value;
+      const hostelSelect = document.getElementById("hostel_unit");
+
+      hostelSelect.innerHTML = '<option value="">-- Select Hostel Unit --</option>';
+
+      if (hostels[gender]) {
+        hostels[gender].forEach(unit => {
+          const opt = document.createElement("option");
+          opt.value = unit;
+          opt.textContent = unit;
+          hostelSelect.appendChild(opt);
+        });
+      }
+    }
+
+    // Auto uppercase student ID
+    document.getElementById("student_id").addEventListener("input", () => {
+      const input = document.getElementById("student_id");
+      input.value = input.value.toUpperCase();
     });
 
-    // Handle submit form
+    // Submit form
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const id = document.getElementById("id").value.trim().toUpperCase();
-      const name = document.getElementById("name").value.trim();
-      const uname = document.getElementById("uname").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("psw").value.trim();
-      const repeat = document.getElementById("psw-repeat").value.trim();
-      const gender = document.getElementById("gender").value;
       const role = document.getElementById("role").value;
-
-      // Validate password match
-      if (password !== repeat) {
-        alert("❌ Password and Repeat Password do not match!");
+      const password = document.getElementById("password").value;
+      const confirm = document.getElementById("confirm_password").value;
+      if (password !== confirm) {
+        alert("❌ Passwords do not match!");
         return;
       }
 
+      const data = {
+        full_name: document.getElementById("full_name").value.trim(),
+        username: document.getElementById("username").value.trim(),
+        password: password,
+        phone_number: document.getElementById("phone_number").value.trim(),
+        gender: document.getElementById("gender").value,
+        role: role
+      };
+
+      if (role === "student") {
+        data.course = document.getElementById("course").value.trim();
+        data.student_id = document.getElementById("student_id").value.trim().toUpperCase();
+        data.room_number = document.getElementById("room_number").value.trim();
+        data.hostel_unit = document.getElementById("hostel_unit").value.trim();
+      } else if (role === "admin") {
+        data.staff_id = document.getElementById("staff_id").value.trim();
+      }
+
       try {
-        const response = await fetch("https://hostelnet-vision-3.onrender.com/api/register", {
+        const response = await fetch("https://hostelnet-vision-3.onrender.com/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            student_id: id,
-            name: name,
-            gender: gender === "man" ? "Male" : "Female",
-            username: uname,
-            email: email,
-            password: password,
-            role: role
-          })
+          body: JSON.stringify(data)
         });
 
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-          alert("✅ Registration successful! You can now login.");
-          window.location.href = "index.html";
+        const text = await response.text();
+        if (response.ok) {
+          document.body.innerHTML = text; // run backend alert
         } else {
-          alert("⚠ " + (data.error || data.message || "Registration failed."));
+          alert("⚠ Registration failed. Please try again.");
         }
       } catch (error) {
         console.error("Error:", error);

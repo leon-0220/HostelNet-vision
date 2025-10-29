@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static("public")); 
+app.use(express.static("public"));
 
 const conn = mysql.createConnection({
   host: "crossover.proxy.rlwy.net",
@@ -20,7 +20,7 @@ const conn = mysql.createConnection({
   port: 59855,
 });
 
-// ✅ Semak connection
+// ✅ Test connection
 conn.connect((err) => {
   if (err) {
     console.error("❌ Failed to connect to database:", err);
@@ -29,40 +29,82 @@ conn.connect((err) => {
   }
 });
 
-function isValidUserId(id) {
-  // Example: DIT0423-001 / FIN0423-002 / ADM0423-003
+function isValidStudentId(id) {
+  // Contoh format DIT0423-001
   const regex = /^[A-Z]{3}\d{4}-\d{3}$/i;
   return regex.test(id);
 }
 
 app.post("/register", async (req, res) => {
-  const { id, username, password, role } = req.body;
-
-  if (!id || !username || !password || !role) {
-    return res.send("<script>alert('⚠ Please fill in all the information!'); window.location.href='register.html';</script>");
-  }
-
-  if (!isValidUserId(id)) {
-    return res.send("<script>alert('❌ Format ID tidak sah! Contoh: DIT0423-001 / FIN0423-002'); window.location.href='register.html';</script>");
-  }
-
   try {
+    const {
+      full_name,
+      course,
+      student_id,
+      room_number,
+      hostel_unit,
+      gender,
+      role,
+      phone_number,
+      staff_id,
+      username,
+      password,
+    } = req.body;
+
+    // Pastikan role ada & lowercase
+    const userRole = role?.toLowerCase();
+
+    // 🔍 Validation ikut role
+    if (userRole === "student") {
+      if (!full_name || !course || !student_id || !room_number || !hostel_unit || !gender || !username || !password || !phone_number) {
+        return res.send("<script>alert('⚠ Please fill in all student fields!'); window.location.href='register.html';</script>");
+      }
+
+      if (!isValidStudentId(student_id)) {
+        return res.send("<script>alert('❌ Invalid Student ID format! Example: DIT0423-001'); window.location.href='register.html';</script>");
+      }
+    } else if (userRole === "admin") {
+      if (!full_name || !staff_id || !gender || !username || !password || !phone_number) {
+        return res.send("<script>alert('⚠ Please fill in all admin fields!'); window.location.href='register.html';</script>");
+      }
+    } else {
+      return res.send("<script>alert('❌ Invalid role selected!'); window.location.href='register.html';</script>");
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const checkSQL = "SELECT * FROM users WHERE id = ? OR username = ?";
-    conn.query(checkSQL, [id, username], (err, result) => {
+    // Semak duplicate user
+    const checkSQL = "SELECT * FROM users WHERE username = ?";
+    conn.query(checkSQL, [username], (err, result) => {
       if (err) {
         console.error(err);
         return res.send("<script>alert('⚠ Error while checking user!'); window.location.href='register.html';</script>");
       }
 
       if (result.length > 0) {
-        return res.send("<script>alert('❌ The ID or username has been registered!'); window.location.href='register.html';</script>");
+        return res.send("<script>alert('❌ Username already registered!'); window.location.href='register.html';</script>");
       }
 
-      const sql = "INSERT INTO users (id, username, password, role) VALUES (?, ?, ?, ?)";
-      conn.query(sql, [id, username, hashedPassword, role], (err2) => {
+      let sql, values;
+
+      if (userRole === "student") {
+        sql = `
+          INSERT INTO users 
+          (full_name, course, student_id, room_number, hostel_unit, gender, role, phone_number, username, password) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        values = [full_name, course, student_id, room_number, hostel_unit, gender, userRole, phone_number, username, hashedPassword];
+      } else {
+        sql = `
+          INSERT INTO users 
+          (full_name, staff_id, gender, role, phone_number, username, password) 
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+        values = [full_name, staff_id, gender, userRole, phone_number, username, hashedPassword];
+      }
+
+      conn.query(sql, values, (err2) => {
         if (err2) {
           console.error(err2);
           return res.send("<script>alert('⚠ Error while registering user!'); window.location.href='register.html';</script>");
@@ -71,12 +113,11 @@ app.post("/register", async (req, res) => {
       });
     });
   } catch (error) {
-    console.error("❌ Hash error:", error);
+    console.error("❌ Register Error:", error);
     res.status(500).send("Internal Server Error");
   }
 });
 
-// ✅ Jalankan server
 app.listen(3000, () => {
   console.log("🚀 Server running on port 3000");
 });
