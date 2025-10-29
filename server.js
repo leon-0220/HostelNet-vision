@@ -236,33 +236,26 @@ app.post("/api/register", async (req, res) => {
     // ✅ Hash password
     const hashed = await bcrypt.hash(password, 10);
 
-    if (role.toLowerCase() === "student") {
-      // Insert into students
+    // Tentukan role ikut input
+    const userRole = role.toLowerCase() === "admin" ? "admin" : "student";
+
+    // Jika student, insert ke students table dulu
+    if (userRole === "student") {
       await db.query(
         `INSERT INTO students 
           (student_id, name, gender, course, room, phone, status) 
          VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
         [student_id, full_name, gender, course || null, room_number || null, phone_number || null]
       );
-
-      // Insert into users
-      await db.query(
-        `INSERT INTO users
-          (student_id, username, email, password, role, must_change_password)
-         VALUES (?, ?, ?, ?, 'student', TRUE)`,
-        [student_id, username, userEmail, hashed]
-      );
-    } else if (role.toLowerCase() === "admin") {
-      // Insert admin into users table only
-      await db.query(
-        `INSERT INTO users
-          (username, email, password, role, must_change_password)
-         VALUES (?, ?, ?, 'admin', TRUE)`,
-        [username, userEmail, hashed]
-      );
-    } else {
-      return res.status(400).json({ error: "Invalid role selected." });
     }
+
+    // Insert ke users table
+    await db.query(
+      `INSERT INTO users
+        (student_id, username, email, password, role, must_change_password)
+       VALUES (?, ?, ?, ?, ?, TRUE)`,
+      [userRole === "student" ? student_id : null, username, userEmail, hashed, userRole]
+    );
 
     res.json({ success: true, message: "Registration successful!" });
   } catch (err) {
