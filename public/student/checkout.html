@@ -3,169 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <title>HostelNet | Checkout</title>
-  <link rel="stylesheet">
   <style>
     :root{
-  --bg: #ff4000;
-  --card: #ffffff;
-  --accent: #f39c12;
-  --muted: #6b7280;
-  --radius: 12px;
-}
+      --bg: #ff4000;
+      --card: #ffffff;
+      --accent: #f39c12;
+      --muted: #6b7280;
+      --radius: 12px;
+    }
 
-body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: Arial, sans-serif;
-}
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+    }
 
-.layout {
-  display: flex;
-  min-height: 100vh;
-  font-family: Arial, sans-serif;
-}
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
 
-.sidebar {
-  width: 220px;
-  background: #fff3e0;
-  color: #3e2723;
-  padding: 20px;
-  transition: transform 0.3s ease;
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  overflow-y: auto;
-  z-index: 1000;
-}
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #fff3e0;
+      color: #3e2723;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
 
-.sidebar.closed {
-    transform: translateX(-100%);
-}
+    .sidebar.closed { transform: translateX(-100%); }
 
-.logo-box {
-  display: flex;
-  flex-direction: column; /* logo atas tulisan */
-  align-items: center;
-  margin-bottom: 20px;
-}
+    .logo-box { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+    .logo-box img { width: 100px; height: auto; margin-bottom: 8px; }
+    .logo-box h2 { margin: 0; font-size: 1rem; color: #3e2723; }
 
-.logo-box img {
-  width: 100px;
-  height: auto;
-  margin-bottom: 8px;
-}
+    .sidebar ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar ul li { margin: 15px 0; }
+    .sidebar ul li a {
+      color: #3e2723; text-decoration: none; display: block; padding: 8px 12px; border-radius: 5px; transition: 0.3s;
+    }
+    .sidebar ul li a:hover { background: #ed5d2d; color: white; }
 
-.logo-box h2 {
-  margin: 0;
-  font-size: 1rem;
-  color: #3e2723;
-}
+    .toggle-btn {
+      position: fixed; top: 15px; left: 15px;
+      background: #fff3e0; border: none; cursor: pointer;
+      padding: 8px 12px; border-radius: 5px; z-index: 1100;
+    }
 
-.sidebar.closed .logo-box h2 {
-    opacity: 0;
-}
+    .sidebar.closed + .toggle-btn { left: 70px; }
 
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+    .main-content {
+      flex: 1; padding: 20px;
+      background: linear-gradient(180deg, #ff4000, #eef3f8);
+      margin-left: 220px;
+      transition: margin-left 0.3s ease;
+    }
 
-.sidebar ul li {
-  margin: 15px 0;
-}
+    .sidebar.closed ~ .main-content { margin-left: 0; }
 
-.sidebar ul li a {
-  color: #3e2723;
-  text-decoration: none;
-  display: block;
-  padding: 8px 12px;
-  border-radius: 5px;
-  transition: 0.3s;
-}
+    .main-content h2 { text-align: center; color: #000; margin-bottom: 20px; }
 
-.sidebar ul li a:hover {
-  background: #ed5d2d;
-}
+    form {
+      background-color: #fff; padding: 20px; max-width: 500px;
+      margin: 20px auto; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
 
-.form button {
-  background-color: #19de85;
-  color: white;
-  border: none;
-  padding: 10px;
-  width: 100%;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.3s;
-}
-
-.main-content {
-  flex: 1;
-  padding: 20px;
-  background: linear-gradient(180deg, #ff4000, #eef3f8);
-  overflow-x: auto;
-  color: #333;
-  margin-left: 220px;
-  transition: margin-left 0.3s ease;
-}
-
-.main-content h2 {
-  text-align: center;
-  color: #000;
-  margin-bottom: 20px;
-}
-
-form {
-  background-color: #fff;
-  padding: 20px;
-  max-width: 500px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  margin: 20px auto;
-  border-radius: 12px;
-}
-
-form label {
-  font-weight: bold;
-  margin-top: 10px;
-  display: block;
-}
-
-form input, form select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-sizing: border-box;
-}
-
-form button:hover {
-  background-color: #ff5500;
-}
-
-.sidebar.closed ~ .main-content {
-    margin-left: 0;
-}
-
-.toggle-btn {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    background: #fff3e0;
-    border: none;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 5px;
-    z-index: 1100;
-}
-
-.sidebar.closed + .toggle-btn {
-    left: 70px;
-}
+    form label { font-weight: bold; display: block; margin-top: 10px; }
+    form input, form select { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc; }
+    form button { background-color: #19de85; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    form button:hover { background-color: #ff5500; }
   </style>
 </head>
 <body>
@@ -187,55 +101,20 @@ form button:hover {
       </ul>
     </div>
 
-    <!-- button to toggle -->
-     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
 
-    <!-- Main Content -->
     <div class="main-content">
       <h2>Student Checkout</h2>
 
-      <form action="checkout.php" method="POST">
+      <form id="checkoutForm" method="POST" action="checkout.php">
         <label for="student_id">Student ID</label>
-        <input type="text" id="student_id" name="student_id" required>
+        <input type="text" id="student_id" name="student_id" readonly>
 
-        <label for="block" class="form-label">Hostel Unit</label>
-          <select id="block" name="block" class="form-select" required>
-            <option value="">-- Select Block --</option>
-            <option value="D401">D401</option>
-            <option value="D402">D402</option>
-            <option value="D201">D201</option>
-            <option value="D202">D202</option>
-            <option value="D204">D204</option>
-            <option value="D301">D301</option>
-            <option value="D404">D404</option>
-            <option value="11A">11A</option>
-            <option value="12">12</option>
-            <option value="14">14</option>
-            <option value="18A4">18A4</option>
-            <option value="20">20</option>
-            <option value="20B2">20B2</option>
-            <option value="20B3">20B3</option>
-            <option value="20B4">20B4</option>
-            <option value="20-1">20-1</option>
-            <option value="20 20-2">20 20-2</option>
-            <option value="20 20-3">20 20-3</option>
-            <option value="21A">21A</option>
-            <option value="21B">21B</option>
-            <option value="24A4">24A4</option>
-            <option value="24B3">24B3</option>
-            <option value="32">32</option>
-            <option value="36-1">36-1</option>
-            <option value="36-2">36-2</option>
-            <option value="36-3">36-3</option>
-            <option value="38-1">38-1</option>
-            <option value="38-2">38-2</option>
-            <option value="38-3">38-3</option>
-            <option value="5B">5B</option>
-            <option value="5C">5C</option>
-          </select>
+        <label for="block">Hostel Unit</label>
+        <input type="text" id="block" name="block" readonly>
 
         <label for="room_no">Room Number</label>
-        <input type="text" id="room_no" name="room_no" required>
+        <input type="text" id="room_no" name="room_no" readonly>
 
         <label for="checkout_date">Checkout Date</label>
         <input type="date" id="checkout_date" name="checkout_date" required>
@@ -244,10 +123,32 @@ form button:hover {
       </form>
     </div>
   </div>
+
   <script>
-  function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("closed");
-}
-</script>
+    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("closed"); }
+
+    // Auto-fill student details
+    async function loadCheckoutData() {
+      const API_BASE = "https://hostelnet-vision-3.onrender.com";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/my-details`, { credentials: "include" });
+        const data = await res.json();
+
+        document.getElementById("student_id").value = data.student_id || "";
+        document.getElementById("block").value = data.hostel_unit || "";
+        document.getElementById("room_no").value = data.room_number || "";
+
+        // Set checkout date default to today
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("checkout_date").value = today;
+
+      } catch(err) {
+        console.error("Failed to load student data:", err);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadCheckoutData);
+  </script>
 </body>
 </html>

@@ -201,26 +201,70 @@ app.get("/api/reset-admin", async (req, res) => {
   }
 });
 
-// === REGISTER === //
+// ===================== REGISTER ROUTE ===================== //
 app.post("/api/register", async (req, res) => {
   try {
-    const { student_id, name, gender, course, username, email, password, role } = req.body;
-    if (!student_id || !name || !gender || !username || !email || !password)
-      return res.status(400).json({ error: "Please fill in all fields" });
+    const {
+      full_name,
+      student_id,
+      username,
+      password,
+      phone_number,
+      gender,
+      role,
+      course,
+      hostel_unit,
+      room_number,
+      staff_id
+    } = req.body;
 
-    const [exists] = await db.query("SELECT * FROM users WHERE username = ? OR email = ?", [username, email]);
-    if (exists.length > 0) return res.status(400).json({ error: "Username or email already exists" });
+    // ❌ Validation
+    if (!full_name || !username || !password || !gender || !role) {
+      return res.status(400).json({ error: "Please fill in all required fields." });
+    }
 
-    const hashed = await bcrypt.hash(password, 10);
-    const userRole = role === "admin" ? "admin" : "student";
-
-    await db.query("INSERT IGNORE INTO students (student_id, name, gender, course) VALUES (?, ?, ?, ?)", [student_id, name, gender, course]);
-    await db.query(
-      "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
-      [student_id, username, email, hashed, userRole, true]
+    // ❌ Check username/email exist
+    const userEmail = username + "@hostelnet.com"; // autofill email
+    const [exists] = await db.query(
+      "SELECT * FROM users WHERE username = ? OR email = ?",
+      [username, userEmail]
     );
+    if (exists.length > 0) {
+      return res.status(400).json({ error: "Username already exists." });
+    }
 
-    res.json({ success: true, message: "Registration successful!", username, student_id, role: userRole });
+    // ✅ Hash password
+    const hashed = await bcrypt.hash(password, 10);
+
+    if (role.toLowerCase() === "student") {
+      // Insert into students
+      await db.query(
+        `INSERT INTO students 
+          (student_id, name, gender, course, room, phone, status) 
+         VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
+        [student_id, full_name, gender, course || null, room_number || null, phone_number || null]
+      );
+
+      // Insert into users
+      await db.query(
+        `INSERT INTO users
+          (student_id, username, email, password, role, must_change_password)
+         VALUES (?, ?, ?, ?, 'student', TRUE)`,
+        [student_id, username, userEmail, hashed]
+      );
+    } else if (role.toLowerCase() === "admin") {
+      // Insert admin into users table only
+      await db.query(
+        `INSERT INTO users
+          (username, email, password, role, must_change_password)
+         VALUES (?, ?, ?, 'admin', TRUE)`,
+        [username, userEmail, hashed]
+      );
+    } else {
+      return res.status(400).json({ error: "Invalid role selected." });
+    }
+
+    res.json({ success: true, message: "Registration successful!" });
   } catch (err) {
     console.error("❌ Register Error:", err);
     res.status(500).json({ error: "Server error during registration" });
@@ -407,6 +451,99 @@ app.get("/api/my-details", async (req, res) => {
   } catch (err) {
     console.error("❌ Error fetching my details:", err);
     res.status(500).json({ error: "Failed to fetch my details" });
+  }
+});
+
+// ===================== STUDENT CHECKOUT =====================
+app.post("/api/checkout", async (req, res) => {
+  try {
+    if (!req.session.user || !req.session.user.student_id) {
+      return res.status(401).json({ success: false, error: "Not logged in" });
+    }
+
+    const { checkout_date } = req.body;
+    const student_id = req.session.user.student_id;
+
+    if (!checkout_date) {
+      return res.status(400).json({ success: false, error: "Checkout date is required" });
+    }
+
+    // Pastikan student ada record check-in aktif
+    const [checkinRows] = await db.query(
+      "SELECT * FROM checkin_checkout WHERE student_id = ? AND checkout_date IS NULL",
+      [student_id]
+    );
+
+    if (checkinRows.length === 0) {
+      return res.status(400).json({ success: false, error: "No active check-in found" });
+    }
+
+    const record = checkinRows[0];
+
+    // Update checkout date
+    await db.query(
+      "UPDATE checkin_checkout SET checkout_date = ? WHERE record_id = ?",
+      [checkout_date, record.record_id]
+    );
+
+    // Update student status to checked-out
+    await db.query(
+      "UPDATE students SET status = 'checked-out', room = NULL WHERE student_id = ?",
+      [student_id]
+    );
+
+    res.json({ success: true, message: "✅ Checkout saved successfully!" });
+  } catch (err) {
+    console.error("❌ Checkout error:", err);
+    res.status(500).json({ success: false, error: "Server error during checkout" });
+  }
+});
+
+// ===================== STUDENT CHECK-IN =====================
+app.post("/api/checkin", async (req, res) => {
+  try {
+    if (!req.session.user || !req.session.user.student_id) {
+      return res.status(401).json({ success: false, error: "Not logged in" });
+    }
+
+    const student_id = req.session.user.student_id;
+    const { unit_code, room_number, checkin_date } = req.body;
+
+    if (!unit_code || !room_number || !checkin_date) {
+      return res.status(400).json({ success: false, error: "All fields are required." });
+    }
+
+    // Pastikan student wujud
+    const [studentRows] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
+    if (studentRows.length === 0) return res.status(404).json({ success: false, error: "Student not found" });
+
+    // Cek kalau student dah check-in aktif (belum checkout)
+    const [existing] = await db.query(
+      "SELECT * FROM checkin_checkout WHERE student_id = ? AND checkout_date IS NULL",
+      [student_id]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ success: false, error: "Student already checked in." });
+    }
+
+    // Masukkan record check-in
+    await db.query(
+      `INSERT INTO checkin_checkout (student_id, unit_code, room_number, checkin_date)
+       VALUES (?, ?, ?, ?)`,
+      [student_id, unit_code, room_number, checkin_date]
+    );
+
+    // Update student status
+    await db.query(
+      "UPDATE students SET status = 'checked-in', room = ? WHERE student_id = ?",
+      [room_number, student_id]
+    );
+
+    res.json({ success: true, message: "✅ Check-in successful!" });
+  } catch (err) {
+    console.error("❌ Check-in error:", err);
+    res.status(500).json({ success: false, error: "Server error during check-in" });
   }
 });
 
