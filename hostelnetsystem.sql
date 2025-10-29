@@ -143,3 +143,34 @@ INSERT INTO completed_jobs (job_title, description)
 VALUES ('Fix Aircond', 'Aircond at Room B202 repaired successfully.'),
        ('Change Bulb', 'Bulb replaced at Hallway 3.'),
        ('Plumbing', 'Leak fixed at Block A toilet.');
+
+ALTER TABLE students
+ADD COLUMN phone VARCHAR(20) DEFAULT NULL,
+ADD COLUMN room VARCHAR(20) DEFAULT NULL,
+ADD COLUMN status ENUM('pending','checked-in','checked-out') DEFAULT 'pending';
+
+ALTER TABLE users
+ADD COLUMN must_change_password BOOLEAN DEFAULT TRUE;
+
+CREATE TABLE IF NOT EXISTS checkin_checkout (
+    record_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(20) NOT NULL,
+    unit_code VARCHAR(20) NOT NULL,
+    room_number VARCHAR(20) NOT NULL,
+    checkin_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    checkout_date TIMESTAMP NULL,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number)
+);
+
+CREATE TABLE IF NOT EXISTS rooms (
+    unit_code VARCHAR(20) NOT NULL,
+    room_number VARCHAR(20) NOT NULL,
+    capacity INT NOT NULL DEFAULT 4,
+    available INT NOT NULL DEFAULT 4,
+    status ENUM('active','inactive','maintenance') DEFAULT 'active',
+    PRIMARY KEY (unit_code, room_number),
+    FOREIGN KEY (unit_code) REFERENCES hostel_units(unit_code) ON DELETE CASCADE
+);
+
+ALTER TABLE hostel_units ADD COLUMN gender ENUM('male','female') NOT NULL DEFAULT 'male';
