@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hostel Occupancy Status</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" href="../../images/2.png" type="image/png">
+  <style>
+    :root {
+      --bg: #ff4000;
+      --card: #ffffff;
+      --accent: #f39c12;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #fff3e0;
+      color: #3e2723;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow-y: auto;
+    }
+
+    .sidebar.closed {
+      transform: translateX(-100%);
+    }
+
+    .logo-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-box img {
+      width: 100px;
+      margin-bottom: 8px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar ul li {
+      margin: 8px 0;
+    }
+
+    .sidebar ul li a {
+      text-decoration: none;
+      color: #3e2723;
+      display: block;
+      padding: 8px 12px;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+      background: #ed5d2d;
+      color: white;
+    }
+
+    /* Toggle Button */
+    .toggle-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #fff3e0;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 5px;
+      z-index: 1100;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 220px;
+      padding: 30px;
+      background: linear-gradient(180deg, #ff4000, #eef3f8);
+      min-height: 100vh;
+      transition: margin-left 0.3s ease;
+    }
+
+    .sidebar.closed ~ .main-content {
+      margin-left: 0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #000;
+      margin-bottom: 30px;
+    }
+
+    /* Table */
+    table {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    th {
+      background: var(--bg);
+      color: white;
+      text-align: center;
+    }
+
+    td {
+      text-align: center;
+      color: #333;
+    }
+
+    tr:hover {
+      background-color: #fff2e0;
+    }
+
+    .status-badge {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .status-in {
+      background: #19de85;
+      color: white;
+    }
+
+    .status-out {
+      background: #ff5500;
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        margin-left: 0;
+        padding-top: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="logo-box">
+        <img src="../../images/2.png" alt="HostelNet Logo">
+        <h3>Admin Panel</h3>
+      </div>
+      <ul>
+        <li><a href="ad_dashboard.html">🏠 Dashboard</a></li>
+        <li><a href="ad_student.html">👨‍🎓 Students</a></li>
+        <li><a href="ad_room.html">🏢 Rooms</a></li>
+        <li><a href="ad_add_room.html" class="active">📅 Check-ins</a></li>
+        <li><a href="../../logout.html" style="color:#ff5555;">🚪 Logout</a></li>
+      </ul>
+    </div>
+
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <h1>Hostel Occupancy Status</h1>
+
+      <div class="container mt-4">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Full Name</th>
+              <th>Course</th>
+              <th>Hostel Unit</th>
+              <th>Room No</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="statusTable">
+            <tr><td colspan="6">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script>
+    const sidebar = document.getElementById("sidebar");
+    function toggleSidebar() {
+      sidebar.classList.toggle("closed");
+    }
+
+    const API_BASE = "https://hostelnet-vision-3.onrender.com";
+
+    // Fetch student status data
+    async function loadStudentStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/api/hostel-status`);
+        const data = await res.json();
+        const tbody = document.getElementById("statusTable");
+
+        if (!data.success || !data.students.length) {
+          tbody.innerHTML = "<tr><td colspan='6'>No student data available</td></tr>";
+          return;
+        }
+
+        tbody.innerHTML = data.students.map(s => `
+          <tr>
+            <td>${s.student_id}</td>
+            <td>${s.full_name}</td>
+            <td>${s.course}</td>
+            <td>${s.unit_code || '-'}</td>
+            <td>${s.room_number || '-'}</td>
+            <td>
+              <span class="status-badge ${s.status === 'in' ? 'status-in' : 'status-out'}">
+                ${s.status === 'in' ? 'Checked-In' : 'Checked-Out'}
+              </span>
+            </td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        console.error("Error loading status:", err);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadStudentStatus);
+  </script>
+</body>
+</html>
