@@ -18,11 +18,11 @@ const app = express();
 // ===================== CONFIG ===================== //
 const PORT = process.env.PORT || 8080;
 const DB_CONFIG = {
-  host: process.env.DB_HOST || "hostelnet-0220-hostelnet-db.g.aivencloud.com",
-  user: process.env.DB_USER || "avnadmin",
-  password: process.env.DB_PASSWORD || "AVNS_exgb7fcLJ3IbAbkYyjk",
-  database: process.env.DB_NAME || "defaultdb",
-  port: process.env.DB_PORT ? Number(process.env.DB_PORT): 13379,
+  host: process.env.DB_HOST || "centerbeam.proxy.rlwy.net",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "qxFWSgDsLImTcNYatgzJuVlcyXFAKezT",
+  database: process.env.DB_NAME || "railway",
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT): 37606,
   ssl: {
     rejectUnauthorized: false,
   },
@@ -39,7 +39,7 @@ app.use(
       "https://leon-0220.github.io/HostelNet-vision",
       "http://localhost:5500",
       "http://127.0.0.1:5500",
-      "https://hostelnet-vision-3.onrender.com",
+      "https://hostelnet-2.onrender.com",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type"],
@@ -777,5 +777,5 @@ app.get("/", (req, res) => {
 
 // ===================== START SERVER ===================== //
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at https://hostelnet-vision-3.onrender.com (PORT: ${PORT})`);
+  console.log(`🚀 Server running at https://hostelnet-2.onrender.com (PORT: ${PORT})`);
 });
