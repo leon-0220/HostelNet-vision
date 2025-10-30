@@ -852,6 +852,25 @@ app.get("/api/checkin-records", async (req, res) => {
   }
 });
 
+// === GET ALL ROOMS === //
+app.get("/api/rooms", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        hu.gender,
+        hu.unit_name AS building,
+        r.room_number AS room_no
+      FROM rooms r
+      JOIN hostel_units hu ON r.unit_code = hu.unit_code
+      ORDER BY hu.gender, hu.unit_name, r.room_number
+    `);
+
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Error fetching rooms:", err);
+    res.status(500).json({ error: "Failed to fetch rooms" });
+  }
+});
 
 
 
