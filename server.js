@@ -770,6 +770,91 @@ app.get("/api/rooms", async (req, res) => {
   }
 });
 
+app.post("/api/checkin", async (req, res) => {
+  try {
+    const { student_id, room_number } = req.body;
+
+    // Validasi input
+    if (!student_id || !room_number) {
+      return res.status(400).json({ message: "Student ID and room number required." });
+    }
+
+    // Semak bilik masih ada tempat
+    const [room] = await db.query("SELECT * FROM rooms WHERE room_number = ?", [room_number]);
+    if (!room.length || room[0].available <= 0) {
+      return res.status(400).json({ message: "Room is full or not found." });
+    }
+
+    // Tambah rekod check-in
+    await db.query(
+      "INSERT INTO checkin_records (student_id, room_number, status) VALUES (?, ?, 'checked-in')",
+      [student_id, room_number]
+    );
+
+    // Kurangkan bilik yang available
+    await db.query("UPDATE rooms SET available = available - 1 WHERE room_number = ?", [room_number]);
+
+    res.json({ success: true, message: "Student checked in successfully." });
+  } catch (err) {
+    console.error("❌ Check-in error:", err);
+    res.status(500).json({ message: "Server error during check-in." });
+  }
+});
+
+app.post("/api/checkout", async (req, res) => {
+  try {
+    const { student_id } = req.body;
+
+    if (!student_id) {
+      return res.status(400).json({ message: "Student ID required." });
+    }
+
+    // Dapatkan rekod aktif (belum check-out)
+    const [record] = await db.query(
+      "SELECT * FROM checkin_records WHERE student_id = ? AND status = 'checked-in' ORDER BY checkin_date DESC LIMIT 1",
+      [student_id]
+    );
+
+    if (!record.length) {
+      return res.status(404).json({ message: "No active check-in record found." });
+    }
+
+    const room_number = record[0].room_number;
+
+    // Update status rekod
+    await db.query(
+      "UPDATE checkin_records SET checkout_date = NOW(), status = 'checked-out' WHERE id = ?",
+      [record[0].id]
+    );
+
+    // Tambah semula bilik available
+    await db.query("UPDATE rooms SET available = available + 1 WHERE room_number = ?", [room_number]);
+
+    res.json({ success: true, message: "Student checked out successfully." });
+  } catch (err) {
+    console.error("❌ Check-out error:", err);
+    res.status(500).json({ message: "Server error during check-out." });
+  }
+});
+
+app.get("/api/checkin-records", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT c.id, s.name AS student_name, c.room_number, c.checkin_date, c.checkout_date, c.status
+      FROM checkin_records c
+      JOIN students s ON c.student_id = s.id
+      ORDER BY c.checkin_date DESC;
+    `);
+    res.json({ success: true, records: rows });
+  } catch (err) {
+    console.error("❌ Fetch check-in records error:", err);
+    res.status(500).json({ message: "Server error fetching records." });
+  }
+});
+
+
+
+
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
   res.send("✅ Backend is running. Visit frontend at https://leon-0220.github.io/HostelNet-vision/");
