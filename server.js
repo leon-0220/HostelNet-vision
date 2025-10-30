@@ -700,7 +700,7 @@ app.post("/api/change-password", async (req, res) => {
   }
 });
 
-app.get("/api/registered-students", async (req, res) => {
+app.get("/api/students", async (req, res) => {
   try {
     const [rows] = await db.execute(`
       SELECT id, name, email, program, room_number
