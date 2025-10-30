@@ -323,8 +323,16 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ error: "Please fill in all required fields." });
     }
 
+    if (role.toLowerCase() === "student" && !student_id) {
+      return res.status(400).json({ error: "Student ID is requires for students."});
+    }
+
+    if (role.toLowerCase() === "admin" && !staff_id) {
+      return res.status(400).json({ error: "Staff ID is required for admins."});
+    }
+
     // ❌ Check username/email exist
-    const userEmail = username + "@hostelnet.com"; // autofill email
+    const userEmail = username + "@hostelnet.com"; 
     const [exists] = await db.query(
       "SELECT * FROM users WHERE username = ? OR email = ?",
       [username, userEmail]
@@ -350,7 +358,14 @@ app.post("/api/register", async (req, res) => {
       `INSERT INTO users
         (student_id, username, email, password, role, must_change_password)
        VALUES (?, ?, ?, ?, ?, TRUE)`,
-      [userRole === "student" ? student_id : null, username, userEmail, hashed, userRole]
+      [
+        userRole === "student" ? student_id : null, 
+        userRole === "admin" ? staff_id : null,
+        username, 
+        userEmail, 
+        hashed, 
+        userRole
+      ]
     );
 
     res.json({ success: true, message: "Registration successful!" });
