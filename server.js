@@ -268,10 +268,21 @@ app.post("/api/upload-profile-pic", upload.single("profile_pic"), async (req, re
 // === TEST DB === //
 app.get("/api/test-db", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT NOW() AS time");
-    res.json({ success: true, message: "✅ Database connected!", time: rows[0].time });
+    const [rows] = await db.query("SELECT NOW() AS current_time");
+    res.json({ 
+      success: true, 
+      message: "✅ Database connected!", 
+      current_time: rows[0].current_time 
+      db_host: process.env.DB_HOST,
+      db_name: process.env.DB_NAME
+    });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Database connection failed" });
+    console.error("❌ Database connection test failed:", err.message);
+    res.status(500).json({ 
+      success: false, 
+      message: "❌ Database connection failed",
+      error: err.message
+    });
   }
 });
 
