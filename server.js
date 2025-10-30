@@ -765,23 +765,24 @@ app.post("/api/add-student", async (req, res) => {
 
 app.post("/api/add-room", async (req, res) => {
   try {
-    const { room_no, type, capacity, status } = req.body;
-    if (!room_no || !type || !capacity || !status) {
+    const { unit_code, room_number, capacity } = req.body;
+    if (!unit_code || !room_number || !capacity) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    // Insert into rooms table
+    // Tambah bilik baru dalam unit asrama
     await db.query(
-      "INSERT INTO rooms (room_number, type, capacity, status) VALUES (?, ?, ?, ?)",
-      [room_no, type, capacity, status]
+      "INSERT INTO rooms (unit_code, room_number, capacity, available, status) VALUES (?, ?, ?, ?, 'active')",
+      [unit_code, room_number, capacity, capacity] // 'available' mula = capacity penuh
     );
 
-    res.json({ message: "Room added successfully!" });
+    res.json({ success: true, message: "Room added successfully!" });
   } catch (err) {
     console.error("❌ Add room error:", err);
     res.status(500).json({ message: "Server error adding room" });
   }
 });
+
 
 app.get("/api/dashboard-stats", async (req, res) => {
   try {
