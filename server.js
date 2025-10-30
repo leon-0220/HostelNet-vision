@@ -171,7 +171,6 @@ let db;
     }
   } catch (err) {
     console.error("❌ Database init failed:", err);
-    process.exit(1);
   }
 })();
 
