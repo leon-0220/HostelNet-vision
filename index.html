@@ -106,18 +106,12 @@ async function checkLoggedIn() {
   if (storedId && storedRole) {
     // redirect ikut role
     if (storedRole.toLowerCase() === "admin") {
-      window.location.href = "admin/dashboard.html";
+      window.location.href = "../admin/dashboard2.html";
     } else if (storedRole.toLowerCase() === "student") {
-      window.location.href = "student/dashboard.html";
+      window.location.href = "../student/dashboard.html";
     }
     return;
   }
-
-if (data.requirePasswordChange) {
-  localStorage.setItem("user_id", data.user_id);
-  window.location.href = "change-password.html"; // redirect ke page tukar password
-  return;
-}
 
   // fallback: check backend session
   try {
@@ -126,13 +120,20 @@ if (data.requirePasswordChange) {
       credentials: "include"
     });
     const data = await res.json();
+
+    if (data.requirePasswordChange) {
+      localStorage.setItem("user_id", data.user_id);
+      window.location.href = "change-password.html"; // redirect ke page tukar password
+      return;
+    }
+
     if (data.loggedIn) {
       localStorage.setItem("user_id", data.user.student_id || data.user.user_id);
       localStorage.setItem("role", data.user.role);
       if (data.user.role.toLowerCase() === "admin") {
-        window.location.href = "admin/dashboard.html";
+        window.location.href = "../admin/dashboard2.html";
       } else {
-        window.location.href = "student/dashboard.html";
+        window.location.href = "../student/dashboard.html";
       }
     }
   } catch (err) {
