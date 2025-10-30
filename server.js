@@ -529,8 +529,8 @@ app.get("/api/hostels/:gender", async (req, res) => {
   }
 });
 
-// === STUDENT CHECK-IN === //
-app.post("/api/checkin", async (req, res) => {
+// === ADMIN CHECK-IN === //
+app.post("/api/admin/checkin", async (req, res) => {
   try {
     const { student_id, unit_code, room_number, checkin_date } = req.body;
 
@@ -616,8 +616,8 @@ app.post("/api/checkout", async (req, res) => {
   }
 });
 
-// ===================== STUDENT CHECK-IN =====================
-app.post("/api/checkin", async (req, res) => {
+// ===================== STUDENT CHECK-IN ===================== //
+app.post("/api/student/checkin", async (req, res) => {
   try {
     if (!req.session.user || !req.session.user.student_id) {
       return res.status(401).json({ success: false, error: "Not logged in" });
@@ -765,7 +765,7 @@ app.get("/api/dashboard-stats", async (req, res) => {
   }
 });
 
-app.get("/api/rooms", async (req, res) => {
+app.get("/api/student/rooms", async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT r.unit_code, hu.unit_name, hu.gender, r.room_number, r.capacity, r.available, r.status
@@ -781,7 +781,7 @@ app.get("/api/rooms", async (req, res) => {
 });
 
 // === GET ALL ROOMS === //
-app.get("/api/rooms", async (req, res) => {
+app.get("/api/admin/rooms", async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT 
@@ -799,8 +799,6 @@ app.get("/api/rooms", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch rooms" });
   }
 });
-
-
 
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
