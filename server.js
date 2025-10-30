@@ -795,6 +795,21 @@ app.get("/api/dashboard-stats", async (req, res) => {
   }
 });
 
+app.get("/api/rooms", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT r.unit_code, hu.unit_name, hu.gender, r.room_number, r.capacity, r.available, r.status
+      FROM rooms r
+      JOIN hostel_units hu ON r.unit_code = hu.unit_code
+      ORDER BY hu.unit_name, r.room_number;
+    `);
+    res.json({ success: true, rooms: rows });
+  } catch (err) {
+    console.error("❌ Fetch rooms error:", err);
+    res.status(500).json({ error: "Server error fetching rooms" });
+  }
+});
+
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
   res.send("✅ Backend is running. Visit frontend at https://leon-0220.github.io/HostelNet-vision/");
