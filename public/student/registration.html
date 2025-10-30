@@ -235,7 +235,6 @@
 
           <button type="submit">Register Now</button>
         </form>
-
         <div class="status" id="statusMessage"></div>
       </div>
     </div>
@@ -257,6 +256,9 @@
       else if (studentId.startsWith("DLE")) courseField.value = "Diploma in Law Enforcement";
       else if (studentId.startsWith("DLM")) courseField.value = "Diploma in Logistic Management";
       else if (studentId.startsWith("DNS")) courseField.value = "Diploma in Nursing";
+      else if (studentId.startsWith("DHM")) courseField.value = "Diploma in Hotel Management";
+      else if (studentId.startsWith("DHS")) courseField.value = "Diploma in Health Science";
+      else if (studentId.startsWith("DIO")) courseField.value = "Diploma in Opticianary";
       else courseField.value = "";
     });
 
@@ -296,7 +298,7 @@
       const statusEl = document.getElementById('statusMessage');
       statusEl.textContent = "Submitting registration...";
       try {
-        const res = await fetch('https://hostelnet-vision-3.onrender.com/api/rooms/register', {
+        const res = await fetch('https://hostelnet-2.onrender.com/api/rooms/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)

@@ -282,7 +282,7 @@ let currentUser = {};
 // Load logged-in user
 async function loadUserDetails() {
   try {
-    const res = await fetch('https://hostelnet-vision-3.onrender.com/api/my-details', {credentials:'include'});
+    const res = await fetch('https://hostelnet-2.onrender.com/api/my-details', {credentials:'include'});
     if(!res.ok) throw new Error("Failed to fetch user data");
     currentUser = await res.json();
     renderRooms(); // render after user data

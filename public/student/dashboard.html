@@ -223,14 +223,14 @@ const userRole = localStorage.getItem("role");
 
 if (!userId) {
   alert("Please log in first!");
-  window.location.href = "../../index.html"; // redirect kalau takde session
+  window.location.href = "../../index.html"; 
 } else if (userRole && userRole.toLowerCase() === "admin") {
   alert("Admins cannot access this page!");
-  window.location.href = "../../public/admin/dashboard.html"; // redirect kalau admin
+  window.location.href = "../../public/admin/dashboard.html";
 }
 
 // Auto-load My Details
-fetch("https://hostelnet-vision-3.onrender.com/api/my-details", { credentials: "include" })
+fetch("https://hostelnet-2.onrender.com/api/my-details", { credentials: "include" })
   .then(res => res.json())
   .then(data => {
     document.getElementById("full_name").innerText = data.full_name;
