@@ -690,46 +690,6 @@ app.post("/api/change-password", async (req, res) => {
   }
 });
 
-// ===================== PROFILE PICTURE UPLOAD ===================== //
-// Folder simpan gambar
-const uploadDir = path.join(__dirname, "public/uploads");
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-// Multer config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    if (!req.session.user || !req.session.user.student_id) return cb(new Error("Not logged in"));
-    const ext = file.originalname.split(".").pop();
-    cb(null, `${req.session.user.student_id}_${Date.now()}.${ext}`);
-  }
-});
-const upload = multer({ storage });
-
-// Upload route
-app.post("/api/upload-profile-picture", upload.single("profile_pic"), async (req, res) => {
-  try {
-    if (!req.session.user || !req.session.user.student_id)
-      return res.status(401).json({ success: false, error: "Not logged in" });
-
-    if (!req.file) return res.status(400).json({ success: false, error: "No file uploaded" });
-
-    const filename = req.file.filename;
-    const student_id = req.session.user.student_id;
-
-    // Tambah column jika belum ada
-    await db.query("ALTER TABLE students ADD COLUMN IF NOT EXISTS profile_pic VARCHAR(255) DEFAULT NULL");
-
-    // Update DB
-    await db.query("UPDATE students SET profile_pic=? WHERE student_id=?", [filename, student_id]);
-
-    res.json({ success: true, message: "Profile picture uploaded!", filename });
-  } catch (err) {
-    console.error("❌ Upload profile picture error:", err);
-    res.status(500).json({ success: false, error: "Server error uploading profile picture" });
-  }
-});
-
 app.get("/api/registered-students", async (req, res) => {
   try {
     const [rows] = await db.execute(`
