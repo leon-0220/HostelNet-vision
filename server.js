@@ -227,6 +227,7 @@ app.post("/api/update-password", async (req, res) => {
 });
 
 // ===================== REGISTER ROUTE ===================== //
+// ===================== REGISTER ROUTE ===================== //
 app.post("/api/register", async (req, res) => {
   try {
     const {
@@ -238,66 +239,86 @@ app.post("/api/register", async (req, res) => {
       gender,
       role,
       course,
-      hostel_unit,
-      room_number,
       staff_id
     } = req.body;
 
     if (!full_name || !username || !password || !gender || !role) {
-      return res.status(400).json({ error: "Please fill in all required fields." });
+      return res.status(400).json({ success: false, error: "Please fill in all required fields." });
     }
 
     const cleanedRole = role.trim().toLowerCase();
     if (cleanedRole === "student" && !student_id) {
-      return res.status(400).json({ error: "Student ID is required for students."});
+      return res.status(400).json({ success: false, error: "Student ID is required for students." });
     }
     if (cleanedRole === "admin" && !staff_id) {
-      return res.status(400).json({ error: "Staff ID is required for admins."});
+      return res.status(400).json({ success: false, error: "Staff ID is required for admins." });
     }
 
-    const userEmail = username + "@hostelnet.com"; 
+    const userEmail = username + "@hostelnet.com";
+
+    // Check duplicate username/email
     const [exists] = await db.query(
       "SELECT * FROM users WHERE username = ? OR email = ?",
       [username, userEmail]
     );
     if (exists.length > 0) {
-      return res.status(400).json({ error: "Username already exists." });
+      return res.status(400).json({ success: false, error: "Username already exists." });
     }
 
+    // Jika student, insert ke table students dulu
     if (cleanedRole === "student") {
-      const [studentExists] = await db.query("Select * FROM students WHERE student_id = ?", [student_id]);
+      const [studentExists] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
       if (studentExists.length > 0) {
-        return res.status(400).json({ error: "Student ID already registered. "});
+        return res.status(400).json({ success: false, error: "Student ID already registered." });
       }
 
-      await db.query(
-        `INSERT INTO students 
-          (student_id, name, gender, course, room, phone, status) 
-         VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
-        [student_id, full_name, gender, course || null, room_number || null, phone_number || null]
-      );
+      try {
+        await db.query(
+          `INSERT INTO students 
+            (student_id, name, gender, course, room, phone, status) 
+           VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
+          [student_id, full_name, gender, course || null, null, phone_number || null]
+        );
+      } catch (err) {
+        console.error("❌ Insert student failed:", err);
+        return res.status(500).json({ success: false, error: "Failed to register student info." });
+      }
     }
 
-    const hashed = await bcrypt.hash(password, 10);
-    const userRole = role.toLowerCase() === "admin" ? "admin" : "student";
+    // Hash password
+    let hashed;
+    try {
+      hashed = await bcrypt.hash(password, 10);
+    } catch (err) {
+      console.error("❌ Password hash failed:", err);
+      return res.status(500).json({ success: false, error: "Failed to process password." });
+    }
 
-    await db.query(
-      `INSERT INTO users
-        (student_id, username, email, password, role, must_change_password)
-       VALUES (?, ?, ?, ?, ?, TRUE)`,
-      [
-        userRole === "student" ? student_id : null, 
-        userRole === "admin" ? staff_id : username,
-        userRole === "admin" ? staff_id + "@hostelnet.com" : userEmail,
-        hashed,
-        userRole
-      ]
-    );
+    // Insert user
+    try {
+      await db.query(
+        `INSERT INTO users
+          (student_id, username, email, password, role, must_change_password)
+         VALUES (?, ?, ?, ?, ?, TRUE)`,
+        [
+          cleanedRole === "student" ? student_id : null,
+          cleanedRole === "admin" ? staff_id : username,
+          cleanedRole === "admin" ? staff_id + "@hostelnet.com" : userEmail,
+          hashed,
+          cleanedRole
+        ]
+      );
+    } catch (err) {
+      console.error("❌ Insert user failed:", err);
+      return res.status(500).json({ success: false, error: "Failed to register user." });
+    }
 
+    // Success
     res.json({ success: true, message: "Registration successful!" });
+
   } catch (err) {
     console.error("❌ Register Error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: "Server error during registration." });
   }
 });
 
