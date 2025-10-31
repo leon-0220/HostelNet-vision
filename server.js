@@ -326,10 +326,10 @@ app.post("/api/register", async (req, res) => {
     }
 
     const cleanedRole = role.trim().toLowerCase();
-    if (cleanedrole === "student" && !student_id) {
+    if (cleanedRole === "student" && !student_id) {
       return res.status(400).json({ error: "Student ID is requires for students."});
     }
-    if (cleanedrole === "admin" && !staff_id) {
+    if (cleanedRole === "admin" && !staff_id) {
       return res.status(400).json({ error: "Staff ID is required for admins."});
     }
 
