@@ -168,6 +168,7 @@ if (adminCheck.length === 0) {
   );
   console.log("🛡 Default admin created: admin01 / AdminPass01");
 }
+  }});
 
 // ===================== UPDATE PROFILE INFO ===================== //
 app.post("/api/update-profile", async (req, res) => {
