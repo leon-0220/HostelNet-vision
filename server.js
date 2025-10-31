@@ -157,21 +157,17 @@ let db;
     console.log("🏠 Hostel units inserted (if missing)");
 
     // ====== DEFAULT ADMIN ====== //
-    const [adminCheck] = await db.query(
-      "SELECT * FROM users WHERE username = 'admin01'"
-    );
-    if (adminCheck.length === 0) {
-      const hashed = await bcrypt.hash("AdminPass01", 10);
-      await db.query(
-        "INSERT INTO users (user_ref_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
-        ["adm0423-102", "admin01", "admin01@gmail.com", hashed, "admin", false]
-      );
-      console.log("🛡 Default admin created: admin01 / AdminPass01");
-    }
-  } catch (err) {
-    console.error("❌ Database init failed:", err);
-  }
-})();
+const [adminCheck] = await db.query(
+  "SELECT * FROM users WHERE username = 'admin01'"
+);
+if (adminCheck.length === 0) {
+  const hashed = await bcrypt.hash("AdminPass01", 10);
+  await db.query(
+    "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
+    [null, "admin01", "admin01@gmail.com", hashed, "admin", false]  // student_id = NULL untuk admin
+  );
+  console.log("🛡 Default admin created: admin01 / AdminPass01");
+}
 
 // ===================== UPDATE PROFILE INFO ===================== //
 app.post("/api/update-profile", async (req, res) => {
