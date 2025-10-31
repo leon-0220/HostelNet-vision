@@ -242,42 +242,49 @@ app.post("/api/register", async (req, res) => {
       staff_id
     } = req.body;
 
-    if (!full_name || !username || !password || !gender || !role) {
+    // ======== VALIDATION ======== //
+    if (!full_name || !password || !gender || !role) {
       return res.status(400).json({ success: false, error: "Please fill in all required fields." });
     }
 
     const cleanedRole = role.trim().toLowerCase();
-    if (cleanedRole === "student" && !student_id) {
-      return res.status(400).json({ success: false, error: "Student ID is required for students." });
-    }
-    if (cleanedRole === "admin" && !staff_id) {
-      return res.status(400).json({ success: false, error: "Staff ID is required for admins." });
+
+    if (cleanedRole === "student") {
+      if (!student_id) return res.status(400).json({ success: false, error: "Student ID is required for students." });
     }
 
-    const userEmail = username + "@hostelnet.com";
+    if (cleanedRole === "admin") {
+      if (!staff_id) return res.status(400).json({ success: false, error: "Staff ID is required for admins." });
+    }
 
-    // Check duplicate username/email
-    const [exists] = await db.query(
+    // ======== PREPARE USER DATA ======== //
+    const userUsername = cleanedRole === "admin" ? staff_id.trim() : username.trim();
+    const userEmail = cleanedRole === "admin" ? staff_id.trim() + "@hostelnet.com" : username.trim() + "@hostelnet.com";
+
+    // ======== CHECK DUPLICATES ======== //
+    const [existing] = await db.query(
       "SELECT * FROM users WHERE username = ? OR email = ?",
-      [username, userEmail]
+      [userUsername, userEmail]
     );
-    if (exists.length > 0) {
-      return res.status(400).json({ success: false, error: "Username already exists." });
+    if (existing.length > 0) {
+      return res.status(400).json({ success: false, error: "Username or email already exists." });
     }
 
-    // Jika student, insert ke table students dulu
     if (cleanedRole === "student") {
       const [studentExists] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
       if (studentExists.length > 0) {
         return res.status(400).json({ success: false, error: "Student ID already registered." });
       }
+    }
 
+    // ======== INSERT INTO STUDENTS (IF STUDENT) ======== //
+    if (cleanedRole === "student") {
       try {
         await db.query(
           `INSERT INTO students 
             (student_id, name, gender, course, room, phone, status) 
            VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
-          [student_id, full_name, gender, course || null, null, phone_number || null]
+          [student_id.trim(), full_name.trim(), gender, course || null, null, phone_number || null]
         );
       } catch (err) {
         console.error("❌ Insert student failed:", err);
@@ -285,35 +292,39 @@ app.post("/api/register", async (req, res) => {
       }
     }
 
-    // Hash password
-    let hashed;
+    // ======== HASH PASSWORD ======== //
+    let hashedPassword;
     try {
-      hashed = await bcrypt.hash(password, 10);
+      hashedPassword = await bcrypt.hash(password, 10);
     } catch (err) {
       console.error("❌ Password hash failed:", err);
       return res.status(500).json({ success: false, error: "Failed to process password." });
     }
 
-    // Insert user
+    // ======== INSERT INTO USERS ======== //
     try {
       await db.query(
         `INSERT INTO users
           (student_id, username, email, password, role, must_change_password)
          VALUES (?, ?, ?, ?, ?, TRUE)`,
         [
-          cleanedRole === "student" ? student_id : null,
-          cleanedRole === "admin" ? staff_id : username,
-          cleanedRole === "admin" ? staff_id + "@hostelnet.com" : userEmail,
-          hashed,
+          cleanedRole === "student" ? student_id.trim() : null,
+          userUsername,
+          userEmail,
+          hashedPassword,
           cleanedRole
         ]
       );
     } catch (err) {
       console.error("❌ Insert user failed:", err);
+      // rollback student insert jika perlu
+      if (cleanedRole === "student") {
+        await db.query("DELETE FROM students WHERE student_id = ?", [student_id.trim()]);
+      }
       return res.status(500).json({ success: false, error: "Failed to register user." });
     }
 
-    // Success
+    // ======== SUCCESS ======== //
     res.json({ success: true, message: "Registration successful!" });
 
   } catch (err) {

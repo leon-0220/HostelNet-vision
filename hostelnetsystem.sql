@@ -193,3 +193,10 @@ CREATE TABLE IF NOT EXISTS checkin_checkout (
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
     FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number)
 );
+
+CREATE TABLE IF NOT EXISTS admins (
+  staff_id VARCHAR(50) PRIMARY KEY,
+  full_name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL
+);
