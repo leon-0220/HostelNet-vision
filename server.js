@@ -227,7 +227,6 @@ app.post("/api/update-password", async (req, res) => {
 });
 
 // ===================== REGISTER ROUTE ===================== //
-// ===================== REGISTER ROUTE ===================== //
 app.post("/api/register", async (req, res) => {
   try {
     const {
@@ -249,12 +248,11 @@ app.post("/api/register", async (req, res) => {
 
     const cleanedRole = role.trim().toLowerCase();
 
-    if (cleanedRole === "student") {
-      if (!student_id) return res.status(400).json({ success: false, error: "Student ID is required for students." });
+    if (cleanedRole === "student" && !student_id) {
+      return res.status(400).json({ success: false, error: "Student ID is required for students." });
     }
-
-    if (cleanedRole === "admin") {
-      if (!staff_id) return res.status(400).json({ success: false, error: "Staff ID is required for admins." });
+    if (cleanedRole === "admin" && !staff_id) {
+      return res.status(400).json({ success: false, error: "Staff ID is required for admins." });
     }
 
     // ======== PREPARE USER DATA ======== //
@@ -298,6 +296,9 @@ app.post("/api/register", async (req, res) => {
       hashedPassword = await bcrypt.hash(password, 10);
     } catch (err) {
       console.error("❌ Password hash failed:", err);
+      if (cleanedRole === "student") {
+        await db.query("DELETE FROM students WHERE student_id = ?", [student_id.trim()]);
+      }
       return res.status(500).json({ success: false, error: "Failed to process password." });
     }
 
@@ -317,7 +318,7 @@ app.post("/api/register", async (req, res) => {
       );
     } catch (err) {
       console.error("❌ Insert user failed:", err);
-      // rollback student insert jika perlu
+      // rollback student insert jika student
       if (cleanedRole === "student") {
         await db.query("DELETE FROM students WHERE student_id = ?", [student_id.trim()]);
       }
@@ -325,7 +326,7 @@ app.post("/api/register", async (req, res) => {
     }
 
     // ======== SUCCESS ======== //
-    res.json({ success: true, message: "Registration successful!" });
+    res.json({ success: true, message: "Registration successful! Student linked to user." });
 
   } catch (err) {
     console.error("❌ Register Error:", err);
