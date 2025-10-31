@@ -164,11 +164,13 @@ if (adminCheck.length === 0) {
   const hashed = await bcrypt.hash("AdminPass01", 10);
   await db.query(
     "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
-    [null, "admin01", "admin01@gmail.com", hashed, "admin", false]  // student_id = NULL untuk admin
+    [null, "admin01", "admin01@gmail.com", hashed, "admin", false]  
   );
   console.log("🛡 Default admin created: admin01 / AdminPass01");
+} catch (err) {
+
 }
-  }});
+  })();
 
 // ===================== UPDATE PROFILE INFO ===================== //
 app.post("/api/update-profile", async (req, res) => {
