@@ -238,10 +238,23 @@
       const adminFields = ["staff_id"];
 
       studentFields.forEach(id => {
-        document.getElementById(id).disabled = (role !== "student");
+        const el = document.getElementById(id);
+        if(role !== "student") {
+          el.readOnly = true;
+          el.value = "";
+        } else {
+          el.readOnly = false;
+        }
       });
+
       adminFields.forEach(id => {
-        document.getElementById(id).disabled = (role !== "admin");
+        const el = document.getElementById(id);
+        if(role !== "admin") {
+          el.readOnly = true;
+          el.value = "";
+        } else {
+          el.readOnly = false;
+        }
       });
     }
 

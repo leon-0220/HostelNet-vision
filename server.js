@@ -163,8 +163,8 @@ let db;
     if (adminCheck.length === 0) {
       const hashed = await bcrypt.hash("AdminPass01", 10);
       await db.query(
-        "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
-        [null, "admin01", "admin01@gmail.com", hashed, "admin", false]
+        "INSERT INTO users (user_ref_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
+        ["adm0423-102", "admin01", "admin01@gmail.com", hashed, "admin", false]
       );
       console.log("🛡 Default admin created: admin01 / AdminPass01");
     }
@@ -240,6 +240,8 @@ app.post("/api/register", async (req, res) => {
       course,
       staff_id
     } = req.body;
+
+    console.log("REQ BODY:", req.body);
 
     // ======== VALIDATION ======== //
     if (!full_name || !password || !gender || !role) {
