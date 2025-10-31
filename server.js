@@ -129,49 +129,34 @@ let db;
 
     console.log("✅ Database tables verified/created successfully.");
 
-    // ====== INSERT HOSTEL UNITS IF NOT EXIST ====== //
-    const hostelUnits = [
-      ["KELANA-M", "Male", "Kelana Parkview"],
-      ["SS4D-M", "Male", "SS4D/8"],
-      ["SS4C-M", "Male", "SS4C/15"],
-      ["SS5D-M", "Male", "SS5D/6A"],
-      ["SS4B-M", "Male", "SS4B/13"],
-      ["SS5C-M", "Male", "SS5C/11"],
-      ["SPACEPOD-M", "Male", "Spacepod"],
-      ["KELANA-F", "Female", "Kelana Parkview"],
-      ["SS5D-F", "Female", "SS5D/8"],
-      ["AYAMAS-F", "Female", "Ayamas"],
-      ["FOCUS-F", "Female", "Focus Point"],
-      ["711-F", "Female", "7-11"],
-      ["SS6-F", "Female", "SS6/8"],
-      ["SPACEPOD-F", "Female", "Spacepod 20"],
-    ];
-
+    // ====== INSERT HOSTEL UNITS ======
+    const hostelUnits = [ ... ];
     for (const [code, gender, name] of hostelUnits) {
       await db.query(
         `INSERT IGNORE INTO hostel_units (unit_code, gender, unit_name) VALUES (?, ?, ?)`,
         [code, gender, name]
       );
     }
-
     console.log("🏠 Hostel units inserted (if missing)");
 
-    // ====== DEFAULT ADMIN ====== //
-const [adminCheck] = await db.query(
-  "SELECT * FROM users WHERE username = 'admin01'"
-);
-if (adminCheck.length === 0) {
-  const hashed = await bcrypt.hash("AdminPass01", 10);
-  await db.query(
-    "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
-    [null, "admin01", "admin01@gmail.com", hashed, "admin", false]  
-  );
-  console.log("🛡 Default admin created: admin01 / AdminPass01");
-} catch (err) {
+    // ====== DEFAULT ADMIN ======
+    const [adminCheck] = await db.query(
+      "SELECT * FROM users WHERE username = 'admin01'"
+    );
+    if (adminCheck.length === 0) {
+      const hashed = await bcrypt.hash("AdminPass01", 10);
+      await db.query(
+        "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
+        [null, "admin01", "admin01@gmail.com", hashed, "admin", false]
+      );
+      console.log("🛡 Default admin created: admin01 / AdminPass01");
+    }
 
-}
-  })();
-
+  } catch (err) {
+    console.error("❌ Database init failed:", err);
+  }
+})();
+   
 // ===================== UPDATE PROFILE INFO ===================== //
 app.post("/api/update-profile", async (req, res) => {
   try {
