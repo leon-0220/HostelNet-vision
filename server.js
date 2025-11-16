@@ -20,11 +20,11 @@ const app = express();
 // ===================== CONFIG ===================== //
 const PORT = process.env.PORT || 8080;
 const DB_CONFIG = {
-  host: process.env.DB_HOST || "centerbeam.proxy.rlwy.net",
+  host: process.env.DB_HOST || "shinkansen.proxy.rlwy.net",
   user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "qxFWSgDsLImTcNYatgzJuVlcyXFAKezT",
+  password: process.env.DB_PASSWORD || "UnOejDfxvrCIRqHayMZXuLnMtpjZIcKb",
   database: process.env.DB_NAME || "railway",
-  port: process.env.DB_PORT ? Number(process.env.DB_PORT): 37606,
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT): 24552,
   ssl: {
     rejectUnauthorized: false,
   },
