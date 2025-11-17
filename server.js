@@ -52,9 +52,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// === SESSION SETUP === //
-import session from "express-session";
-
 app.use(session({
   secret: "hostelnet-secret-key", 
   resave: false,
