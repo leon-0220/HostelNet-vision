@@ -351,7 +351,6 @@ app.post("/api/register", async (req, res) => {
       if (studentExists.length > 0) {
         return res.status(400).json({ error: "Student ID already registered. "});
       }
-    }
 
     try {
         await db.query(
@@ -365,7 +364,6 @@ app.post("/api/register", async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-
     const userRole = role.toLowerCase() === "admin" ? "admin" : "student";
 
     try {
