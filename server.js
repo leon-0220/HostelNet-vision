@@ -201,7 +201,7 @@ app.post("/api/update-profile", async (req, res) => {
       return res.status(400).json({ success: false, error: "Full name and course required" });
 
     await db.query(
-      UPDATE students SET name=?, course=?, phone=? WHERE student_id=?,
+      "UPDATE students SET name=?, course=?, phone=? WHERE student_id=?",
       [full_name, course, phone || null, student_id]
     );
 
