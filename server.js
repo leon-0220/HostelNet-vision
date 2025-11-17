@@ -224,7 +224,8 @@ app.post("/api/update-password", async (req, res) => {
     if (!old_password || !new_password)
       return res.status(400).json({ success: false, error: "Both old and new password required" });
 
-    const [users] = await db.query("SELECT * FROM users WHERE student_id=?", [student_id]);
+    const [users] = await db.query("SELECT * FROM users WHERE student_id=?", 
+      [student_id]);
     if (!users.length) return res.status(404).json({ error: "User not found" });
 
     const user = users[0];
@@ -232,7 +233,8 @@ app.post("/api/update-password", async (req, res) => {
     if (!match) return res.status(400).json({ error: "Old password incorrect" });
 
     const hashed = await bcrypt.hash(new_password, 10);
-    await db.query("UPDATE users SET password=?, must_change_password=0 WHERE student_id=?", [hashed, student_id]);
+    await db.query("UPDATE users SET password=?, must_change_password=0 WHERE student_id=?", 
+      [hashed, student_id]);
 
     res.json({ success: true, message: "Password updated successfully!" });
   } catch (err) {
@@ -254,7 +256,8 @@ app.post("/api/upload-profile-pic", upload.single("profile_pic"), async (req, re
 
     // Pastikan column profile_pic ada
     await db.query("ALTER TABLE students ADD COLUMN IF NOT EXISTS profile_pic VARCHAR(255) DEFAULT NULL");
-    await db.query("UPDATE students SET profile_pic=? WHERE student_id=?", [filename, student_id]);
+    await db.query("UPDATE students SET profile_pic=? WHERE student_id=?", 
+      [filename, student_id]);
 
     res.json({ success: true, message: "Profile picture uploaded!", filename });
   } catch (err) {
@@ -343,7 +346,8 @@ app.post("/api/register", async (req, res) => {
     }
 
     if (cleanedRole === "student") {
-      const [studentExists] = await db.query("Select * FROM students WHERE student_id = ?", [student_id]);
+      const [studentExists] = await db.query("Select * FROM students WHERE student_id = ?", 
+        [student_id]);
       if (studentExists.length > 0) {
         return res.status(400).json({ error: "Student ID already registered. "});
       }
@@ -351,9 +355,7 @@ app.post("/api/register", async (req, res) => {
 
     try {
         await db.query(
-          `INSERT INTO students 
-            (student_id, name, gender, course, room, phone, status) 
-           VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
+          `INSERT INTO students (student_id, name, gender, course, room, phone, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
           [student_id, full_name, gender, course || null, room_number || null, phone_number || null]
         );
       } catch (err) {
@@ -368,9 +370,7 @@ app.post("/api/register", async (req, res) => {
 
     try {
       await db.query(
-        `INSERT INTO users
-          (student_id, username, email, password, role, must_change_password)
-         VALUES (?, ?, ?, ?, ?, TRUE)`,
+        `INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, TRUE)`,
         [
           userRole === "student" ? student_id : null, 
           userRole === "admin" ? staff_id : username,
@@ -398,7 +398,8 @@ app.post("/api/login", async (req, res) => {
     if (!username || !password) 
       return res.status(400).json({ error: "Missing username or password" });
 
-    const [users] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
+    const [users] = await db.query("SELECT * FROM users WHERE username = ?", 
+      [username]);
     if (users.length === 0) 
       return res.status(401).json({ error: "Invalid username or password" });
 
@@ -465,7 +466,8 @@ app.get("/api/my-details", async (req, res) => {
     }
 
     if (role === "admin") {
-      const [users] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
+      const [users] = await db.query("SELECT * FROM users WHERE username = ?", 
+        [username]);
       if (users.length === 0) return res.status(404).json({ error: "Admin not found" });
 
       const admin = users[0];
@@ -570,7 +572,8 @@ app.post("/api/admin/checkin", async (req, res) => {
     }
 
     // Check student exist
-    const [studentCheck] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
+    const [studentCheck] = await db.query("SELECT * FROM students WHERE student_id = ?", 
+      [student_id]);
     if (studentCheck.length === 0) return res.status(404).json({ error: "Student not found" });
 
     // Prevent double check-in (if not checked out)
@@ -584,13 +587,13 @@ app.post("/api/admin/checkin", async (req, res) => {
 
     // Insert new check-in
     await db.query(
-      `INSERT INTO checkin_checkout (student_id, unit_code, room_number, checkin_date)
-       VALUES (?, ?, ?, ?)`,
+      `INSERT INTO checkin_checkout (student_id, unit_code, room_number, checkin_date) VALUES (?, ?, ?, ?)`,
       [student_id, unit_code, room_number, checkin_date]
     );
 
     // Update student status
-    await db.query("UPDATE students SET status = 'checked-in', room = ? WHERE student_id = ?", [
+    await db.query("UPDATE students SET status = 'checked-in', room = ? WHERE student_id = ?", 
+      [
       room_number,
       student_id,
     ]);
@@ -662,7 +665,8 @@ app.post("/api/student/checkin", async (req, res) => {
     }
 
     // Pastikan student wujud
-    const [studentRows] = await db.query("SELECT * FROM students WHERE student_id = ?", [student_id]);
+    const [studentRows] = await db.query("SELECT * FROM students WHERE student_id = ?", 
+      [student_id]);
     if (studentRows.length === 0) return res.status(404).json({ success: false, error: "Student not found" });
 
     // Cek kalau student dah check-in aktif (belum checkout)
@@ -677,8 +681,7 @@ app.post("/api/student/checkin", async (req, res) => {
 
     // Masukkan record check-in
     await db.query(
-      `INSERT INTO checkin_checkout (student_id, unit_code, room_number, checkin_date)
-       VALUES (?, ?, ?, ?)`,
+      `INSERT INTO checkin_checkout (student_id, unit_code, room_number, checkin_date) VALUES (?, ?, ?, ?)`,
       [student_id, unit_code, room_number, checkin_date]
     );
 
@@ -837,5 +840,5 @@ app.get("/", (req, res) => {
 
 // ===================== START SERVER ===================== //
 app.listen(PORT, () => {
-  console.log(🚀 Server running at https://hostelnet-2.onrender.com (PORT: ${PORT}));
+  console.log(`🚀 Server running at https://hostelnet-2.onrender.com (PORT: ${PORT})`);
 });
