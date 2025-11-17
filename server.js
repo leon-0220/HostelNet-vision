@@ -149,7 +149,7 @@ let db;
 
     for (const [code, gender, name] of hostelUnits) {
       await db.query(
-        INSERT IGNORE INTO hostel_units (unit_code, gender, unit_name) VALUES (?, ?, ?),
+        "INSERT IGNORE INTO hostel_units (unit_code, gender, unit_name) VALUES (?, ?, ?)",
         [code, gender, name]
       );
     }
@@ -769,7 +769,6 @@ app.post("/api/add-room", async (req, res) => {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    // Tambah bilik baru dalam unit asrama
     await db.query(
       "INSERT INTO rooms (unit_code, room_number, capacity, available, status) VALUES (?, ?, ?, ?, 'active')",
       [unit_code, room_number, capacity, capacity] // 'available' mula = capacity penuh
