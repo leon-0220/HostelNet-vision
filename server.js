@@ -178,10 +178,12 @@ const uploadDir = path.join(__dirname, "public/uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
+  destination: (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) {
     const ext = file.originalname.split(".").pop();
-    cb(null, ${req.session.user.student_id}_${Date.now()}.${ext});
+    cb(null, `${req.session.user.student_id}_${Date.now()}.${ext}`);
   }
 });
 const upload = multer({ storage });
