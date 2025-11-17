@@ -181,7 +181,7 @@ const storage = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, uploadDir);
   },
-  filename: (req, file, cb) {
+  filename(req, file, cb) {
     const ext = file.originalname.split(".").pop();
     cb(null, `${req.session.user.student_id}_${Date.now()}.${ext}`);
   }
