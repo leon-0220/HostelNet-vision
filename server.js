@@ -77,6 +77,7 @@ let db;
       gender ENUM('Male','Female') NOT NULL,
       course VARCHAR(100),
       room VARCHAR(50),
+      phone VARCHAR(20),
       status ENUM('pending','checked-in','checked-out') DEFAULT 'pending'
     );`);
 
