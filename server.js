@@ -186,7 +186,8 @@ const storage = multer.diskStorage({
   },
   filename(req, file, cb) {
     const ext = file.originalname.split(".").pop();
-    cb(null, `${req.session.user.student_id}_${Date.now()}.${ext}`);
+    const sid = req.session.user.student_id || 'user';
+    cb(null, `${sid}_${Date.now()}.${ext}`);
   }
 });
 const upload = multer({ storage });
@@ -257,8 +258,10 @@ app.post("/api/upload-profile-pic", upload.single("profile_pic"), async (req, re
     const student_id = req.session.user.student_id;
     const filename = req.file.filename;
 
-    // Pastikan column profile_pic ada
-    await db.query("ALTER TABLE students ADD COLUMN IF NOT EXISTS profile_pic VARCHAR(255) DEFAULT NULL");
+    const [columns] = await db.query("SHOW COLUMNS FROM students LIKE 'profile_pic'");
+    if (columns.length === 0) {
+      await db.query("ALTER TABLE students ADD COLUMN IF NOT EXISTS profile_pic VARCHAR(255) DEFAULT NULL");
+    }
     await db.query("UPDATE students SET profile_pic=? WHERE student_id=?", 
       [filename, student_id]);
 
@@ -752,9 +755,9 @@ app.post("/api/change-password", async (req, res) => {
 app.get("/api/students", async (req, res) => {
   try {
     const [rows] = await db.execute(`
-      SELECT id, name, email, program, room_number
+      SELECT id, name, gender, course, room AS room_number, phone, status
       FROM students
-      WHERE hostel_registered = 1
+      WHERE status != 'pending'
     `);
     res.json(rows);
   } catch (error) {
@@ -764,18 +767,19 @@ app.get("/api/students", async (req, res) => {
 });
 app.post("/api/add-student", async (req, res) => {
   try {
-    const { name, room, contact, status } = req.body;
-    if (!name || !room || !contact || !status) {
+    const { student_id, name, gender, course, room, phone, status } = req.body;
+    if (!student_id || !name || !gender || !room || !status) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
     // Insert into students table
-    const [result] = await db.query(
-      "INSERT INTO students (name, room, phone, status) VALUES (?, ?, ?, ?)",
-      [name, room, contact, status]
+    await db.query(
+      "INSERT INTO students (student_id, name, gender, course, room, phone, status) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [student_id, name, gender, course || null, room, phone || null,, status]
     );
 
-    res.json({ message: "Student added successfully!", id: result.insertId });
+    res.json({ message: "Student added successfully!", student_id });
   } catch (err) {
     console.error("❌ Add student error:", err);
     res.status(500).json({ message: "Server error adding student" });
@@ -790,8 +794,8 @@ app.post("/api/add-room", async (req, res) => {
     }
 
     await db.query(
-      "INSERT INTO rooms (unit_code, room_number, capacity, available, status) VALUES (?, ?, ?, ?, 'active')",
-      [unit_code, room_number, capacity, capacity] // 'available' mula = capacity penuh
+      "INSERT IGNORE INTO rooms (unit_code, room_number, capacity, available, status) VALUES (?, ?, ?, ?, 'active')",
+      [unit_code, room_number, capacity, capacity] 
     );
 
     res.json({ success: true, message: "Room added successfully!" });
@@ -805,7 +809,7 @@ app.post("/api/add-room", async (req, res) => {
 app.get("/api/dashboard-stats", async (req, res) => {
   try {
     const [[{ total_students }]] = await db.query("SELECT COUNT(*) AS total_students FROM students");
-    const [[{ occupied_rooms }]] = await db.query("SELECT COUNT(*) AS occupied_rooms FROM rooms WHERE status='Occupied'");
+    const [[{ occupied_rooms }]] = await db.query("SELECT COUNT(*) AS occupied_rooms FROM rooms WHERE available < capacity");
     res.json({ total_students, occupied_rooms });
   } catch (err) {
     console.error("❌ Dashboard stats error:", err);
