@@ -163,16 +163,18 @@ let db;
     );
     if (adminCheck.length === 0) {
       const hashed = await bcrypt.hash("AdminPass01", 10);
+
+      await db.query(`
+        ALTER TABLE users 
+        ADD COLUMN IF NOT EXISTS student_id VARCHAR(20) DEFAULT NULL
+      `);
+
       await db.query(
         "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
         [null, "admin01", "admin01@gmail.com", hashed, "admin", false]
       );
       console.log("🛡 Default admin created: admin01 / AdminPass01");
     }
-  } catch (err) {
-    console.error("❌ Database init failed:", err);
-  }
-})();
 
 // ===================== PROFILE PICTURE UPLOAD ===================== //
 const uploadDir = path.join(__dirname, "public/uploads");
