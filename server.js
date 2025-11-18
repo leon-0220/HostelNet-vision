@@ -320,7 +320,8 @@ app.post("/api/register", async (req, res) => {
       course,
       hostel_unit,
       room_number,
-      staff_id
+      staff_id,
+      email
     } = req.body;
 
     // Validation
@@ -328,13 +329,14 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ error: "Please fill in all required fields." });
     }
 
-    const cleanedRole = role.trim().toLowerCase();
+    const userRole = role.trim().toLowerCase();
+    const userEmail= email || `${username}@hostelnet.com`;
 
-    if (cleanedRole === "student" && !student_id) {
+    if (userRole === "student" && !student_id) {
       return res.status(400).json({ error: "Student ID is requires for students."});
     }
 
-    if (cleanedRole === "admin" && !staff_id) {
+    if (userRole === "admin" && !staff_id) {
       return res.status(400).json({ error: "Staff ID is required for admins."});
     }
 
@@ -348,7 +350,7 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ error: "Username already exists." });
     }
 
-    if (cleanedRole === "student") {
+    if (userRole === "student") {
       const [studentExists] = await db.query(
         "Select * FROM students WHERE student_id = ?", 
         [student_id]
@@ -374,15 +376,16 @@ app.post("/api/register", async (req, res) => {
       
     const hashed = await bcrypt.hash(password, 10);
 
-    try {
+    if (userRole === "student") {
       await db.query(
-        `INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, TRUE)`,
+        `INSERT INTO users (student_id, username, email, password, role, must_change_password) 
+        VALUES (?, ?, ?, ?, ?, TRUE)`,
         [
-          userRole === "student" ? student_id : null, 
-          userRole === "admin" ? staff_id : username,
-          userRole === "admin" ? staff_id + "@hostelnet.com" : userEmail,
+          student_id, 
+          username,
+          userEmail,
           hashed,
-          userRole
+          "student",
         ]
       );
       } else {
