@@ -69,6 +69,8 @@ let db;
   try {
     db = await mysql.createPool(DB_CONFIG);
     console.log("✅ Database connected successfully!");
+  }
+});
 
     // ====== CREATE TABLES ====== //
     await db.query(`CREATE TABLE IF NOT EXISTS students (
