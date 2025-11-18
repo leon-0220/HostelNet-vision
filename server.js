@@ -73,9 +73,6 @@ let db;
     const [rows] = await db.query("SELECT NOW() AS current_time");
     console.log("DB test OK: ", rows[0].current_time);
   
-  } catch (err) {
-    console.error("Database connection failed:", err);
-
     // ====== CREATE TABLES ====== //
     await db.query(`CREATE TABLE IF NOT EXISTS students (
       student_id VARCHAR(20) PRIMARY KEY,
