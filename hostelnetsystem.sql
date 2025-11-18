@@ -1,95 +1,100 @@
-CREATE DATABASE IF NOT EXISTS hostelnetsystem;
-USE hostelnetsystem;
-
-CREATE TABLE IF NOT EXISTS hostel_units (
+CREATE DATABASE hostelnet;
+DROP DATABASE hostelnet;
+USE hostelnet;
+DROP TABLE IF EXISTS hostel_units;
+CREATE TABLE hostel_units (
     unit_code VARCHAR(20) PRIMARY KEY,
     unit_name VARCHAR(100) NOT NULL,
-    description TEXT
+    description TEXT,
+    gender ENUM('male','female') NOT NULL DEFAULT 'male'
 );
 
-INSERT INTO hostel_units (unit_code, unit_name, description)
-VALUES ('D401', 'Kelana Parkview', 'Male Hostel'),
-       ('D402', 'Kelana Parkview', 'Male Hostel'),
-       ('11A', 'SS4B/13', 'Male Hostel'),
-       ('14', 'SS4C/15', 'Male Hostel'),
-       ('20', 'SS5D/6A', 'Male Hostel'),
-       ('21A', 'SS4D/8', 'Male Hostel'),
-       ('21B', 'SS4D/8', 'Male Hostel'),
-       ('32', 'SS5C/11', 'Male Hostel'),
-       ('20-1', 'Spacepod', 'Male Hostel'),
-       ('36-1', 'Spacepod', 'Male Hostel'),
-       ('38-1', 'Spacepod', 'Male Hostel'),
-       ('D201', 'Kelana Parkview', 'Female Hostel'),
-       ('D202', 'Kelana Parkview', 'Female Hostel'),
-       ('D204', 'Kelana Parkview', 'Female Hostel'),
-       ('D301', 'Kelana Parkview', 'Female Hostel'),
-       ('D404', 'Kelana Parkview', 'Female Hostel'),
-       ('12', 'SS5D/8', 'Female Hostel'),
-       ('18A4', 'Ayamas', 'Female Hostel'),
-       ('20B2', 'Focus Point', 'Female Hostel'),
-       ('20B3', 'Focus Point', 'Female Hostel'),
-       ('20B4', 'Focus Point', 'Female Hostel'),
-       ('24B3', '7-11', 'Female Hostel'),
-       ('24A4', '7-11', 'Female Hostel'),
-       ('5B', 'SS6/8', 'Female Hostel'),
-       ('5C', 'SS6/8', 'Female Hostel'),
-       ('36-2', 'Spacepod', 'Female Hostel'),
-       ('36-3', 'Spacepod', 'Female Hostel'),
-       ('38-2', 'Spacepod', 'Female Hostel'),
-       ('38-3', 'Spacepod', 'Female Hostel'),
-       ('20-2', 'Spacepod', 'Female Hostel'),
-       ('20-3', 'Spacepod', 'Female Hostel');
+INSERT INTO hostel_units (unit_code, unit_name, description, gender)
+VALUES 
+('D401', 'Kelana Parkview', 'Male Hostel', 'male'),
+('D402', 'Kelana Parkview', 'Male Hostel', 'male'),
+('11A', 'SS4B/13', 'Male Hostel', 'male'),
+('14', 'SS4C/15', 'Male Hostel', 'male'),
+('20', 'SS5D/6A', 'Male Hostel', 'male'),
+('21A', 'SS4D/8', 'Male Hostel', 'male'),
+('21B', 'SS4D/8', 'Male Hostel', 'male'),
+('32', 'SS5C/11', 'Male Hostel', 'male'),
+('20-1', 'Spacepod', 'Male Hostel', 'male'),
+('36-1', 'Spacepod', 'Male Hostel', 'male'),
+('38-1', 'Spacepod', 'Male Hostel', 'male'),
+('D201', 'Kelana Parkview', 'Female Hostel', 'female'),
+('D202', 'Kelana Parkview', 'Female Hostel', 'female'),
+('D204', 'Kelana Parkview', 'Female Hostel', 'female'),
+('D301', 'Kelana Parkview', 'Female Hostel', 'female'),
+('D404', 'Kelana Parkview', 'Female Hostel', 'female'),
+('12', 'SS5D/8', 'Female Hostel', 'female'),
+('18A4', 'Ayamas', 'Female Hostel', 'female'),
+('20B2', 'Focus Point', 'Female Hostel', 'female'),
+('20B3', 'Focus Point', 'Female Hostel', 'female'),
+('20B4', 'Focus Point', 'Female Hostel', 'female'),
+('24B3', '7-11', 'Female Hostel', 'female'),
+('24A4', '7-11', 'Female Hostel', 'female'),
+('5B', 'SS6/8', 'Female Hostel', 'female'),
+('5C', 'SS6/8', 'Female Hostel', 'female'),
+('36-2', 'Spacepod', 'Female Hostel', 'female'),
+('36-3', 'Spacepod', 'Female Hostel', 'female'),
+('38-2', 'Spacepod', 'Female Hostel', 'female'),
+('38-3', 'Spacepod', 'Female Hostel', 'female'),
+('20-2', 'Spacepod', 'Female Hostel', 'female'),
+('20-3', 'Spacepod', 'Female Hostel', 'female');
 
-CREATE TABLE IF NOT EXISTS students (
-    student_id VARCHAR(20) PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
-    course VARCHAR(100),
-    gender ENUM('male','female'),
-    email VARCHAR(150)
-);
-
-INSERT INTO students (student_id, name, course, gender, email)
-VALUES ('DLM0423-001', 'Tengku Adrean Ruiz Bin Tengku Asyraf Ruiz', 'Diploma in Logistic Management', 'male', 'tadrean@gmail.com'),
-       ('DLM0423-002', 'Thariq Ridzuwan Bin Tizz Razif', 'Diploma in Logistic Management', 'male', 'thariq@gmail.com'),
-       ('DIT0423-001', 'Rahmah Binti Mohamad Sukor', 'Diploma in IT', 'female', 'rahmahsukor5@gmail.com'),
-       ('DIT0423-002', 'Puteri Nurelisah Binti Nasir', 'Diploma in IT', 'female', 'puteri@gmail.com'),
-       ('DIT0423-003', 'Nur Aisyah', 'Diploma in IT', 'female', 'aisyah@gmail.com');
-
-CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_ref_id VARCHAR(50) NOT NULL,           
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,         
-    password VARCHAR(255) NOT NULL,
-    role ENUM('student','finance','warden','admin','maintenance') DEFAULT 'student',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-INSERT INTO users (user_ref_id, username, email, password, role)
-VALUES ('DLM0423-001', 'JovenMaestro.09', 'tadrean@gmail.com', 'TengkuAdreanRuiz02', 'student'),
-       ('DLM0423-002', 'Eagle.08', 'thariq@gmail.com', 'ThariqRidzuwan', 'student'),
-       ('DIT0423-001', 'Leon.0920', 'rahmahsukor5@gmail.com', 'TengkuAdreanRuiz02', 'student'),
-       ('FIN001', 'Finance.01', 'finance01@gmail.com', 'FinancePass01', 'finance'),
-       ('WARD001', 'Warden.01', 'warden01@gmail.com', 'WardenPass01', 'warden'),
-       ('ADMIN001', 'Admin.01', 'admin01@gmail.com', 'AdminPass01', 'admin'),
-       ('MAIN001', 'Maintenance.01', 'maint01@gmail.com', 'MaintPass01', 'maintenance');
-
-CREATE TABLE IF NOT EXISTS rooms (
+DROP TABLE IF EXISTS rooms;
+CREATE TABLE rooms (
     unit_code VARCHAR(20) NOT NULL,
     room_number VARCHAR(20) NOT NULL,
     capacity INT NOT NULL DEFAULT 4,
-    available INT NOT NULL DEFAULT 0,
+    available INT NOT NULL DEFAULT 4,
     status ENUM('active','inactive','maintenance') DEFAULT 'active',
     PRIMARY KEY (unit_code, room_number),
     FOREIGN KEY (unit_code) REFERENCES hostel_units(unit_code) ON DELETE CASCADE
 );
 
 INSERT INTO rooms (unit_code, room_number, capacity, available)
-VALUES ('24B3', '02', 10, 3),
-       ('24B3', '03', 10, 3),
-       ('24B3', '04', 12, 2);
+VALUES 
+('24B3', '02', 10, 3),
+('24B3', '03', 10, 3),
+('24B3', '04', 12, 2);
 
-CREATE TABLE IF NOT EXISTS room_assignment (
+DROP TABLE IF EXISTS students;
+CREATE TABLE students (
+    student_id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    course VARCHAR(100),
+    gender ENUM('male','female'),
+    email VARCHAR(150),
+    phone VARCHAR(20) DEFAULT NULL,
+    room VARCHAR(20) DEFAULT NULL,
+    status ENUM('pending','checked-in','checked-out') DEFAULT 'pending'
+);
+
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_ref_id VARCHAR(50) NOT NULL,           
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,         
+    password VARCHAR(255) NOT NULL,
+    role ENUM('student','finance','warden','admin','maintenance') DEFAULT 'student',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_student FOREIGN KEY (user_ref_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS admins;
+CREATE TABLE admins (
+    staff_id VARCHAR(50) PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    CONSTRAINT fk_admin_user FOREIGN KEY (staff_id) REFERENCES users(user_ref_id) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS room_assignment;
+CREATE TABLE room_assignment (
     assignment_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(20) NOT NULL,
     unit_code VARCHAR(20) NOT NULL,
@@ -100,39 +105,19 @@ CREATE TABLE IF NOT EXISTS room_assignment (
     FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number)
 );
 
-CREATE TABLE IF NOT EXISTS checkin_checkout (
-    record_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id VARCHAR(20) NOT NULL,
-    unit_code VARCHAR(20) NOT NULL,
-    room_number VARCHAR(20) NOT NULL,
-    checkin_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    checkout_date TIMESTAMP NULL,
-    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
-    FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number)
-);
-
-CREATE TABLE IF NOT EXISTS payments (
-   payment_id INT AUTO_INCREMENT PRIMARY KEY,
-   student_id VARCHAR(20) NOT NULL,
-   amount DECIMAL(10,2) NOT NULL,
-   payment_date DATE NOT NULL,
-   status ENUM('paid', 'pending', 'overdue') DEFAULT 'paid',
-   FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
-);
-
-INSERT INTO payments (student_id, amount, payment_date, status)
-VALUES ('DLM0423-001', '500', CURDATE(), 'paid');
-
-CREATE TABLE IF NOT EXISTS maintenance_requests (
+DROP TABLE IF EXISTS maintenance_requests;
+CREATE TABLE maintenance_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_ref_id VARCHAR(50) NOT NULL,
     room_number VARCHAR(20) NOT NULL,
     request_text TEXT NOT NULL,
     status ENUM('pending','in_progress','completed') DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_ref_id) REFERENCES users(user_ref_id)
 );
 
-CREATE TABLE IF NOT EXISTS completed_jobs (
+DROP TABLE IF EXISTS completed_jobs;
+CREATE TABLE completed_jobs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     job_title VARCHAR(100) NOT NULL,
     description TEXT NOT NULL,
@@ -140,63 +125,81 @@ CREATE TABLE IF NOT EXISTS completed_jobs (
 );
 
 INSERT INTO completed_jobs (job_title, description)
-VALUES ('Fix Aircond', 'Aircond at Room B202 repaired successfully.'),
-       ('Change Bulb', 'Bulb replaced at Hallway 3.'),
-       ('Plumbing', 'Leak fixed at Block A toilet.');
+VALUES 
+('Fix Aircond', 'Aircond at Room B202 repaired successfully.'),
+('Change Bulb', 'Bulb replaced at Hallway 3.'),
+('Plumbing', 'Leak fixed at Block A toilet.');
 
-ALTER TABLE students
-ADD COLUMN phone VARCHAR(20) DEFAULT NULL,
-ADD COLUMN room VARCHAR(20) DEFAULT NULL,
-ADD COLUMN status ENUM('pending','checked-in','checked-out') DEFAULT 'pending';
+DROP TABLE IF EXISTS checkin_checkout;
+CREATE TABLE checkin_checkout (
+    record_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(20) NOT NULL,
+    unit_code VARCHAR(20) NOT NULL,
+    room_number VARCHAR(20) NOT NULL,
+    checkin_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    checkout_date TIMESTAMP NULL,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number)
+);
+
+SELECT * FROM students;
+SELECT * FROM users;
+DESCRIBE users;
 
 ALTER TABLE users
-ADD COLUMN must_change_password BOOLEAN DEFAULT TRUE;
+ADD COLUMN student_id VARCHAR(20) NULL AFTER id,
+ADD CONSTRAINT fk_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE SET NULL;
 
-CREATE TABLE IF NOT EXISTS checkin_checkout (
-    record_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id VARCHAR(20) NOT NULL,
-    unit_code VARCHAR(20) NOT NULL,
-    room_number VARCHAR(20) NOT NULL,
-    checkin_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    checkout_date TIMESTAMP NULL,
-    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
-    FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number)
+ALTER TABLE users
+ADD COLUMN must_change_password BOOLEAN DEFAULT TRUE AFTER role;
+
+ALTER TABLE users
+MODIFY user_ref_id INT NOT NULL DEFAULT 0;
+
+ALTER TABLE users
+MODIFY user_ref_id INT NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE users
+MODIFY user_ref_id INT NOT NULL DEFAULT 0;
+ALTER TABLE users
+DROP COLUMN user_ref_id;
+ALTER TABLE users 
+MODIFY user_ref_id INT NULL;
+ALTER TABLE users
+MODIFY user_ref_id VARCHAR(20) NULL;
+
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS students;
+
+CREATE TABLE students (
+    student_id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    gender ENUM('Male','Female') NOT NULL,
+    course VARCHAR(100),
+    room VARCHAR(50),
+    status ENUM('pending','checked-in','checked-out') DEFAULT 'pending',
+    phone VARCHAR(20)
 );
 
-CREATE TABLE IF NOT EXISTS rooms (
-    unit_code VARCHAR(20) NOT NULL,
-    room_number VARCHAR(20) NOT NULL,
-    capacity INT NOT NULL DEFAULT 4,
-    available INT NOT NULL DEFAULT 4,
-    status ENUM('active','inactive','maintenance') DEFAULT 'active',
-    PRIMARY KEY (unit_code, room_number),
-    FOREIGN KEY (unit_code) REFERENCES hostel_units(unit_code) ON DELETE CASCADE
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_ref_id VARCHAR(20) DEFAULT NULL, -- link to student if student, NULL if admin
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('student','admin') DEFAULT 'student',
+    must_change_password BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_ref_id) REFERENCES students(student_id) ON DELETE CASCADE
 );
 
-ALTER TABLE hostel_units ADD COLUMN gender ENUM('male','female') NOT NULL DEFAULT 'male';
+ALTER TABLE users
+ADD COLUMN student_id VARCHAR(20) NULL;
 
-ALTER TABLE checkin_checkout
+ALTER TABLE users
 ADD CONSTRAINT fk_student
-FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE;
+FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE SET NULL;
 
-ALTER TABLE checkin_checkout
-ADD CONSTRAINT fk_room
-FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number);
+DESCRIBE users;
 
-CREATE TABLE IF NOT EXISTS checkin_checkout (
-    record_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id VARCHAR(20) NOT NULL,
-    unit_code VARCHAR(20) NOT NULL,
-    room_number VARCHAR(20) NOT NULL,
-    checkin_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    checkout_date TIMESTAMP NULL,
-    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
-    FOREIGN KEY (unit_code, room_number) REFERENCES rooms(unit_code, room_number)
-);
-
-CREATE TABLE IF NOT EXISTS admins (
-  staff_id VARCHAR(50) PRIMARY KEY,
-  full_name VARCHAR(100) NOT NULL,
-  email VARCHAR(100) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL
-);
+ALTER TABLE users ADD COLUMN staff_id VARCHAR(50);
