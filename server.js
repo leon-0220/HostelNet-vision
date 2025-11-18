@@ -75,8 +75,6 @@ let db;
   
   } catch (err) {
     console.error("Database connection failed:", err);
-  }
-  })();
 
     // ====== CREATE TABLES ====== //
     await db.query(`CREATE TABLE IF NOT EXISTS students (
@@ -137,6 +135,11 @@ let db;
     );`);
 
     console.log("✅ Database tables verified/created successfully.");
+
+  } catch (err) {
+    console.error("Database initialization error:", err);
+  }
+})();
 
     // ====== INSERT HOSTEL UNITS IF NOT EXIST ====== //
     const hostelUnits = [
