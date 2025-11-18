@@ -774,8 +774,7 @@ app.post("/api/add-student", async (req, res) => {
 
     // Insert into students table
     await db.query(
-      "INSERT INTO students (student_id, name, gender, course, room, phone, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO students (student_id, name, gender, course, room, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [student_id, name, gender, course || null, room, phone || null,, status]
     );
 
