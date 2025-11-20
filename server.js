@@ -346,7 +346,7 @@ app.post("/api/register", async (req, res) => {
     const userEmail= email || `${username}@hostelnet.com`;
 
     if (userRole === "student" && !student_id) {
-      return res.status(400).json({ error: "Student ID is requires for students."});
+      return res.status(400).json({ error: "Student ID is required for students."});
     }
 
     if (userRole === "admin" && !staff_id) {
@@ -360,8 +360,11 @@ app.post("/api/register", async (req, res) => {
     );
 
     if (exists.length > 0) {
-      return res.status(400).json({ error: "Username already exists." });
-    }
+      return res.status(400).json({ 
+        error: exists[0].username === username
+        ? "Username already exists." });
+        : "Email already exists."
+      });
 
     if (userRole === "student") {
       const [studentExists] = await db.query(
@@ -374,13 +377,13 @@ app.post("/api/register", async (req, res) => {
       }
 
       await db.query(
-          `INSERT INTO students (student_id, name, gender, course, room, phone, status) 
+          `INSERT INTO students (student_id, full_name, gender, course, room_number, phone_number, status) 
           VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
           [
             student_id, 
             full_name, 
             gender, 
-            course || null, 
+            course || null,
             room_number || null, 
             phone_number || null
           ]
@@ -405,7 +408,11 @@ app.post("/api/register", async (req, res) => {
       await db.query(
         `INSERT INTO users (student_id, username, email, password, role, must_change_password)
          VALUES (NULL, ?, ?, ?, 'admin', TRUE)`,
-        [staff_id, `${staff_id}@hostelnet.com`, hashed]
+        [
+          staff_id,
+          userEmail,
+          hashed
+        ]
       );
     }
     
