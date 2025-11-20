@@ -362,7 +362,7 @@ app.post("/api/register", async (req, res) => {
     if (exists.length > 0) {
       return res.status(400).json({ 
         error: exists[0].username === username
-        ? "Username already exists." });
+        ? "Username already exists." 
         : "Email already exists."
       });
 
@@ -422,7 +422,7 @@ app.post("/api/register", async (req, res) => {
     console.error("❌ Register Error:", err);
     res.status(500).json({ error: err.message });
   }
-});
+};
 
 // === LOGIN === //
 app.post("/api/login", async (req, res) => {
@@ -874,4 +874,4 @@ app.get("/", (req, res) => {
 // ===================== START SERVER ===================== //
 app.listen(PORT, () => {
   console.log(`🚀 Server running at https://hostelnet-2.onrender.com (PORT: ${PORT})`);
-});
+})});
