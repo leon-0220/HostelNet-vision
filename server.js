@@ -37,8 +37,8 @@ const DB_CONFIG = {
 app.use(
   cors({
     origin: [
-      "https://leon-0220.github.io",
-      "https://leon-0220.github.io/HostelNet-vision",
+      "https://rara-leon02.github.io",
+      "https://rara-leon02.github.io/HostelNet-vision/",
       "http://localhost:5500",
       "http://127.0.0.1:5500",
       "https://hostelnet-2.onrender.com",
@@ -861,7 +861,7 @@ app.get("/api/admin/rooms", async (req, res) => {
 
 // ===================== STATIC FRONTEND ===================== //
 app.get("/", (req, res) => {
-  res.send("✅ Backend is running. Visit frontend at https://leon-0220.github.io/HostelNet-vision/");
+  res.send("✅ Backend is running. Visit frontend at https://rara-leon02.github.io/HostelNet-vision/");
 });
 
 // ===================== START SERVER ===================== //
