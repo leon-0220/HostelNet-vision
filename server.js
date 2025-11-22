@@ -18,6 +18,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
+const PORT = process.env.PORT || 8080;
+
 // ===================== MIDDLEWARE ===================== //
 const allowedOrigins = [
   "https://rara-leon02.github.io",
