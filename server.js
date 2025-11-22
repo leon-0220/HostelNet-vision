@@ -9,6 +9,7 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import multer from "multer";
 import fs from "fs";
+import db from "./db.js";
 
 dotenv.config();
 
