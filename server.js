@@ -34,16 +34,18 @@ const DB_CONFIG = {
 };
 
 // ===================== MIDDLEWARE ===================== //
+const allowedOrigins = [
+  "https://rara-leon02.github.io",
+  "https://rara-leon02.github.io/HostelNet-vision/",    
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "https://hostelnet-2.onrender.com",
+];
+
 app.use(
   cors({
-    origin: [
-      "https://rara-leon02.github.io",
-      "https://rara-leon02.github.io/HostelNet-vision/",
-      "http://localhost:5500",
-      "http://127.0.0.1:5500",
-      "https://hostelnet-2.onrender.com",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
     credentials: true,
   })
@@ -51,6 +53,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
+app.options("*", cors());
 
 app.use(session({
   secret: "hostelnet-secret-key", 
@@ -320,6 +323,7 @@ app.get("/api/reset-admin", async (req, res) => {
 });
 
 // ===================== REGISTER ROUTE ===================== //
+app.options("/api/register", cors());
 app.post("/api/register", async (req, res) => {
   try {
     const {
