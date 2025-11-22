@@ -169,7 +169,7 @@ let db;
 
     for (const [code, gender, name] of hostelUnits) {
       await db.query(
-        "INSERT IGNORE INTO hostel_units (unit_code, gender, unit_name) VALUES (?, ?, ?)",
+        'INSERT IGNORE INTO hostel_units (unit_code, gender, unit_name) VALUES (?, ?, ?)',
         [code, gender, name]
       );
     }
