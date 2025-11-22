@@ -9,9 +9,9 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import multer from "multer";
 import fs from "fs";
-const { db, initDB } = require("./db.js");
+import db, { initDB } from "./db.js";
 
-require("dotenv").config();
+dotenv.config();
 
 (async () => {
   try {
