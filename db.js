@@ -19,7 +19,7 @@ queueLimit: 0,
 
 const db = mysql.createPool(DB_CONFIG);
   
-async function initDB() {
+export async function initDB() {
   await db.query(`CREATE TABLE IF NOT EXISTS students (
     student_id VARCHAR(20) PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
