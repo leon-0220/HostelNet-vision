@@ -887,4 +887,4 @@ app.get("/", (req, res) => {
 // ===================== START SERVER ===================== //
 app.listen(PORT, () => {
   console.log(`🚀 Server running at https://hostelnet-2.onrender.com (PORT: ${PORT})`);
-})});
+});
