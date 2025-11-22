@@ -13,8 +13,8 @@ const DB_CONFIG = {
     rejectUnauthorized: false,
   },
   waitForConnections: true,
-connectionLimit: 10,
-queueLimit: 0,
+  connectionLimit: 10,
+  queueLimit: 0,
 };
 
 const db = mysql.createPool(DB_CONFIG);
@@ -103,7 +103,6 @@ export async function initDB() {
       [code, gender, name]
     );
   }
-}
 
   console.log("🏠 Hostel units inserted (if missing)");
 
@@ -112,10 +111,11 @@ export async function initDB() {
   if (adminCheck.length === 0) {
     const hashed = await bcrypt.hash("AdminPass01", 10);
       await db.query(
-        "INSERT INTO users (student_id, username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
-        [null, "admin01", "admin01@gmail.com", hashed, "admin", false]
+        "INSERT INTO users (username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
+        ["admin01", "admin01@gmail.com", hashed, "admin", false]
       );
       console.log("🛡 Default admin created: admin01 / AdminPass01");
     }
+  }
 
 export default db;
