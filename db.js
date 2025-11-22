@@ -22,7 +22,7 @@ const db = mysql.createPool(DB_CONFIG);
 export async function initDB() {
   await db.query(`CREATE TABLE IF NOT EXISTS students (
     student_id VARCHAR(20) PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
+    full_name VARCHAR(150) NOT NULL,
     gender ENUM('Male','Female') NOT NULL,
     course VARCHAR(100),
     room VARCHAR(50),
