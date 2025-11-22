@@ -377,6 +377,7 @@ app.post("/api/register", async (req, res) => {
         ? "Username already exists." 
         : "Email already exists."
       });
+    }
 
     if (userRole === "student") {
       const [studentExists] = await db.query(
