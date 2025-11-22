@@ -1,7 +1,6 @@
-import mysql from "mysql2/promise";
-import bcrypt from "bcryptjs";
-import dotenv from "dotenv";
-dotenv.config();
+const mysql = require("mysql2/promise");
+const bcrypt = require("bcryptjs");
+require("dotenv").config();
 
 const DB_CONFIG = {
   host: process.env.DB_HOST || "shinkansen.proxy.rlwy.net",
@@ -19,7 +18,7 @@ queueLimit: 0,
 
 const db = mysql.createPool(DB_CONFIG);
   
-export async function initDB() {
+async function initDB() {
   await db.query(`CREATE TABLE IF NOT EXISTS students (
     student_id VARCHAR(20) PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
@@ -103,6 +102,7 @@ export async function initDB() {
       [code, gender, name]
     );
   }
+}
 
   console.log("🏠 Hostel units inserted (if missing)");
 
@@ -117,4 +117,4 @@ export async function initDB() {
       console.log("🛡 Default admin created: admin01 / AdminPass01");
     }
 
-export default db;
+module.exports = { db, initDB };

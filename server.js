@@ -1,5 +1,5 @@
-// ===================== IMPORTS ===================== //
-import express from "express";
+// ===================== IMPORTS ===================== // 
+const express = require("express");
 import mysql from "mysql2/promise";
 import cors from "cors";
 import session from "express-session";
@@ -9,9 +9,9 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import multer from "multer";
 import fs from "fs";
-import db, { initDB } from "./db.js";
+const { db, initDB } = require("./db.js");
 
-dotenv.config();
+require("dotenv").config();
 
 (async () => {
   try {
