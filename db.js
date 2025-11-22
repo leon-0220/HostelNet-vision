@@ -111,7 +111,7 @@ export async function initDB() {
   if (adminCheck.length === 0) {
     const hashed = await bcrypt.hash("AdminPass01", 10);
       await db.query(
-        "INSERT INTO users (username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO users (username, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?)",
         ["admin01", "admin01@gmail.com", hashed, "admin", false]
       );
       console.log("🛡 Default admin created: admin01 / AdminPass01");
