@@ -13,15 +13,6 @@ import db, { initDB } from "./db.js";
 
 dotenv.config();
 
-(async () => {
-  try {
-    await initDB();
-    console.log("DB initialized");
-  } catch (err) {
-    console.error("Database initialization error:", err);
-  }
-})();
-
 // ===================== SETUP ===================== //
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,6 +58,16 @@ app.use(session({
     maxAge: 1000 * 60 * 60 
   }
 }));
+
+// ===================== DATABASE INIT ============================== //
+(async () => {
+  try {
+    await initDB();
+    console.log("DB initialized");
+  } catch (err) {
+    console.error("Database initialization error:", err);
+  }
+})();
 
 // ===================== PROFILE PICTURE UPLOAD ===================== //
 const uploadDir = path.join(__dirname, "public/uploads");
