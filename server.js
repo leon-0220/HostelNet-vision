@@ -1,5 +1,5 @@
 // ===================== IMPORTS ===================== // 
-const express = require("express");
+import express from"express";
 import mysql from "mysql2/promise";
 import cors from "cors";
 import session from "express-session";
