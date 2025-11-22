@@ -1,6 +1,7 @@
-const mysql = require("mysql2/promise");
-const bcrypt = require("bcryptjs");
-require("dotenv").config();
+import mysql from "mysql2/promise";
+import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
+dotenv.config();
 
 const DB_CONFIG = {
   host: process.env.DB_HOST || "shinkansen.proxy.rlwy.net",
@@ -117,4 +118,4 @@ async function initDB() {
       console.log("🛡 Default admin created: admin01 / AdminPass01");
     }
 
-module.exports = { db, initDB };
+export default db;
